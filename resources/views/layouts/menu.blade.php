@@ -34,3 +34,7 @@
     <a href="{!! route('driverApis.index') !!}"><i class="fa fa-edit"></i><span>Driver Apis</span></a>
 </li>
 
+<li class="{{ Request::is('filters*') ? 'active' : '' }}">
+    <a href="{!! route('filters.index') !!}"><i class="fa fa-filter"></i><span>Filters</span></a>
+</li>
+

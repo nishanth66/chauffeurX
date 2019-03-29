@@ -60,3 +60,5 @@ Route::resource('driverApis', 'driverApiController');
 Route::resource('passengerRatings', 'passenger_ratingController');
 Route::resource('paymentMethod', 'driverTipsController');
 Route::resource('driverDistance', 'maximumDistanceController');
+
+Route::resource('filters', 'filterController');
