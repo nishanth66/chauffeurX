@@ -58,12 +58,18 @@ class driverApiController extends Controller
     {
         if (driver::whereId($request->driverid)->exists())
         {
-            $update = $request->except('categoryid');
+            $update = $request->except('categoryid','payment_methid_id');
             if (isset($request->categoryid) && ($request->categoryid != '' || !empty($request->categoryid)))
             {
                 $inputCategory['driverid'] = $request->driverid;
                 $inputCategory['categoryid'] = $request->categoryid;
                 driverCategory::create($inputCategory);
+            }
+            if (isset($request->payment_methid_id) && ($request->payment_methid_id != '' || !empty($request->payment_methid_id)))
+            {
+                $inputPayment['driverid'] = $request->driverid;
+                $inputPayment['payment_methid_id'] = $request->payment_methid_id;
+                DB::table('driver_payment_method')->insert($inputPayment);
             }
             $response['status'] = "Success";
             $response['code'] = 200;
