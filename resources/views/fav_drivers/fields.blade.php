@@ -1,0 +1,17 @@
+<!-- Userid Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('userid', 'Userid:') !!}
+    {!! Form::text('userid', null, ['class' => 'form-control']) !!}
+</div>
+
+<!-- Driverid Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('driverid', 'Driverid:') !!}
+    {!! Form::text('driverid', null, ['class' => 'form-control']) !!}
+</div>
+
+<!-- Submit Field -->
+<div class="form-group col-sm-12">
+    {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
+    <a href="{!! route('favDrivers.index') !!}" class="btn btn-default">Cancel</a>
+</div>

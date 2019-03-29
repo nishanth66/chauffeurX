@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="428e11ee-e902-46e4-ae1d-1b694fe7b928" name="Default" comment="" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_TABLE_DETAILS" value="true" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FileEditorManager">
+    <leaf>
+      <file leaf-file-name="adddistributorController.php" pinned="false" current-in-tab="true">
+        <entry file="file://D:/github/message/app/Http/Controllers/adddistributorController.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="472">
+              <caret line="157" column="48" lean-forward="false" selection-start-line="157" selection-start-column="48" selection-end-line="157" selection-end-column="48" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="CSS File" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>kmPrice</find>
+      <find>parkingFees</find>
+      <find>daily_parking_fees</find>
+      <find>km_</find>
+      <find>trip</find>
+      <find>minPrice</find>
+      <find>minimum/price</find>
+      <find>tripPrice</find>
+      <find>customerProfile</find>
+      <find>Auth::user()</find>
+      <find>lastreminder_type</find>
+      <find>customerProfile(</find>
+      <find>--pricingTable-blue</find>
+      <find>assignPackage</find>
+      <find>@med</find>
+      <find>active-package</find>
+      <find>round($days)</find>
+      <find>APP_NAME</find>
+      <find>#btnMg2</find>
+      <find>driverProfileFields</find>
+      <find>booking</find>
+      <find>new/booking</find>
+      <find>booking/n</find>
+      <find>schema</find>
+      <find>booking(</find>
+      <find>booking/column</find>
+      <find>newCustomerColumn</find>
+      <find>new/customer/column</find>
+      <find>editColumn</find>
+      <find>Schema::</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>phone</replace>
+      <replace>Not Found</replace>
+      <replace>data</replace>
+      <replace>api\passengerApiController</replace>
+      <replace>passengers::</replace>
+      <replace>payments</replace>
+      <replace>Payment Method</replace>
+      <replace>$payments</replace>
+      <replace>paymentMethod.index</replace>
+      <replace>$userDetais</replace>
+      <replace>col-sm-12</replace>
+    </replaceStrings>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/api.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/passengerApiController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/driverApiController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/cencellationController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/fields.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/menu.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/RegistersUsers.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/PaypalController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/.env" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/routes.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/scheduleMessegeController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/LoginController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/paypalCredentialsController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/routes.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/defaultMessageController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/menu.blade 2.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/show.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/edit.blade 2.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/usermessage.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/fields.blade 2.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/usermessageController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/table.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/users.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/User.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/AuthController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/welcome.blade.php" />
+        <option value="D:/backups/messengerNew/resources/views/users/change.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/distributorController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/change.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/scheduleMessegeController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/PaypalController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/singlestyle.css" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/index.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/packages.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/app.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/.env" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/style2.css" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/create.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/fields.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/menu.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/maximumDistanceController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/edit.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/passengerApiController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/api.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/table2.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/UserController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/web.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/column.blade.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/HomeController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/user_profileController.php" />
+        <option value="D:/github/message/app/Http/Controllers/adddistributorController.php" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER">
+    <package-json value="$PROJECT_DIR$/package.json" />
+  </component>
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="PhpWorkspaceProjectConfiguration" backward_compatibility_performed="true" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1040" />
+    <option name="height" value="744" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scratches" />
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="resources" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="views" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="resources" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="views" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="cencellations" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="resources" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Http" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_interpreter_path" value="C:/Program Files/nodejs/node" />
+    <property name="list.type.of.created.stylesheet" value="CSS" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="CodeceptionConfigurationType" factoryName="Codeception">
+      <PhpTestRunnerSettings />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerJest" factoryName="Jest">
+      <node-interpreter value="project" />
+      <working-dir value="" />
+      <envs />
+      <scope-kind value="ALL" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerProtractor" factoryName="Protractor">
+      <config-file value="" />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
+      <method />
+    </configuration>
+    <configuration default="true" type="NodeJSConfigurationType" factoryName="Node.js" path-to-node="project" working-dir="">
+      <method />
+    </configuration>
+    <configuration default="true" type="PHPUnitRunConfigurationType" factoryName="PHPUnit">
+      <TestRunner />
+      <method />
+    </configuration>
+    <configuration default="true" type="PhpBehatConfigurationType" factoryName="Behat">
+      <BehatRunner />
+      <method />
+    </configuration>
+    <configuration default="true" type="PhpLocalRunConfigurationType" factoryName="PHP Console">
+      <method />
+    </configuration>
+    <configuration default="true" type="PhpSpecConfigurationType" factoryName="PHPSpec">
+      <PhpTestRunnerSettings />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.npm" factoryName="npm">
+      <command value="run" />
+      <scripts />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="mocha-javascript-test-runner" factoryName="Mocha">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <working-directory />
+      <pass-parent-env>true</pass-parent-env>
+      <envs />
+      <ui />
+      <extra-mocha-options />
+      <test-kind>DIRECTORY</test-kind>
+      <test-directory />
+      <recursive>false</recursive>
+      <method />
+    </configuration>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="428e11ee-e902-46e4-ae1d-1b694fe7b928" name="Default" comment="" />
+      <created>1551098788048</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1551098788048</updated>
+      <workItem from="1551098790495" duration="3379000" />
+      <workItem from="1551155142037" duration="20458000" />
+      <workItem from="1551241481644" duration="28104000" />
+      <workItem from="1551327971573" duration="5928000" />
+      <workItem from="1551335045869" duration="21120000" />
+      <workItem from="1551415184716" duration="24245000" />
+      <workItem from="1551763956516" duration="3828000" />
+      <workItem from="1551775876825" duration="10164000" />
+      <workItem from="1552381641259" duration="1096000" />
+      <workItem from="1552392008084" duration="2025000" />
+      <workItem from="1552449235932" duration="3284000" />
+      <workItem from="1552452749784" duration="18224000" />
+      <workItem from="1552475311102" duration="237000" />
+      <workItem from="1553230577419" duration="21038000" />
+      <workItem from="1553313799641" duration="27801000" />
+      <workItem from="1553488146656" duration="12063000" />
+      <workItem from="1553511264416" duration="5484000" />
+      <workItem from="1553572780184" duration="4281000" />
+      <workItem from="1553577453858" duration="9386000" />
+      <workItem from="1553595512193" duration="2440000" />
+      <workItem from="1553599324926" duration="4989000" />
+      <workItem from="1553660629461" duration="29259000" />
+      <workItem from="1553746147796" duration="11575000" />
+      <workItem from="1553764444430" duration="4789000" />
+      <workItem from="1553834209494" duration="1543000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="276740000" />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1040" height="744" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.28163266" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32959184" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="processedProjectFiles" value="true" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/app/Http/Controllers/Home1Controller.php</url>
+          <line>434</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/affiliateController 2.php</url>
+          <line>237</line>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/app/Http/Controllers/api/driverApiController.php</url>
+          <line>11</line>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/passengerApiController 2.php</url>
+          <line>1040</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/driverApiController.php</url>
+          <line>298</line>
+          <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/scheduleMessegeController.php</url>
+          <line>21</line>
+          <option name="timeStamp" value="35" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/scheduleMessegeController.php</url>
+          <line>167</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="40" />
+    </breakpoint-manager>
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/scheduleMessegeController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/ThrottlesLogins.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/LoginController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/AuthenticatesAndRegistersUsers.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/AuthenticatesUsers.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/paypalCredentialsController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/defaultMessageController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/routes.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/show.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/edit.blade 2.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/menu.blade 2.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/usermessage.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/fields.blade 2.php" />
+    <entry file="jar://$APPLICATION_HOME_DIR$/lib/phpstorm.jar!/resources/html5-schema/html5/common.rnc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="194">
+          <caret line="124" column="18" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="529" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/usermessageController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/User.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/users.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/welcome.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/invitation.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/AuthController.php" />
+    <entry file="file://D:/backups/messengerNew/app/Http/Controllers/scheduleMessegeController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="219">
+          <caret line="115" column="78" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="169" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/distributorController.php" />
+    <entry file="file://D:/backups/messengerNew/resources/views/users/change.blade.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="397" column="18" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="544" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/scheduleMessegeController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/PaypalController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/change.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/singlestyle.css" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/index.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/packages.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/app.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/.env" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/style2.css" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/driverTipsController.php" />
+    <entry file="file://$PROJECT_DIR$/resources/views/cencellations/fields.blade.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" column="67" lean-forward="true" selection-start-line="2" selection-start-column="4" selection-end-line="3" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/fields.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/edit.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/maximumDistanceController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/create.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/passengerApiController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/menu.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/table.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/table2.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/create.blade 2.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/web 2.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/api.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/web.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="261">
+          <caret line="93" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="147" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/column.blade.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="20" column="34" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="69" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/UserController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="577" column="9" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="1809" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/user_profileController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="227">
+          <caret line="222" column="17" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="625" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/HomeController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="213" column="72" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="1539" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/github/message/app/Http/Controllers/adddistributorController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="472">
+          <caret line="157" column="48" lean-forward="false" selection-start-line="157" selection-start-column="48" selection-end-line="157" selection-end-column="48" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
