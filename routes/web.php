@@ -62,3 +62,4 @@ Route::resource('paymentMethod', 'driverTipsController');
 Route::resource('driverDistance', 'maximumDistanceController');
 
 Route::resource('filters', 'filterController');
+Route::get('fireBaseDemo', 'fireBaseController@fireBaseDemo');
