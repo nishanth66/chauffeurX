@@ -27,7 +27,7 @@
         <script>
         $(document).ready(function() {
             $('#categories-table').DataTable( {
-                dom: 'frtip',
+                dom: 'Bfrtip',
                 buttons: [
                     {
                         extend: 'copyHtml5',

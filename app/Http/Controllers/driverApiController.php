@@ -11,7 +11,7 @@ use Flash;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Response;
 
-class driverApiController extends AppBaseController
+class driverApiController extends Controller
 {
     /** @var  driverApiRepository */
     private $driverApiRepository;

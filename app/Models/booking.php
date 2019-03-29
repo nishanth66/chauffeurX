@@ -49,13 +49,16 @@ class booking extends Model
         'source_description',
         'destination_description',
         'alternate_phone',
-        'statu',
+        'status',
         'image',
         'payment',
+	    'penalty',
         'paid',
         'driverid',
         'estimated_time',
         'categoryId',
+        'wait_time',
+        'cancelled_at'
     ];
 
     /**
@@ -75,12 +78,15 @@ class booking extends Model
         'source_description' => 'string',
         'destination_description' => 'string',
         'alternate_phone' => 'string',
-        'statu' => 'string',
+        'status' => 'string',
         'image' => 'string',
         'payment' => 'string',
+        'penalty' => 'string',
         'paid' => 'string',
         'estimated_time' => 'string',
         'categoryId' => 'string',
+        'wait_time' => 'string',
+        'cancelled_at' => 'string',
     ];
 
     /**

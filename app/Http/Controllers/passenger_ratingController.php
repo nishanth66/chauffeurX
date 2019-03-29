@@ -11,7 +11,7 @@ use Flash;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Response;
 
-class passenger_ratingController extends AppBaseController
+class passenger_ratingController extends Controller
 {
     /** @var  passenger_ratingRepository */
     private $passengerRatingRepository;

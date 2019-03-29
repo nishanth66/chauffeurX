@@ -34,6 +34,7 @@ class priceController extends Controller
         $this->priceRepository->pushCriteria(new RequestCriteria($request));
         $prices = $this->priceRepository->all();
 
+
         return view('prices.index',compact('categories','prices'));
     }
 

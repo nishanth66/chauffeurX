@@ -8,17 +8,17 @@ use App\Repositories\driverTipsRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
 use Flash;
+use Illuminate\Support\Facades\DB;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Response;
 
-class driverTipsController extends AppBaseController
+class driverTipsController extends Controller
 {
     /** @var  driverTipsRepository */
-    private $driverTipsRepository;
 
-    public function __construct(driverTipsRepository $driverTipsRepo)
+    public function __construct()
     {
-        $this->driverTipsRepository = $driverTipsRepo;
+//        $this->driverTipsRepository = $driverTipsRepo;
     }
 
     /**
@@ -27,13 +27,11 @@ class driverTipsController extends AppBaseController
      * @param Request $request
      * @return Response
      */
-    public function index(Request $request)
+    public function index()
     {
-        $this->driverTipsRepository->pushCriteria(new RequestCriteria($request));
-        $driverTips = $this->driverTipsRepository->all();
-
-        return view('driver_tips.index')
-            ->with('driverTips', $driverTips);
+        $i=1;
+        $payments = DB::table('payment_methods')->get();
+        return view('payments.index',compact('payments','i'));
     }
 
     /**
@@ -43,7 +41,7 @@ class driverTipsController extends AppBaseController
      */
     public function create()
     {
-        return view('driver_tips.create');
+        return view('paymentMethod.index');
     }
 
     /**
@@ -55,13 +53,13 @@ class driverTipsController extends AppBaseController
      */
     public function store(CreatedriverTipsRequest $request)
     {
-        $input = $request->all();
+        $input = $request->except('_token','_method');
 
-        $driverTips = $this->driverTipsRepository->create($input);
+        $payments = DB::table('payment_methods')->insert($input);
 
-        Flash::success('Driver Tips saved successfully.');
+        Flash::success('Payment Methods saved successfully.');
 
-        return redirect(route('driverTips.index'));
+        return redirect(route('paymentMethod.index'));
     }
 
     /**
@@ -73,15 +71,15 @@ class driverTipsController extends AppBaseController
      */
     public function show($id)
     {
-        $driverTips = $this->driverTipsRepository->findWithoutFail($id);
+        $payments = DB::table('payment_methods')->whereId($id)->first();
 
-        if (empty($driverTips)) {
-            Flash::error('Driver Tips not found');
+        if (empty($payments)) {
+            Flash::error('Payment Method not found');
 
-            return redirect(route('driverTips.index'));
+            return redirect(route('paymentMethod.index'));
         }
 
-        return view('driver_tips.show')->with('driverTips', $driverTips);
+        return view('payments.show')->with('driverTips', $payments);
     }
 
     /**
@@ -93,15 +91,15 @@ class driverTipsController extends AppBaseController
      */
     public function edit($id)
     {
-        $driverTips = $this->driverTipsRepository->findWithoutFail($id);
+        $payments = DB::table('payment_methods')->whereId($id)->first();
 
-        if (empty($driverTips)) {
-            Flash::error('Driver Tips not found');
+        if (empty($payments)) {
+            Flash::error('Payment Method not found');
 
-            return redirect(route('driverTips.index'));
+            return redirect(route('paymentMethod.index'));
         }
 
-        return view('driver_tips.edit')->with('driverTips', $driverTips);
+        return view('payments.edit')->with('payments', $payments);
     }
 
     /**
@@ -114,19 +112,19 @@ class driverTipsController extends AppBaseController
      */
     public function update($id, UpdatedriverTipsRequest $request)
     {
-        $driverTips = $this->driverTipsRepository->findWithoutFail($id);
+        $payments = DB::table('payment_methods')->whereId($id)->first();
+        $update = $request->except('_token','_method');
+        if (empty($payments)) {
+            Flash::error('Payment Method not found');
 
-        if (empty($driverTips)) {
-            Flash::error('Driver Tips not found');
-
-            return redirect(route('driverTips.index'));
+            return redirect(route('paymentMethod.index'));
         }
 
-        $driverTips = $this->driverTipsRepository->update($request->all(), $id);
+        $payments = DB::table('payment_methods')->whereId($id)->update($update);
 
-        Flash::success('Driver Tips updated successfully.');
+        Flash::success('Payment Method updated successfully.');
 
-        return redirect(route('driverTips.index'));
+        return redirect(route('paymentMethod.index'));
     }
 
     /**
@@ -138,18 +136,18 @@ class driverTipsController extends AppBaseController
      */
     public function destroy($id)
     {
-        $driverTips = $this->driverTipsRepository->findWithoutFail($id);
+        $payments = DB::table('payment_methods')->whereId($id)->first();
 
-        if (empty($driverTips)) {
-            Flash::error('Driver Tips not found');
+        if (empty($payments)) {
+            Flash::error('Payment Method not found');
 
-            return redirect(route('driverTips.index'));
+            return redirect(route('paymentMethod.index'));
         }
 
-        $this->driverTipsRepository->delete($id);
+        DB::table('payment_methods')->whereId($id)->delete();
 
-        Flash::success('Driver Tips deleted successfully.');
+        Flash::success('Payment Method deleted successfully.');
 
-        return redirect(route('driverTips.index'));
+        return redirect(route('paymentMethod.index'));
     }
 }

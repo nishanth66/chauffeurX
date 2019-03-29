@@ -2,8 +2,8 @@
     <thead>
         <tr>
             <th>Amount</th>
-        <th>Terms</th>
-            <th colspan="3">Action</th>
+            <th>Terms</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>

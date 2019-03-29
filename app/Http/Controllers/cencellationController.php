@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatecencellationRequest;
 use App\Http\Requests\UpdatecencellationRequest;
+use App\Models\cencellation;
 use App\Repositories\cencellationRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
@@ -27,13 +28,17 @@ class cencellationController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function index(Request $request)
+    public function index()
     {
-        $this->cencellationRepository->pushCriteria(new RequestCriteria($request));
-        $cencellations = $this->cencellationRepository->all();
-
-        return view('cencellations.index')
-            ->with('cencellations', $cencellations);
+        if(cencellation::exists())
+        {
+            $cencellation = cencellation::first();
+            return view('cencellations.edit')->with('cencellation', $cencellation);
+        }
+        else
+        {
+            return view('cencellations.create');
+        }
     }
 
     /**
@@ -59,7 +64,7 @@ class cencellationController extends Controller
 
         $cencellation = $this->cencellationRepository->create($input);
 
-        Flash::success('Cencellation saved successfully.');
+        Flash::success('Cancellation saved successfully.');
 
         return redirect(route('cencellations.index'));
     }
@@ -76,7 +81,7 @@ class cencellationController extends Controller
         $cencellation = $this->cencellationRepository->findWithoutFail($id);
 
         if (empty($cencellation)) {
-            Flash::error('Cencellation not found');
+            Flash::error('Cancellation not found');
 
             return redirect(route('cencellations.index'));
         }
@@ -96,7 +101,7 @@ class cencellationController extends Controller
         $cencellation = $this->cencellationRepository->findWithoutFail($id);
 
         if (empty($cencellation)) {
-            Flash::error('Cencellation not found');
+            Flash::error('Cancellation not found');
 
             return redirect(route('cencellations.index'));
         }
@@ -117,14 +122,14 @@ class cencellationController extends Controller
         $cencellation = $this->cencellationRepository->findWithoutFail($id);
 
         if (empty($cencellation)) {
-            Flash::error('Cencellation not found');
+            Flash::error('Cancellation not found');
 
             return redirect(route('cencellations.index'));
         }
 
         $cencellation = $this->cencellationRepository->update($request->all(), $id);
 
-        Flash::success('Cencellation updated successfully.');
+        Flash::success('Cancellation updated successfully.');
 
         return redirect(route('cencellations.index'));
     }
@@ -141,14 +146,14 @@ class cencellationController extends Controller
         $cencellation = $this->cencellationRepository->findWithoutFail($id);
 
         if (empty($cencellation)) {
-            Flash::error('Cencellation not found');
+            Flash::error('Cancellation not found');
 
             return redirect(route('cencellations.index'));
         }
 
         $this->cencellationRepository->delete($id);
 
-        Flash::success('Cencellation deleted successfully.');
+        Flash::success('Cancellation deleted successfully.');
 
         return redirect(route('cencellations.index'));
     }

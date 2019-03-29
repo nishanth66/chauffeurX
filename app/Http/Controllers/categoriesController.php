@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatecategoriesRequest;
 use App\Http\Requests\UpdatecategoriesRequest;
+use App\Models\categories;
 use App\Repositories\categoriesRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
@@ -128,8 +129,16 @@ class categoriesController extends Controller
 
             return redirect(route('categories.index'));
         }
+        $input = $request->except('image');
+        if ($request->hasFile('image'))
+        {
+            $photoName = rand(1,7257361) . time() . '.' . $request->image->getClientOriginalExtension();
+            $mime = $request->image->getClientOriginalExtension();
+            $request->image->move(public_path('avatars'), $photoName);
+            $input['image'] = $photoName;
+        }
 
-        $categories = $this->categoriesRepository->update($request->all(), $id);
+        $categories = $this->categoriesRepository->update($input, $id);
 
         Flash::success('Categories updated successfully.');
 
@@ -153,7 +162,7 @@ class categoriesController extends Controller
             return redirect(route('categories.index'));
         }
 
-        $this->categoriesRepository->delete($id);
+        categories::whereId($id)->forcedelete();
 
         Flash::success('Categories deleted successfully.');
 

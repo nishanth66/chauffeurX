@@ -28,7 +28,7 @@ Route::resource('drivers', 'driverController');
 
 Route::resource('ratings', 'ratingController');
 
-Route::resource('driverTips', 'driverTipsController');
+//Route::resource('driverTips', 'driverTipsController');
 
 Route::resource('cencellations', 'cencellationController');
 
@@ -58,3 +58,5 @@ Route::resource('passengers', 'passengersController');
 Route::resource('driverApis', 'driverApiController');
 
 Route::resource('passengerRatings', 'passenger_ratingController');
+Route::resource('paymentMethod', 'driverTipsController');
+Route::resource('driverDistance', 'maximumDistanceController');

@@ -2,10 +2,10 @@
     <thead>
         <tr>
             <th>Name</th>
-        <th>Link</th>
-        <th>Method</th>
-        <th>Parameters</th>
-            <th colspan="3">Action</th>
+            <th>Link</th>
+            <th>Method</th>
+            <th>Parameters</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>

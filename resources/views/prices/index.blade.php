@@ -28,7 +28,7 @@
     <script>
         $(document).ready(function() {
             $('#prices-table').DataTable( {
-                dom: 'frtip',
+                dom: 'Bfrtip',
                 buttons: [
                     {
                         extend: 'copyHtml5',

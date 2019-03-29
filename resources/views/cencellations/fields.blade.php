@@ -1,13 +1,13 @@
 <!-- Amount Field -->
-<div class="form-group col-sm-6">
+<div class="form-group col-sm-12">
     {!! Form::label('amount', 'Amount:') !!}
     {!! Form::text('amount', null, ['class' => 'form-control']) !!}
 </div>
 
 <!-- Terms Field -->
-<div class="form-group col-sm-6">
-    {!! Form::label('terms', 'Terms:') !!}
-    {!! Form::text('terms', null, ['class' => 'form-control']) !!}
+<div class="form-group col-sm-12">
+    {!! Form::label('max_time', 'Maximum time for free Cancellation (in Minutes):') !!}
+    {!! Form::text('max_time', null, ['class' => 'form-control']) !!}
 </div>
 
 <!-- Submit Field -->

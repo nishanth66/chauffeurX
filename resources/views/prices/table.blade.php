@@ -9,10 +9,24 @@
     <tbody>
     @foreach($prices as $price)
         <?php
+        if (\App\Models\categories::whereId($price->category)->exists())
+        {
             $category = \App\Models\categories::whereId($price->category)->first();
+
+//            exit;
+        }
+        else
+        {
+            $category = "";
+        }
         ?>
         <tr>
-            <td>{!! $category->name !!}</td>
+            <td>
+                @if(isset($category))
+                {{$category->name}}
+                @else
+                @endif
+            </td>
             <td>{!! $price->amount !!}</td>
             <td>
                 {!! Form::open(['route' => ['prices.destroy', $price->id], 'method' => 'delete']) !!}

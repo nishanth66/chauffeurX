@@ -36,27 +36,42 @@ Route::post('/editBooking', 'api\passengerApiController@editBooking')->name('edi
 Route::get('/allBooking', 'api\passengerApiController@allBooking')->name('allBooking');
 Route::post('/driverBookings', 'api\passengerApiController@driverBookings')->name('driverBookings');
 Route::post('/cancelBookingFee', 'api\passengerApiController@cancelBookingFee')->name('cancelBookingFee');
+Route::post('/cancelBooking', 'api\passengerApiController@cancelBooking')->name('cancelBooking');
 Route::post('/addStripeCard', 'api\passengerApiController@addStripeCard')->name('addStripeCard');
 Route::post('/getStripeCards', 'api\passengerApiController@getStripeCards')->name('getStripeCards');
 
 Route::post('/advertisement', 'api\passengerApiController@advertisement')->name('advertisement');
 
 Route::post('/activateCard', 'api\passengerApiController@activateCard')->name('activateCard');
+Route::post('/RequestBooking', 'api\passengerApiController@RequestBooking')->name('RequestBooking');
 
 Route::post('/inviteFriends', 'api\passengerApiController@inviteFriends')->name('inviteFriends');
-//Route::post('/getDistance1', 'api\passengerApiController@calculateDistance')->name('getDistance');
-
+Route::get('/driverBookings/{id}', 'api\passengerApiController@driverBookings')->name('driverBookings');
+Route::get('/getPenalty/{id}', 'api\passengerApiController@getPenalty')->name('getPenalty');
+Route::post('/getDistance1', 'api\passengerApiController@calculateDistance')->name('getDistance');
+Route::post('/getAddress', 'api\passengerApiController@getAddress')->name('getAddress');
+Route::get('/getDriverLastRide/{id}', 'api\passengerApiController@getDriverLastRide')->name('getDriverLastRide');
+Route::get('/getDriverRating/{id}', 'api\passengerApiController@getDriverRating')->name('getDriverRating');
+Route::get('/assignDriver/{id}', 'api\passengerApiController@assignDriver')->name('assignDriver');
+Route::get('/getPaymentMethods', 'api\passengerApiController@getPaymentMethods')->name('getPaymentMethods');
+Route::get('/getCategories', 'api\passengerApiController@getCategories')->name('getCategories');
+Route::post('/getDriversByCategory', 'api\passengerApiController@getDriversByCategory')->name('getDriversByCategory');
+Route::post('/getNearbyDrievrs', 'api\passengerApiController@getNearbyDrievrs')->name('getNearbyDrievrs');
+Route::get('/whatsappDemo', 'api\passengerApiController@whatsappDemo')->name('whatsappDemo');
 
 Route::prefix('driver')->group(function () {
-    Route::group(['namespace' => 'driver'], function()
+    Route::group(['namespace' => 'api'], function()
     {
-        Route::post('/login', 'api\driverApiController@login')->name('login');
-        Route::post('/verify', 'api\driverApiController@verify')->name('verify');
-        Route::post('/register', 'api\driverApiController@register')->name('register');
-        Route::post('/profile', 'api\driverApiController@profile')->name('profile');
+        Route::post('/login', 'driverApiController@login')->name('login');
+        Route::post('/verify', 'driverApiController@verify')->name('verify');
+        Route::post('/register', 'driverApiController@register')->name('register');
+        Route::post('/profile', 'driverApiController@profile')->name('profile');
+        Route::post('/rateRide', 'driverApiController@rateRide')->name('rateRide');
+        Route::post('/tripStart', 'driverApiController@tripStart')->name('tripStart');
+        Route::post('/tripEnd', 'driverApiController@tripEnd')->name('tripEnd');
+        Route::post('/myBookings', 'driverApiController@myBookings')->name('myBookings');
+        Route::post('/waitTime', 'driverApiController@waitedTime')->name('waitedTime');
+        Route::post('/myCategories', 'driverApiController@myCategories')->name('myCategories');
+        Route::post('/inviteFriends', 'driverApiController@inviteFriends')->name('inviteFriends');
     });
 });
-
-Route::resource('examples', 'exampleAPIController');
-
-Route::resource('driver_categories', 'driverCategoryAPIController');

@@ -20,7 +20,7 @@ class rating extends Model
 {
     use SoftDeletes;
 
-    public $table = 'ratings';
+    public $table = 'driver_ratings';
     
 
     protected $dates = ['deleted_at'];
