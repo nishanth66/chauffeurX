@@ -46,6 +46,9 @@ Route::post('/activateCard', 'api\passengerApiController@activateCard')->name('a
 Route::post('/RequestBooking', 'api\passengerApiController@RequestBooking')->name('RequestBooking');
 
 Route::post('/inviteFriends', 'api\passengerApiController@inviteFriends')->name('inviteFriends');
+
+Route::get('/getFilters', 'api\passengerApiController@getFilters')->name('getFilters');
+
 Route::get('/driverBookings/{id}', 'api\passengerApiController@driverBookings')->name('driverBookings');
 Route::get('/getPenalty/{id}', 'api\passengerApiController@getPenalty')->name('getPenalty');
 Route::post('/getDistance1', 'api\passengerApiController@calculateDistance')->name('getDistance');

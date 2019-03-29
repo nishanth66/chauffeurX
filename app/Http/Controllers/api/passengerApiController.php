@@ -10,6 +10,7 @@ use App\Models\driver;
 use App\Models\driverCategory;
 use App\Models\driverTips;
 use App\Models\favDriver;
+use App\Models\filter;
 use App\Models\invitedFriends;
 use App\Models\passengers;
 use App\Models\passengerStripe;
@@ -1337,6 +1338,26 @@ class passengerApiController extends Controller
 
     }
 
+    public function getFilters()
+    {
+        if (filter::exists())
+        {
+            $filters = filter::get();
+
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['message'] = "Filters fetched Successfully!";
+            $response['data'] = $filters;
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['message'] = "No filters are found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
 
 
     public function whatsappDemo()
