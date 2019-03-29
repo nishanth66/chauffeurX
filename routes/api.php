@@ -47,7 +47,8 @@ Route::post('/RequestBooking', 'api\passengerApiController@RequestBooking')->nam
 
 Route::post('/inviteFriends', 'api\passengerApiController@inviteFriends')->name('inviteFriends');
 
-Route::get('/getFilters', 'api\passengerApiController@getFilters')->name('getFilters');
+
+Route::get('/getDriversByFilter', 'api\passengerApiController@getFilters')->name('getFilters');
 
 Route::get('/driverBookings/{id}', 'api\passengerApiController@driverBookings')->name('driverBookings');
 Route::get('/getPenalty/{id}', 'api\passengerApiController@getPenalty')->name('getPenalty');

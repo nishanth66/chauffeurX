@@ -1338,26 +1338,6 @@ class passengerApiController extends Controller
 
     }
 
-    public function getFilters()
-    {
-        if (filter::exists())
-        {
-            $filters = filter::get();
-
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['message'] = "Filters fetched Successfully!";
-            $response['data'] = $filters;
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['message'] = "No filters are found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
 
 
     public function whatsappDemo()
