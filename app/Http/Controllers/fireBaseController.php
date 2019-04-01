@@ -32,15 +32,13 @@ class fireBaseController extends Controller
 
         $firebase = (new Factory)
             ->withServiceAccount($serviceAccount)
-            // The following line is optional if the project id in your credentials file
-            // is identical to the subdomain of your Firebase project. If you need it,
-            // make sure to replace the URL with the URL of your project.
-            ->withDatabaseUri('https://driverapp-master-bb0a8.firebaseio.com/')
             ->create();
 
 
         $database = $firebase->getDatabase();
+
+        $bcd=$database->getReference('users')->getChild("id")->getValue(); // returns an array of key names
         echo '<pre>';
-        print_r($database);
+        print_r($bcd);
     }
 }

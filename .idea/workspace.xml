@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="428e11ee-e902-46e4-ae1d-1b694fe7b928" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/routes/web.php" afterPath="$PROJECT_DIR$/routes/web.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Controllers/fireBaseController.php" afterPath="$PROJECT_DIR$/app/Http/Controllers/fireBaseController.php" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -23,13 +22,98 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="fireBaseController.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/Http/Controllers/fireBaseController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="472">
-              <caret line="43" column="25" lean-forward="false" selection-start-line="43" selection-start-column="25" selection-end-line="43" selection-end-column="25" />
+            <state relative-caret-position="629">
+              <caret line="39" column="107" lean-forward="true" selection-start-line="39" selection-start-column="78" selection-end-line="39" selection-end-column="107" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="directory.blade.php" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/directory.blade.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="459">
+              <caret line="51" column="140" lean-forward="true" selection-start-line="51" selection-start-column="75" selection-end-line="51" selection-end-column="140" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="web.php" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/web.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="153">
+              <caret line="54" column="22" lean-forward="false" selection-start-line="54" selection-start-column="12" selection-end-line="54" selection-end-column="22" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="cronController.php" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/cronController.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="441">
+              <caret line="528" column="0" lean-forward="true" selection-start-line="528" selection-start-column="0" selection-end-line="528" selection-end-column="0" />
+              <folding>
+                <element signature="e#642#1033#0#PHP" expanded="false" />
+                <element signature="e#1057#1531#0#PHP" expanded="false" />
+                <element signature="e#22269#29892#0#PHP" expanded="false" />
+                <element signature="e#29899#30319#0#PHP" expanded="false" />
+                <marker date="1554095316066" expanded="true" signature="24310:24321" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="24322:26292" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="24343:24469" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="24376:24412" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="24490:24625" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="24523:24574" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="24646:24784" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="24679:24730" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="24805:24930" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="24838:24889" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="24959:24971" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="24972:25020" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="25041:25163" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="25075:25121" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="25206:25327" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="25239:25290" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="25370:25517" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="25403:25470" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="25538:25690" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="25571:25622" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="25711:25841" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="25744:25796" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="25862:26003" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="25895:25946" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="26024:26271" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="26057:26108" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="26164:26233" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="26350:26361" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="26362:27305" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="26386:27268" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="26419:26475" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="26476:27243" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="26513:26593" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="26647:26745" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="26803:26901" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="26957:27055" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="27108:27206" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="27749:27780" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="27781:28430" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="27818:27871" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="27924:27994" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="28044:28114" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="28171:28241" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="28308:28378" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="28536:28566" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="28567:28733" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="28616:28687" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="28797:28827" ph="..." />
+                <marker date="1554095316066" expanded="true" signature="28828:28953" ph="..." />
+                <marker date="1554095316066" expanded="false" signature="28877:28893" ph="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -38,7 +122,7 @@
         <entry file="file://$PROJECT_DIR$/public/driverapp-master-bb0a8-5133dcc7296c.json">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="204">
-              <caret line="12" column="0" lean-forward="true" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+              <caret line="12" column="0" lean-forward="false" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -106,7 +190,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/.env" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/routes.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/scheduleMessegeController.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/LoginController.php" />
@@ -156,6 +239,7 @@
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/passengerApiController.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/api.php" />
         <option value="$PROJECT_DIR$/routes/web.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-3/cronController.php" />
         <option value="$PROJECT_DIR$/app/Http/Controllers/fireBaseController.php" />
       </list>
     </option>
@@ -193,8 +277,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -269,6 +351,8 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -395,11 +479,12 @@
       <workItem from="1553834209494" duration="9072000" />
       <workItem from="1553863561144" duration="11000" />
       <workItem from="1553863634709" duration="1386000" />
+      <workItem from="1554091641976" duration="6753000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="285666000" />
+    <option name="totallyTimeSpent" value="292419000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -412,19 +497,18 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1040" height="744" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29387754" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32959184" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -478,15 +562,17 @@
           <line>167</line>
           <option name="timeStamp" value="36" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/cronController.php</url>
+          <line>363</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="40" />
+      <option name="time" value="41" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/welcome.blade.php" />
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/invitation.blade.php" />
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/AuthController.php" />
     <entry file="file://D:/backups/messengerNew/app/Http/Controllers/scheduleMessegeController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="219">
@@ -669,15 +755,94 @@
     <entry file="file://$PROJECT_DIR$/public/driverapp-master-bb0a8-5133dcc7296c.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="204">
-          <caret line="12" column="0" lean-forward="true" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+          <caret line="12" column="0" lean-forward="false" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/directory.blade.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="51" column="140" lean-forward="true" selection-start-line="51" selection-start-column="75" selection-end-line="51" selection-end-column="140" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/cronController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="441">
+          <caret line="528" column="0" lean-forward="true" selection-start-line="528" selection-start-column="0" selection-end-line="528" selection-end-column="0" />
+          <folding>
+            <element signature="e#642#1033#0#PHP" expanded="false" />
+            <element signature="e#1057#1531#0#PHP" expanded="false" />
+            <element signature="e#22269#29892#0#PHP" expanded="false" />
+            <element signature="e#29899#30319#0#PHP" expanded="false" />
+            <marker date="1554095316066" expanded="true" signature="24310:24321" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="24322:26292" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="24343:24469" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="24376:24412" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="24490:24625" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="24523:24574" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="24646:24784" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="24679:24730" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="24805:24930" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="24838:24889" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="24959:24971" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="24972:25020" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="25041:25163" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="25075:25121" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="25206:25327" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="25239:25290" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="25370:25517" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="25403:25470" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="25538:25690" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="25571:25622" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="25711:25841" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="25744:25796" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="25862:26003" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="25895:25946" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="26024:26271" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="26057:26108" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="26164:26233" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="26350:26361" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="26362:27305" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="26386:27268" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="26419:26475" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="26476:27243" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="26513:26593" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="26647:26745" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="26803:26901" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="26957:27055" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="27108:27206" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="27749:27780" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="27781:28430" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="27818:27871" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="27924:27994" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="28044:28114" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="28171:28241" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="28308:28378" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="28536:28566" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="28567:28733" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="28616:28687" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="28797:28827" ph="..." />
+            <marker date="1554095316066" expanded="true" signature="28828:28953" ph="..." />
+            <marker date="1554095316066" expanded="false" signature="28877:28893" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/web.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="54" column="22" lean-forward="false" selection-start-line="54" selection-start-column="12" selection-end-line="54" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/Http/Controllers/fireBaseController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="472">
-          <caret line="43" column="25" lean-forward="false" selection-start-line="43" selection-start-column="25" selection-end-line="43" selection-end-column="25" />
+        <state relative-caret-position="629">
+          <caret line="39" column="107" lean-forward="true" selection-start-line="39" selection-start-column="78" selection-end-line="39" selection-end-column="107" />
           <folding />
         </state>
       </provider>
