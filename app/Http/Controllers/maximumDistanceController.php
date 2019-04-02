@@ -43,7 +43,7 @@ class maximumDistanceController extends Controller
     public function update($id,Request $request)
     {
         $input['distance'] = $request->distance;
-        DB::table('maximum_distance')->whereId($id)->update();
+        DB::table('maximum_distance')->whereId($id)->update($input);
         Flash::success('Maximum Distance Updated Successfully!');
         return redirect(route('driverDistance.index'));
     }

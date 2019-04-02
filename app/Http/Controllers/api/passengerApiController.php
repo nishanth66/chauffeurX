@@ -1279,12 +1279,14 @@ class passengerApiController extends Controller
         $long1 = $userDetais[2];
         $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$request->categoryid and d.deleted_at is null and c.deleted_at is null");
         $driverLatLng = [];
+        $i=0;
         foreach ($drivers as $driver)
         {
 //            $coordinates=$this->database->getReference('users')->getChild($driver->device_token)->getValue();
-            $coordinates=$this->database->getReference('users')->getChild("id")->getValue();
+            $coordinates=$this->database->getReference('online_drivers')->getChild($i)->getValue();
             $coordinates['driverid'] = $driver->id;
             array_push($driverLatLng,$coordinates);
+            $i++;
         }
         foreach ($driverLatLng as $driver)
         {
@@ -1345,93 +1347,93 @@ class passengerApiController extends Controller
 
     }
 
-    public function getNearbyDrievrs(Request $request)
-    {
-        $userDetais = explode('-',$request->user_lat_lng);
-        if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])) || (!isset($userDetais[2]) || $userDetais[2] == '' || empty($userDetais[2])))
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
-            $response['data'] = [];
-            return $response;
-        }
-        else
-        {
-            $lat1 = $userDetais[1];
-            $long1 = $userDetais[2];
-        }
-        $drivers = explode(',',$request->driver_lat_lng);
-        foreach ($drivers as $driver)
-        {
-            $details = explode('-',$driver);
-            if ((!isset($details[0]) || $details[0] == '' || empty($details[0])) || (!isset($details[1]) || $details[1] == '' || empty($details[1])) || (!isset($details[2]) || $details[2] == '' || empty($details[2])))
-            {
-                $response['status'] = "Failed";
-                $response['code'] = 500;
-                $response['message'] = "Invalid driver data Received! Format- driver_lat_long = 'driverid-lat-lng'";
-                $response['data'] = [];
-                return $response;
-            }
-            else
-            {
-                $id = $details[0];
-                $lat2 = $details[1];
-                $long2 = $details[2];
-                if (driver::whereId($id)->exists() == 0)
-                {
-                    $response['status'] = "Failed";
-                    $response['code'] = 500;
-                    $response['message'] = "Driver with id = $id not Found";
-                    $response['data'] = [];
-                    return $response;
-                }
-            }
-            if (isset($lat1) && isset($long1) && isset($lat2) && isset($long2))
-            {
-                $Totaldistance = $this->calculateDistance($lat1,$long1,$lat2,$long2);
-                if (DB::table('maximum_distance')->exists())
-                {
-                    $max_distance = DB::table('maximum_distance')->first();
-                    $max_distance = (float)$max_distance->distance;
-                }
-                else
-                {
-                    $max_distance = 10;
-                }
-                if ((float)$Totaldistance['distance'] <= (float)$max_distance)
-                {
-                    $distance[$id] = $Totaldistance['distance'];
-                }
-            }
-        }
-        if (isset($distance) && ($distance != '' || !empty($distance)))
-        {
-            asort($distance);
-            if (count($distance) > 0)
-            {
-                $output = array_slice($distance,0,10,true);
-            }
-            else
-            {
-                $output = $distance;
-            }
-            $response['code'] = 200;
-            $response['status'] = "Success";
-            $response['message'] = "Driver with distance fetched successfully!";
-            $response['data'] = $output;
-            return $response;
-        }
-        else
-        {
-            $response['code'] = 200;
-            $response['status'] = "Success";
-            $response['message'] = "No nearby drivers are found with the provided category!";
-            $response['data'] = [];
-            return $response;
-        }
-
-    }
+//    public function getNearbyDrievrs(Request $request)
+//    {
+//        $userDetais = explode('-',$request->user_lat_lng);
+//        if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])) || (!isset($userDetais[2]) || $userDetais[2] == '' || empty($userDetais[2])))
+//        {
+//            $response['status'] = "Failed";
+//            $response['code'] = 500;
+//            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
+//            $response['data'] = [];
+//            return $response;
+//        }
+//        else
+//        {
+//            $lat1 = $userDetais[1];
+//            $long1 = $userDetais[2];
+//        }
+//        $drivers = explode(',',$request->driver_lat_lng);
+//        foreach ($drivers as $driver)
+//        {
+//            $details = explode('-',$driver);
+//            if ((!isset($details[0]) || $details[0] == '' || empty($details[0])) || (!isset($details[1]) || $details[1] == '' || empty($details[1])) || (!isset($details[2]) || $details[2] == '' || empty($details[2])))
+//            {
+//                $response['status'] = "Failed";
+//                $response['code'] = 500;
+//                $response['message'] = "Invalid driver data Received! Format- driver_lat_long = 'driverid-lat-lng'";
+//                $response['data'] = [];
+//                return $response;
+//            }
+//            else
+//            {
+//                $id = $details[0];
+//                $lat2 = $details[1];
+//                $long2 = $details[2];
+//                if (driver::whereId($id)->exists() == 0)
+//                {
+//                    $response['status'] = "Failed";
+//                    $response['code'] = 500;
+//                    $response['message'] = "Driver with id = $id not Found";
+//                    $response['data'] = [];
+//                    return $response;
+//                }
+//            }
+//            if (isset($lat1) && isset($long1) && isset($lat2) && isset($long2))
+//            {
+//                $Totaldistance = $this->calculateDistance($lat1,$long1,$lat2,$long2);
+//                if (DB::table('maximum_distance')->exists())
+//                {
+//                    $max_distance = DB::table('maximum_distance')->first();
+//                    $max_distance = (float)$max_distance->distance;
+//                }
+//                else
+//                {
+//                    $max_distance = 10;
+//                }
+//                if ((float)$Totaldistance['distance'] <= (float)$max_distance)
+//                {
+//                    $distance[$id] = $Totaldistance['distance'];
+//                }
+//            }
+//        }
+//        if (isset($distance) && ($distance != '' || !empty($distance)))
+//        {
+//            asort($distance);
+//            if (count($distance) > 0)
+//            {
+//                $output = array_slice($distance,0,10,true);
+//            }
+//            else
+//            {
+//                $output = $distance;
+//            }
+//            $response['code'] = 200;
+//            $response['status'] = "Success";
+//            $response['message'] = "Driver with distance fetched successfully!";
+//            $response['data'] = $output;
+//            return $response;
+//        }
+//        else
+//        {
+//            $response['code'] = 200;
+//            $response['status'] = "Success";
+//            $response['message'] = "No nearby drivers are found with the provided category!";
+//            $response['data'] = [];
+//            return $response;
+//        }
+//
+//    }
 
 
 

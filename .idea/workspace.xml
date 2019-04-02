@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="428e11ee-e902-46e4-ae1d-1b694fe7b928" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/latLng.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/laravel.iml" afterPath="$PROJECT_DIR$/.idea/laravel.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Controllers/api/passengerApiController.php" afterPath="$PROJECT_DIR$/app/Http/Controllers/api/passengerApiController.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Controllers/maximumDistanceController.php" afterPath="$PROJECT_DIR$/app/Http/Controllers/maximumDistanceController.php" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -22,7 +26,44 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf>
+      <file leaf-file-name="passengerApiController.php" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/passengerApiController.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="594">
+              <caret line="1297" column="45" lean-forward="false" selection-start-line="1297" selection-start-column="39" selection-end-line="1297" selection-end-column="45" />
+              <folding>
+                <element signature="e#51060#51116#0#PHP" expanded="false" />
+                <marker date="1554183007922" expanded="true" signature="46168:46393" ph="select COUNT... bookings" />
+                <marker date="1554183007922" expanded="true" signature="48416:48571" ph="select d.* f... drivers" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="driverApiController.php" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/driverApiController.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="115">
+              <caret line="335" column="41" lean-forward="false" selection-start-line="335" selection-start-column="20" selection-end-line="335" selection-end-column="41" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="UserController.php" pinned="false" current-in-tab="true">
+        <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/UserController.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1108">
+              <caret line="1807" column="5" lean-forward="true" selection-start-line="1807" selection-start-column="5" selection-end-line="1807" selection-end-column="5" />
+              <folding>
+                <marker date="1554185620973" expanded="true" signature="56306:56396" ph="select monda... ${$table}" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -33,7 +74,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>daily_parking_fees</find>
       <find>km_</find>
       <find>trip</find>
       <find>minPrice</find>
@@ -63,6 +103,7 @@
       <find>Schema::</find>
       <find>pr</find>
       <find>key</find>
+      <find>push</find>
     </findStrings>
     <replaceStrings>
       <replace>phone</replace>
@@ -84,7 +125,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/paypalCredentialsController.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/routes.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/defaultMessageController.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/menu.blade 2.php" />
@@ -111,7 +151,6 @@
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/style2.css" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/create.blade.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/fields.blade.php" />
-        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/maximumDistanceController.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/edit.blade.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/table2.blade.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/UserController.php" />
@@ -134,7 +173,9 @@
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/driverApiController.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/api.php" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/driver.php" />
+        <option value="$PROJECT_DIR$/latLng.json" />
         <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/passengerApiController.php" />
+        <option value="$USER_HOME$/AppData/Local/Temp/fz3temp-2/maximumDistanceController.php" />
       </list>
     </option>
   </component>
@@ -171,7 +212,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -187,6 +227,7 @@
         </subPane>
       </pane>
       <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -315,11 +356,12 @@
       <workItem from="1553863634709" duration="1386000" />
       <workItem from="1554091641976" duration="12458000" />
       <workItem from="1554117951373" duration="4263000" />
+      <workItem from="1554178438068" duration="6551000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="302387000" />
+    <option name="totallyTimeSpent" value="308938000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -332,14 +374,15 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1040" height="744" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32959184" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289689" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -413,7 +456,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/change.blade.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/singlestyle.css" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/index.blade.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/packages.blade.php" />
@@ -430,14 +472,12 @@
     </entry>
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/fields.blade.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/edit.blade.php" />
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/maximumDistanceController.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/create.blade.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/table.blade.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/table2.blade.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/create.blade 2.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/web 2.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/column.blade.php" />
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/UserController.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/user_profileController.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/HomeController.php" />
     <entry file="file://D:/github/message/app/Http/Controllers/adddistributorController.php">
@@ -543,62 +583,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/directory.blade.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="51" column="140" lean-forward="true" selection-start-line="51" selection-start-column="75" selection-end-line="51" selection-end-column="140" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/cronController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="441">
-          <caret line="528" column="0" lean-forward="true" selection-start-line="528" selection-start-column="0" selection-end-line="528" selection-end-column="0" />
-          <folding>
-            <element signature="e#642#1033#0#PHP" expanded="false" />
-            <element signature="e#1057#1531#0#PHP" expanded="false" />
-            <element signature="e#22269#29892#0#PHP" expanded="false" />
-            <element signature="e#29899#30319#0#PHP" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/web.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="54" column="22" lean-forward="false" selection-start-line="54" selection-start-column="12" selection-end-line="54" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/directory.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/cronController.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/web.php" />
     <entry file="file://$USER_HOME$/Downloads/driverapp-master-bb0a8-export (1).json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="1" lean-forward="false" selection-start-line="0" selection-start-column="1" selection-end-line="0" selection-end-column="1" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/menu.blade.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/passengerApiController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="438">
-          <caret line="78" column="57" lean-forward="false" selection-start-line="78" selection-start-column="57" selection-end-line="78" selection-end-column="57" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/menu.blade.php" />
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/passengerApiController.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/PaypalController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-153">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -606,62 +606,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
           <caret line="43" column="21" lean-forward="false" selection-start-line="43" selection-start-column="21" selection-end-line="43" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/passengerApiController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="423">
-          <caret line="1436" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="1465" selection-end-column="0" />
-          <folding>
-            <element signature="e#44#73#0#PHP" expanded="true" />
-            <element signature="e#3683#5154#0#PHP" expanded="false" />
-            <element signature="e#5160#6169#0#PHP" expanded="false" />
-            <element signature="e#6175#7885#0#PHP" expanded="false" />
-            <element signature="e#7891#9624#0#PHP" expanded="false" />
-            <element signature="e#9630#10866#0#PHP" expanded="false" />
-            <element signature="e#10872#13701#0#PHP" expanded="false" />
-            <element signature="e#13707#15618#0#PHP" expanded="false" />
-            <element signature="e#15624#18190#0#PHP" expanded="false" />
-            <element signature="e#18196#18753#0#PHP" expanded="false" />
-            <element signature="e#18759#19814#0#PHP" expanded="false" />
-            <element signature="e#19820#20854#0#PHP" expanded="false" />
-            <element signature="e#20860#22016#0#PHP" expanded="false" />
-            <element signature="e#22022#22669#0#PHP" expanded="false" />
-            <element signature="e#22675#23308#0#PHP" expanded="false" />
-            <element signature="e#23314#24293#0#PHP" expanded="false" />
-            <element signature="e#24299#25362#0#PHP" expanded="false" />
-            <element signature="e#25368#26372#0#PHP" expanded="false" />
-            <element signature="e#26378#27401#0#PHP" expanded="false" />
-            <element signature="e#27407#28406#0#PHP" expanded="false" />
-            <element signature="e#28412#31491#0#PHP" expanded="false" />
-            <element signature="e#31497#32917#0#PHP" expanded="false" />
-            <element signature="e#32923#33948#0#PHP" expanded="false" />
-            <element signature="e#33954#34560#0#PHP" expanded="false" />
-            <element signature="e#34566#35142#0#PHP" expanded="false" />
-            <element signature="e#35148#37288#0#PHP" expanded="false" />
-            <element signature="e#37294#39532#0#PHP" expanded="false" />
-            <element signature="e#39538#40790#0#PHP" expanded="false" />
-            <element signature="e#40800#42058#0#PHP" expanded="false" />
-            <element signature="e#42064#42221#0#PHP" expanded="false" />
-            <element signature="e#42227#42907#0#PHP" expanded="false" />
-            <element signature="e#43930#44171#0#PHP" expanded="false" />
-            <element signature="e#44177#45081#0#PHP" expanded="false" />
-            <element signature="e#45087#45613#0#PHP" expanded="false" />
-            <element signature="e#45619#45995#0#PHP" expanded="false" />
-            <element signature="e#46001#46525#0#PHP" expanded="false" />
-            <element signature="e#46531#46795#0#PHP" expanded="false" />
-            <element signature="e#46801#47055#0#PHP" expanded="false" />
-            <element signature="e#51149#51761#0#PHP" expanded="false" />
-            <element signature="e#51664#51761#0#PHP" expanded="false" />
-            <element signature="e#51925#52942#0#PHP" expanded="false" />
-            <element signature="e#52451#52942#0#PHP" expanded="false" />
-            <element signature="e#52596#52928#0#PHP" expanded="false" />
-            <element signature="e#54518#55447#0#PHP" expanded="false" />
-            <marker date="1554123634768" expanded="true" signature="46168:46393" ph="select COUNT... bookings" />
-            <marker date="1554123634768" expanded="true" signature="48416:48571" ph="select d.* f... drivers" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -669,37 +613,60 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="370">
           <caret line="39" column="74" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/latLng.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="455">
+          <caret line="50" column="2" lean-forward="true" selection-start-line="50" selection-start-column="2" selection-end-line="50" selection-end-column="2" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/maximumDistanceController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="544">
+          <caret line="34" column="13" lean-forward="false" selection-start-line="34" selection-start-column="13" selection-end-line="34" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/api.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="481">
+          <caret line="75" column="75" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="75" selection-end-column="75" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/passengerApiController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="594">
+          <caret line="1297" column="45" lean-forward="false" selection-start-line="1297" selection-start-column="39" selection-end-line="1297" selection-end-column="45" />
           <folding>
-            <element signature="e#40#68#0#PHP" expanded="true" />
+            <element signature="e#51060#51116#0#PHP" expanded="false" />
+            <marker date="1554183007922" expanded="true" signature="46168:46393" ph="select COUNT... bookings" />
+            <marker date="1554183007922" expanded="true" signature="48416:48571" ph="select d.* f... drivers" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/driverApiController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="370">
-          <caret line="345" column="89" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="355" selection-end-column="0" />
-          <folding>
-            <element signature="e#409#1551#0#PHP" expanded="false" />
-            <element signature="e#1557#1610#0#PHP" expanded="false" />
-            <element signature="e#1616#1671#0#PHP" expanded="false" />
-            <element signature="e#1677#3047#0#PHP" expanded="false" />
-            <element signature="e#3053#4041#0#PHP" expanded="false" />
-            <element signature="e#4047#4838#0#PHP" expanded="false" />
-            <element signature="e#4844#5633#0#PHP" expanded="false" />
-            <element signature="e#5639#7476#0#PHP" expanded="false" />
-            <element signature="e#7482#8208#0#PHP" expanded="false" />
-            <element signature="e#8214#10868#0#PHP" expanded="false" />
-            <element signature="e#10874#11863#0#PHP" expanded="false" />
-          </folding>
+        <state relative-caret-position="115">
+          <caret line="335" column="41" lean-forward="false" selection-start-line="335" selection-start-column="20" selection-end-line="335" selection-end-column="41" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/api.php">
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-2/UserController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="438">
-          <caret line="79" column="119" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="81" selection-end-column="3" />
-          <folding />
+        <state relative-caret-position="1108">
+          <caret line="1807" column="5" lean-forward="true" selection-start-line="1807" selection-start-column="5" selection-end-line="1807" selection-end-column="5" />
+          <folding>
+            <marker date="1554185620973" expanded="true" signature="56306:56396" ph="select monda... ${$table}" />
+          </folding>
         </state>
       </provider>
     </entry>
