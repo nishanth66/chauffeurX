@@ -26,6 +26,7 @@ class driverApiController extends Controller
                 $response['status'] = "Success";
                 $response['message'] = "User Details Fetched successfully";
                 $response['data'] = $driver;
+                driver::whereId($driver->id)->update(['device_token' => $request->device_token]);
             }
             else
             {
@@ -42,6 +43,7 @@ class driverApiController extends Controller
             $response['message'] = "User Not Found!";
             $response['data'] = [];
         }
+        return $response;
     }
 
     public function verify(Request $request)
@@ -329,6 +331,25 @@ class driverApiController extends Controller
             $response['data'] = $categories;
             return $response;
         }
+    }
+
+    public function changeAvailableStatus(Request $request)
+    {
+        if (driver::whereId($request->driverid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Driver Not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        driver::whereId($request->driverid)->update(['isAvailable'=>$request->isAvailable]);
+        $driver = driver::whereId($request->driverid)->first();
+        $response['code'] = 200;
+        $response['status'] = "Success";
+        $response['message'] = "Driver available status changed updated successfully";
+        $response['data'] = $driver;
+        return $response;
     }
 
 }

@@ -25,9 +25,13 @@ use Illuminate\Support\Facades\Validator;
 use Twilio\Exceptions\RestException;
 use Twilio\Exceptions\TwilioException;
 use Twilio\Rest\Client;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\ServiceAccount;
+
 class passengerApiController extends Controller
 {
     protected $googleMap = "AIzaSyB56Xh1A7HQDPQg_7HxrPTcSNnlpqYavc0";
+    private $database;
     public function __construct()
     {
         $config = array(
@@ -51,7 +55,7 @@ class passengerApiController extends Controller
             ->create();
 
 
-        $database = $firebase->getDatabase();
+        $this->database = $firebase->getDatabase();
     }
     //
     public function login(Request $request)
@@ -1245,7 +1249,7 @@ class passengerApiController extends Controller
 
     public function getDriversByCategory(Request $request)
     {
-        if (categories::whreId($request->categoryid)->exists() == 0)
+        if (categories::whereId($request->categoryid)->exists() == 0)
         {
             $response['status'] = "Failed";
             $response['code'] = 500;
@@ -1253,26 +1257,92 @@ class passengerApiController extends Controller
             $response['data'] = [];
             return $response;
         }
-        else
+        if (driverCategory::where('categoryid',$request->categoryid)->exists() == 0)
         {
-            if (driverCategory::where('categoryid',$request->categoryid)->exists() == 0)
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['message'] = "No drivers are found on this category";
+            $response['data'] = [];
+            return $response;
+        }
+        $userDetais = explode('-',$request->user_lat_lng);
+        if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])) || (!isset($userDetais[2]) || $userDetais[2] == '' || empty($userDetais[2])))
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
+            $response['data'] = [];
+            return $response;
+        }
+
+        $lat1 = $userDetais[1];
+        $long1 = $userDetais[2];
+        $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$request->categoryid and d.deleted_at is null and c.deleted_at is null");
+        $driverLatLng = [];
+        foreach ($drivers as $driver)
+        {
+//            $coordinates=$this->database->getReference('users')->getChild($driver->device_token)->getValue();
+            $coordinates=$this->database->getReference('users')->getChild("id")->getValue();
+            $coordinates['driverid'] = $driver->id;
+            array_push($driverLatLng,$coordinates);
+        }
+        foreach ($driverLatLng as $driver)
+        {
+            $id = $driver['driverid'];
+            $lat2 = $driver['lat'];
+            $long2 = $driver['lng'];
+            if (driver::whereId($id)->exists() == 0)
             {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['message'] = "No drivers are found on this category";
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['message'] = "Driver with id = $id not Found";
                 $response['data'] = [];
                 return $response;
             }
-            else
+            if (isset($lat1) && isset($long1) && isset($lat2) && isset($long2))
             {
-                $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$request->categoryid and d.deleted_at is null and c.deleted_at is null");
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['message'] = "Drivers Fetched Successfully";
-                $response['data'] = $drivers;
-                return $response;
+                $Totaldistance = $this->calculateDistance($lat1,$long1,$lat2,$long2);
+                if (DB::table('maximum_distance')->exists())
+                {
+                    $max_distance = DB::table('maximum_distance')->first();
+                    $max_distance = (float)$max_distance->distance;
+                }
+                else
+                {
+                    $max_distance = 10;
+                }
+                if ((float)$Totaldistance['distance'] <= (float)$max_distance)
+                {
+                    $distance[$id] = $Totaldistance['distance'];
+                }
             }
         }
+        if (isset($distance) && ($distance != '' || !empty($distance)))
+        {
+            asort($distance);
+            if (count($distance) > 0)
+            {
+                $output = array_slice($distance,0,10,true);
+            }
+            else
+            {
+                $output = $distance;
+            }
+            $response['code'] = 200;
+            $response['status'] = "Success";
+            $response['message'] = "Driver with distance fetched successfully!";
+            $response['data'] = $output;
+            return $response;
+        }
+        else
+        {
+            $response['code'] = 200;
+            $response['status'] = "Success";
+            $response['message'] = "No nearby drivers are found with the provided category!";
+            $response['data'] = [];
+            return $response;
+        }
+
     }
 
     public function getNearbyDrievrs(Request $request)

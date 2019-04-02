@@ -48,7 +48,7 @@ Route::post('/RequestBooking', 'api\passengerApiController@RequestBooking')->nam
 Route::post('/inviteFriends', 'api\passengerApiController@inviteFriends')->name('inviteFriends');
 
 
-Route::get('/getDriversByFilter', 'api\passengerApiController@getFilters')->name('getFilters');
+Route::get('/getDriversByFilter', 'api\passengerApiController@getDriversByFilter')->name('getDriversByFilter');
 
 Route::get('/driverBookings/{id}', 'api\passengerApiController@driverBookings')->name('driverBookings');
 Route::get('/getPenalty/{id}', 'api\passengerApiController@getPenalty')->name('getPenalty');
@@ -60,7 +60,7 @@ Route::get('/assignDriver/{id}', 'api\passengerApiController@assignDriver')->nam
 Route::get('/getPaymentMethods', 'api\passengerApiController@getPaymentMethods')->name('getPaymentMethods');
 Route::get('/getCategories', 'api\passengerApiController@getCategories')->name('getCategories');
 Route::post('/getDriversByCategory', 'api\passengerApiController@getDriversByCategory')->name('getDriversByCategory');
-Route::post('/getNearbyDrievrs', 'api\passengerApiController@getNearbyDrievrs')->name('getNearbyDrievrs');
+//Route::post('/getNearbyDrievrs', 'api\passengerApiController@getNearbyDrievrs')->name('getNearbyDrievrs');
 Route::get('/whatsappDemo', 'api\passengerApiController@whatsappDemo')->name('whatsappDemo');
 
 Route::prefix('driver')->group(function () {
@@ -77,5 +77,6 @@ Route::prefix('driver')->group(function () {
         Route::post('/waitTime', 'driverApiController@waitedTime')->name('waitedTime');
         Route::post('/myCategories', 'driverApiController@myCategories')->name('myCategories');
         Route::post('/inviteFriends', 'driverApiController@inviteFriends')->name('inviteFriends');
+        Route::post('/changeAvailableStatus', 'driverApiController@changeAvailableStatus')->name('changeAvailableStatus');
     });
 });

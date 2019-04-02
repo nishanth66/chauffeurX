@@ -39,7 +39,9 @@ class driver extends Model
         'licence',
         'isAvailable',
         'status',
-        'email'
+        'email',
+        'device_token',
+        'referal_code',
     ];
 
     /**
@@ -56,7 +58,9 @@ class driver extends Model
         'licence' => 'string',
         'isAvailable' => 'string',
         'status' => 'string',
-        'email' => 'string'
+        'device_token' => 'string',
+        'email' => 'string',
+        'referal_code' => 'string',
     ];
 
     /**

@@ -1,3 +1,5 @@
+
+@if(Auth::user()->status == 0 || Auth::user()->status == 1)
 <li class="{{ Request::is('cencellations*') ? 'active' : '' }}">
     <a href="{!! url('cencellations') !!}"><i class="fa fa-gift"></i><span>Cancellation</span></a>
 </li>
@@ -18,7 +20,7 @@
 <li class="{{ Request::is('prices*') ? 'active' : '' }}">
     <a href="{!! route('prices.index') !!}"><i class="fa fa-money"></i><span>Prices</span></a>
 </li>
-
+@if(Auth::user()->status == 1)
 <li class="{{ Request::is('passengerApis*') ? 'active' : '' }}">
     <a href="{!! route('passengerApis.index') !!}"><i class="fa fa-edit"></i><span>Passenger Apis</span></a>
 </li>
@@ -33,7 +35,8 @@
 <li class="{{ Request::is('driverApis*') ? 'active' : '' }}">
     <a href="{!! route('driverApis.index') !!}"><i class="fa fa-edit"></i><span>Driver Apis</span></a>
 </li>
-
+@endif
+@endif
 {{--<li class="{{ Request::is('filters*') ? 'active' : '' }}">--}}
     {{--<a href="{!! route('filters.index') !!}"><i class="fa fa-filter"></i><span>Filters</span></a>--}}
 {{--</li>--}}
