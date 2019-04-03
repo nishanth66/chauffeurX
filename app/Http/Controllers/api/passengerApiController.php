@@ -267,7 +267,7 @@ class passengerApiController extends Controller
                 $latSrc = $src[0];
                 $lonSrc = $src[1];
             } else {
-                $response['statusCode'] = 500;
+                $response['code'] = 500;
                 $response['status']     = 'failed';
                 $response['message']    = 'Enter Valid Source Location.';
 
@@ -278,7 +278,7 @@ class passengerApiController extends Controller
                 $latDest = $dest[0];
                 $lonDest = $dest[1];
             } else {
-                $response['statusCode'] = 500;
+                $response['code'] = 500;
                 $response['status']     = 'failed';
                 $response['message']    = 'Enter Valid Destination Location.';
 
@@ -337,7 +337,7 @@ class passengerApiController extends Controller
                 $latSrc = $src[0];
                 $lonSrc = $src[1];
             } else {
-                $response['statusCode'] = 500;
+                $response['code'] = 500;
                 $response['status']     = 'failed';
                 $response['message']    = 'Enter Valid Source Location.';
 
@@ -348,7 +348,7 @@ class passengerApiController extends Controller
                 $latDest = $dest[0];
                 $lonDest = $dest[1];
             } else {
-                $response['statusCode'] = 500;
+                $response['code'] = 500;
                 $response['status']     = 'failed';
                 $response['message']    = 'Enter Valid Destination Location.';
 
@@ -375,6 +375,63 @@ class passengerApiController extends Controller
         }
         return $response;
     }
+    public function displayPrice(Request $request)
+    {
+        if (categories::exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'Admin didnt setup any Category';
+            $response['data']    = [];
+        }
+        $src= explode( ",", $request->source);
+        if ( isset( $src[0] ) && isset( $src[1] ) ) {
+            $latSrc = $src[0];
+            $lonSrc = $src[1];
+        } else {
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'Enter Valid Source Location.';
+
+            return $response;
+        }
+        $dest = explode( ",", $request->destination );
+        if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
+            $latDest = $dest[0];
+            $lonDest = $dest[1];
+        } else {
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'Enter Valid Destination Location.';
+
+            return $response;
+        }
+        $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
+        $distance = $distanceTime['distance'];
+        $time = $distanceTime['time'];
+        $categories = categories::get();
+        $rideDetails = [];
+        foreach ($categories as $category)
+        {
+            if (price::where('category',$category->id)->exists())
+            {
+                $categoryPrice = price::where('category',$category->id)->first();
+                $totalPrice = (float)$distance*(float)$categoryPrice->amount;
+                $array['category_id'] = $category->id;
+                $array['category_name'] = $category->name;
+                $array['category_image'] = asset('public/avatars').'/'.$category->image;
+                $array['distance'] = $distance;
+                $array['estimated_time'] = $time;
+                $array['estimated_price'] = number_format($totalPrice);
+                array_push($rideDetails,$array);
+            }
+        }
+        $response['code'] = 200;
+        $response['status'] = "Success";
+        $response['message'] = "Ride details fetched";
+        $response['data'] = $rideDetails;
+        return $response;
+    }
 
     public function editBooking(Request $request)
     {
@@ -388,7 +445,7 @@ class passengerApiController extends Controller
                     $latSrc = $src[0];
                     $lonSrc = $src[1];
                 } else {
-                    $response['statusCode'] = 500;
+                    $response['code'] = 500;
                     $response['status']     = 'failed';
                     $response['message']    = 'Enter Valid Source Location.';
 
@@ -399,7 +456,7 @@ class passengerApiController extends Controller
                     $latDest = $dest[0];
                     $lonDest = $dest[1];
                 } else {
-                    $response['statusCode'] = 500;
+                    $response['code'] = 500;
                     $response['status']     = 'failed';
                     $response['message']    = 'Enter Valid Destination Location.';
 
@@ -1247,24 +1304,28 @@ class passengerApiController extends Controller
         return $rate;
     }
 
-    public function getDriversByCategory(Request $request)
+    public function getNearbyDrievrs(Request $request)
     {
-        if (categories::whereId($request->categoryid)->exists() == 0)
+        if (isset($request->categoryid) && (!empty($request->categoryid) || $request->categoryid != ''))
         {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['message'] = "Category Not Found";
-            $response['data'] = [];
-            return $response;
+            if (categories::whereId($request->categoryid)->exists() == 0)
+            {
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['message'] = "Category Not Found";
+                $response['data'] = [];
+                return $response;
+            }
+            if (driverCategory::where('categoryid',$request->categoryid)->exists() == 0)
+            {
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['message'] = "No drivers are found on this category";
+                $response['data'] = [];
+                return $response;
+            }
         }
-        if (driverCategory::where('categoryid',$request->categoryid)->exists() == 0)
-        {
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['message'] = "No drivers are found on this category";
-            $response['data'] = [];
-            return $response;
-        }
+
         $userDetais = explode('-',$request->user_lat_lng);
         if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])) || (!isset($userDetais[2]) || $userDetais[2] == '' || empty($userDetais[2])))
         {
@@ -1277,16 +1338,33 @@ class passengerApiController extends Controller
 
         $lat1 = $userDetais[1];
         $long1 = $userDetais[2];
-        $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$request->categoryid and d.deleted_at is null and c.deleted_at is null");
+        if (isset($request->categoryid) && (!empty($request->categoryid) || $request->categoryid != ''))
+        {
+             $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$request->categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1");
+        }
+        else
+        {
+            $drivers = driver::where('isAvailable',1)->get();
+        }
+        if (count($drivers) == 0)
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['message'] = "No drivers are Active at the moment";
+            $response['data'] = [];
+            return $response;
+        }
         $driverLatLng = [];
-        $i=0;
         foreach ($drivers as $driver)
         {
 //            $coordinates=$this->database->getReference('users')->getChild($driver->device_token)->getValue();
-            $coordinates=$this->database->getReference('online_drivers')->getChild($i)->getValue();
+            $coordinates=$this->database->getReference('online_drivers')->getChild($driver->device_token)->getValue();
+            if (empty($coordinates['driverId']) || empty($coordinates['lat']) || empty($coordinates['lng']))
+            {
+                continue;
+            }
             $coordinates['driverid'] = $driver->id;
             array_push($driverLatLng,$coordinates);
-            $i++;
         }
         foreach ($driverLatLng as $driver)
         {
@@ -1332,7 +1410,7 @@ class passengerApiController extends Controller
             }
             $response['code'] = 200;
             $response['status'] = "Success";
-            $response['message'] = "Driver with distance fetched successfully!";
+            $response['message'] = "Nearby drievrs are fetched successfully!";
             $response['data'] = $output;
             return $response;
         }
@@ -1340,7 +1418,7 @@ class passengerApiController extends Controller
         {
             $response['code'] = 200;
             $response['status'] = "Success";
-            $response['message'] = "No nearby drivers are found with the provided category!";
+            $response['message'] = "No nearby drivers are found!";
             $response['data'] = [];
             return $response;
         }

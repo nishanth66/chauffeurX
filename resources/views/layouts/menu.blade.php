@@ -41,3 +41,7 @@
     {{--<a href="{!! route('filters.index') !!}"><i class="fa fa-filter"></i><span>Filters</span></a>--}}
 {{--</li>--}}
 
+<li class="{{ Request::is('userCoupons*') ? 'active' : '' }}">
+    <a href="{!! route('userCoupons.index') !!}"><i class="fa fa-edit"></i><span>User Coupons</span></a>
+</li>
+

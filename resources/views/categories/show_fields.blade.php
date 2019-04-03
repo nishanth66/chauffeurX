@@ -19,7 +19,13 @@
 <!-- Image Field -->
 <div class="form-group">
     {!! Form::label('image', 'Image:') !!}
-    <p>{!! $categories->image !!}</p>
+    <p>
+        @if(isset($categories->image) && ($categories->image != '' || !empty($categories->image)))
+            <img src="{{asset('public/avatars').'/'.$categories->image}}" class="show-image">
+        @else
+            <img src="{{asset('public/avatars/default.jpg')}}" class="show-image">
+        @endif
+    </p>
 </div>
 
 <!-- Created At Field -->

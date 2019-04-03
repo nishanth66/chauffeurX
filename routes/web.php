@@ -63,3 +63,5 @@ Route::resource('driverDistance', 'maximumDistanceController');
 
 Route::resource('filters', 'filterController');
 Route::get('fireBaseDemo', 'fireBaseController@fireBaseDemo');
+
+Route::resource('userCoupons', 'userCouponsController');

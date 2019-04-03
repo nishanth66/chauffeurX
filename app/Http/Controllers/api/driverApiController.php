@@ -351,5 +351,65 @@ class driverApiController extends Controller
         $response['data'] = $driver;
         return $response;
     }
+    public function acceptBooking(Request $request)
+    {
+        if (driver::whereId($request->drievrid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Driver not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        if (booking::whereId($request->bookingid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Booking not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        if (booking::whereId($request->bookingid)->where('driverid',null)->orWhere('driverid','')->exists() ==0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Booking has already assigned to other Driver";
+            $response['data'] = [];
+            return $response;
+        }
+        booking::whereId($request->bookingid)->update(['driverid'=>$request->driverid,'status'=>'Booking Accepted']);
+        $booking = booking::whereId($request->bookingid)->first();
+        $response['code'] = 200;
+        $response['status'] = "Success";
+        $response['message'] = "Booking accepted successfully";
+        $response['data'] = $booking;
+        return $response;
+    }
+    public function PaymentCompleted(Request $request)
+    {
+        if (driver::whereId($request->drievrid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Driver not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        if (booking::whereId($request->bookingid)->where('driverid',$request->drievrid)->exists() ==0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Booking not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        booking::whereId($request->bookingid)->where('drievrid',$request->bookingid)->update(['paid'=>1]);
+        $booking = booking::whereId($request->bookingid)->first();
+        $response['code'] = 200;
+        $response['status'] = "Success";
+        $response['message'] = "Payment saved Successfully";
+        $response['data'] = $booking;
+        return $response;
+    }
 
 }
