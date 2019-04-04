@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f9e3609d5a053f0a1fa386825b0cca0a",
+    "content-hash": "18b2003a05dcdf78e71a433f94d9e556",
     "packages": [
         {
             "name": "appointer/swaggervel",
@@ -745,6 +745,68 @@
                 "schedule"
             ],
             "time": "2018-06-06T03:12:17+00:00"
+        },
+        {
+            "name": "edujugon/push-notification",
+            "version": "v3.0.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Edujugon/PushNotification.git",
+                "reference": "7fd555c0149d669de7a34c159e8371187480e273"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Edujugon/PushNotification/zipball/7fd555c0149d669de7a34c159e8371187480e273",
+                "reference": "7fd555c0149d669de7a34c159e8371187480e273",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.2",
+                "illuminate/notifications": "^5.3",
+                "illuminate/support": "^5.3",
+                "php": ">=5.6.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.0.*"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Edujugon\\PushNotification\\Providers\\PushNotificationServiceProvider"
+                    ],
+                    "aliases": {
+                        "PushNotification": "Edujugon\\PushNotification\\Facades\\PushNotification"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Edujugon\\PushNotification\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Eduardo Marcos",
+                    "email": "edujugon@gmail.com"
+                }
+            ],
+            "description": "Laravel 5 Package to send push notifications to Android and IOS devices. (GCM,FCM,APN)",
+            "keywords": [
+                "FCM",
+                "apn",
+                "gcm",
+                "high",
+                "laravel",
+                "notification",
+                "priority",
+                "push"
+            ],
+            "time": "2019-03-19T18:38:43+00:00"
         },
         {
             "name": "egulias/email-validator",

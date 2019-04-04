@@ -12,6 +12,7 @@
         "appointer/swaggervel": "dev-master",
         "cartalyst/stripe-laravel": "9.0.*",
         "doctrine/dbal": "~2.3",
+        "edujugon/push-notification": "^3.0",
         "fideloper/proxy": "^4.0",
         "infyomlabs/adminlte-templates": "5.7.x-dev",
         "infyomlabs/laravel-generator": "5.7.x-dev",

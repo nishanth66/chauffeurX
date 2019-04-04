@@ -166,6 +166,7 @@ class ComposerStaticInit2043ea35474eaed2d8485c33a80b07bf
         'E' => 
         array (
             'Egulias\\EmailValidator\\' => 23,
+            'Edujugon\\PushNotification\\' => 26,
         ),
         'D' => 
         array (
@@ -472,6 +473,10 @@ class ComposerStaticInit2043ea35474eaed2d8485c33a80b07bf
         array (
             0 => __DIR__ . '/..' . '/egulias/email-validator/EmailValidator',
         ),
+        'Edujugon\\PushNotification\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/edujugon/push-notification/src',
+        ),
         'Dotenv\\' => 
         array (
             0 => __DIR__ . '/..' . '/vlucas/phpdotenv/src',
@@ -613,6 +618,7 @@ class ComposerStaticInit2043ea35474eaed2d8485c33a80b07bf
         'App\\Http\\Controllers\\driverTipsController' => __DIR__ . '/../..' . '/app/Http/Controllers/driverTipsController.php',
         'App\\Http\\Controllers\\favDriverController' => __DIR__ . '/../..' . '/app/Http/Controllers/favDriverController.php',
         'App\\Http\\Controllers\\filterController' => __DIR__ . '/../..' . '/app/Http/Controllers/filterController.php',
+        'App\\Http\\Controllers\\fireBaseController' => __DIR__ . '/../..' . '/app/Http/Controllers/fireBaseController.php',
         'App\\Http\\Controllers\\invitedFriendsController' => __DIR__ . '/../..' . '/app/Http/Controllers/invitedFriendsController.php',
         'App\\Http\\Controllers\\maximumDistanceController' => __DIR__ . '/../..' . '/app/Http/Controllers/maximumDistanceController.php',
         'App\\Http\\Controllers\\passengerApiController' => __DIR__ . '/../..' . '/app/Http/Controllers/passengerApiController.php',
@@ -621,6 +627,7 @@ class ComposerStaticInit2043ea35474eaed2d8485c33a80b07bf
         'App\\Http\\Controllers\\passengersController' => __DIR__ . '/../..' . '/app/Http/Controllers/passengersController.php',
         'App\\Http\\Controllers\\priceController' => __DIR__ . '/../..' . '/app/Http/Controllers/priceController.php',
         'App\\Http\\Controllers\\ratingController' => __DIR__ . '/../..' . '/app/Http/Controllers/ratingController.php',
+        'App\\Http\\Controllers\\userCouponsController' => __DIR__ . '/../..' . '/app/Http/Controllers/userCouponsController.php',
         'App\\Http\\Kernel' => __DIR__ . '/../..' . '/app/Http/Kernel.php',
         'App\\Http\\Middleware\\Authenticate' => __DIR__ . '/../..' . '/app/Http/Middleware/Authenticate.php',
         'App\\Http\\Middleware\\CheckForMaintenanceMode' => __DIR__ . '/../..' . '/app/Http/Middleware/CheckForMaintenanceMode.php',
@@ -651,6 +658,7 @@ class ComposerStaticInit2043ea35474eaed2d8485c33a80b07bf
         'App\\Http\\Requests\\CreatepassengersRequest' => __DIR__ . '/../..' . '/app/Http/Requests/CreatepassengersRequest.php',
         'App\\Http\\Requests\\CreatepriceRequest' => __DIR__ . '/../..' . '/app/Http/Requests/CreatepriceRequest.php',
         'App\\Http\\Requests\\CreateratingRequest' => __DIR__ . '/../..' . '/app/Http/Requests/CreateratingRequest.php',
+        'App\\Http\\Requests\\CreateuserCouponsRequest' => __DIR__ . '/../..' . '/app/Http/Requests/CreateuserCouponsRequest.php',
         'App\\Http\\Requests\\UpdateadvertisementRequest' => __DIR__ . '/../..' . '/app/Http/Requests/UpdateadvertisementRequest.php',
         'App\\Http\\Requests\\UpdatebookingRequest' => __DIR__ . '/../..' . '/app/Http/Requests/UpdatebookingRequest.php',
         'App\\Http\\Requests\\UpdatecancellationFeeRequest' => __DIR__ . '/../..' . '/app/Http/Requests/UpdatecancellationFeeRequest.php',
@@ -668,6 +676,7 @@ class ComposerStaticInit2043ea35474eaed2d8485c33a80b07bf
         'App\\Http\\Requests\\UpdatepassengersRequest' => __DIR__ . '/../..' . '/app/Http/Requests/UpdatepassengersRequest.php',
         'App\\Http\\Requests\\UpdatepriceRequest' => __DIR__ . '/../..' . '/app/Http/Requests/UpdatepriceRequest.php',
         'App\\Http\\Requests\\UpdateratingRequest' => __DIR__ . '/../..' . '/app/Http/Requests/UpdateratingRequest.php',
+        'App\\Http\\Requests\\UpdateuserCouponsRequest' => __DIR__ . '/../..' . '/app/Http/Requests/UpdateuserCouponsRequest.php',
         'App\\Models\\advertisement' => __DIR__ . '/../..' . '/app/Models/advertisement.php',
         'App\\Models\\booking' => __DIR__ . '/../..' . '/app/Models/booking.php',
         'App\\Models\\categories' => __DIR__ . '/../..' . '/app/Models/categories.php',
@@ -686,6 +695,7 @@ class ComposerStaticInit2043ea35474eaed2d8485c33a80b07bf
         'App\\Models\\passengers' => __DIR__ . '/../..' . '/app/Models/passengers.php',
         'App\\Models\\price' => __DIR__ . '/../..' . '/app/Models/price.php',
         'App\\Models\\rating' => __DIR__ . '/../..' . '/app/Models/rating.php',
+        'App\\Models\\userCoupons' => __DIR__ . '/../..' . '/app/Models/userCoupons.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Providers\\AuthServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AuthServiceProvider.php',
         'App\\Providers\\BroadcastServiceProvider' => __DIR__ . '/../..' . '/app/Providers/BroadcastServiceProvider.php',
@@ -710,6 +720,7 @@ class ComposerStaticInit2043ea35474eaed2d8485c33a80b07bf
         'App\\Repositories\\passengersRepository' => __DIR__ . '/../..' . '/app/Repositories/passengersRepository.php',
         'App\\Repositories\\priceRepository' => __DIR__ . '/../..' . '/app/Repositories/priceRepository.php',
         'App\\Repositories\\ratingRepository' => __DIR__ . '/../..' . '/app/Repositories/ratingRepository.php',
+        'App\\Repositories\\userCouponsRepository' => __DIR__ . '/../..' . '/app/Repositories/userCouponsRepository.php',
         'App\\User' => __DIR__ . '/../..' . '/app/User.php',
         'Appointer\\Swaggervel\\Http\\Controllers\\SwaggervelController' => __DIR__ . '/..' . '/appointer/swaggervel/src/Appointer/Swaggervel/Http/Controllers/SwaggervelController.php',
         'Appointer\\Swaggervel\\SwaggervelServiceProvider' => __DIR__ . '/..' . '/appointer/swaggervel/src/Appointer/Swaggervel/SwaggervelServiceProvider.php',
@@ -1137,6 +1148,21 @@ class ComposerStaticInit2043ea35474eaed2d8485c33a80b07bf
         'Dotenv\\Loader' => __DIR__ . '/..' . '/vlucas/phpdotenv/src/Loader.php',
         'Dotenv\\Parser' => __DIR__ . '/..' . '/vlucas/phpdotenv/src/Parser.php',
         'Dotenv\\Validator' => __DIR__ . '/..' . '/vlucas/phpdotenv/src/Validator.php',
+        'Edujugon\\PushNotification\\Apn' => __DIR__ . '/..' . '/edujugon/push-notification/src/Apn.php',
+        'Edujugon\\PushNotification\\Channels\\ApnChannel' => __DIR__ . '/..' . '/edujugon/push-notification/src/Channels/ApnChannel.php',
+        'Edujugon\\PushNotification\\Channels\\FcmChannel' => __DIR__ . '/..' . '/edujugon/push-notification/src/Channels/FcmChannel.php',
+        'Edujugon\\PushNotification\\Channels\\GcmChannel' => __DIR__ . '/..' . '/edujugon/push-notification/src/Channels/GcmChannel.php',
+        'Edujugon\\PushNotification\\Channels\\PushChannel' => __DIR__ . '/..' . '/edujugon/push-notification/src/Channels/PushChannel.php',
+        'Edujugon\\PushNotification\\Contracts\\PushServiceInterface' => __DIR__ . '/..' . '/edujugon/push-notification/src/Contracts/PushServiceInterface.php',
+        'Edujugon\\PushNotification\\Events\\NotificationPushed' => __DIR__ . '/..' . '/edujugon/push-notification/src/Events/NotificationPushed.php',
+        'Edujugon\\PushNotification\\Exceptions\\PushNotificationException' => __DIR__ . '/..' . '/edujugon/push-notification/src/Exceptions/PushNotificationException.php',
+        'Edujugon\\PushNotification\\Facades\\PushNotification' => __DIR__ . '/..' . '/edujugon/push-notification/src/Facades/PushNotification.php',
+        'Edujugon\\PushNotification\\Fcm' => __DIR__ . '/..' . '/edujugon/push-notification/src/Fcm.php',
+        'Edujugon\\PushNotification\\Gcm' => __DIR__ . '/..' . '/edujugon/push-notification/src/Gcm.php',
+        'Edujugon\\PushNotification\\Messages\\PushMessage' => __DIR__ . '/..' . '/edujugon/push-notification/src/Messages/PushMessage.php',
+        'Edujugon\\PushNotification\\Providers\\PushNotificationServiceProvider' => __DIR__ . '/..' . '/edujugon/push-notification/src/Providers/PushNotificationServiceProvider.php',
+        'Edujugon\\PushNotification\\PushNotification' => __DIR__ . '/..' . '/edujugon/push-notification/src/PushNotification.php',
+        'Edujugon\\PushNotification\\PushService' => __DIR__ . '/..' . '/edujugon/push-notification/src/PushService.php',
         'Egulias\\EmailValidator\\EmailLexer' => __DIR__ . '/..' . '/egulias/email-validator/EmailValidator/EmailLexer.php',
         'Egulias\\EmailValidator\\EmailParser' => __DIR__ . '/..' . '/egulias/email-validator/EmailValidator/EmailParser.php',
         'Egulias\\EmailValidator\\EmailValidator' => __DIR__ . '/..' . '/egulias/email-validator/EmailValidator/EmailValidator.php',
