@@ -18,6 +18,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 Route::post('/verificationCode', 'api\passengerApiController@login')->name('sendVerification');
 Route::post('/verify', 'api\passengerApiController@verify')->name('verify');
+Route::post('/userDetails', 'api\passengerApiController@userDetails')->name('userDetails');
 Route::post('/profile', 'api\passengerApiController@register')->name('profile');
 Route::post('/register', 'api\passengerApiController@register')->name('register');
 Route::post('/editProfile', 'api\passengerApiController@editProfile')->name('editProfile');
@@ -31,7 +32,7 @@ Route::post('/getRideRating', 'api\passengerApiController@getRideRating')->name(
 Route::post('/driverRating', 'api\passengerApiController@driverRating')->name('driverRating');
 Route::post('/addDriverTips', 'api\passengerApiController@addDriverTips')->name('addDriverTips');
 Route::post('/driverTips', 'api\passengerApiController@driverTips')->name('driverTips');
-Route::post('/booking', 'api\passengerApiController@booking')->name('booking');
+Route::post('/confirmBooking', 'api\passengerApiController@booking')->name('booking');
 Route::post('/editBooking', 'api\passengerApiController@editBooking')->name('editBooking');
 Route::get('/allBooking', 'api\passengerApiController@allBooking')->name('allBooking');
 Route::post('/driverBookings', 'api\passengerApiController@driverBookings')->name('driverBookings');
@@ -61,6 +62,7 @@ Route::get('/assignDriver/{id}', 'api\passengerApiController@assignDriver')->nam
 Route::get('/getPaymentMethods', 'api\passengerApiController@getPaymentMethods')->name('getPaymentMethods');
 Route::get('/getCategories', 'api\passengerApiController@getCategories')->name('getCategories');
 Route::post('/getNearbyDrievrs', 'api\passengerApiController@getNearbyDrievrs')->name('getNearbyDrievrs');
+Route::post('/validatePromoCode', 'api\passengerApiController@validatePromoCode')->name('validatePromoCode');
 //Route::post('/getNearbyDrievrs', 'api\passengerApiController@getNearbyDrievrs')->name('getNearbyDrievrs');
 Route::get('/whatsappDemo', 'api\passengerApiController@whatsappDemo')->name('whatsappDemo');
 

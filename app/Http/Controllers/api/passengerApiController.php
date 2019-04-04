@@ -16,6 +16,7 @@ use App\Models\passengers;
 use App\Models\passengerStripe;
 use App\Models\price;
 use App\Models\rating;
+use App\Models\userCoupons;
 use App\User;
 use Cartalyst\Stripe\Laravel\Facades\Stripe;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ use Twilio\Exceptions\TwilioException;
 use Twilio\Rest\Client;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\ServiceAccount;
+use Edujugon\PushNotification\PushNotification;
 
 class passengerApiController extends Controller
 {
@@ -58,6 +60,10 @@ class passengerApiController extends Controller
         $this->database = $firebase->getDatabase();
     }
     //
+
+
+//  *************************  functions related to Personal Info Login/Register Starts here *****************************
+
     public function login(Request $request)
     {
         $mNumber = $request->phone;
@@ -105,6 +111,10 @@ class passengerApiController extends Controller
         if (passengers::where('phone',$request->phone)->where('otp',$request->otp)->exists())
         {
             $user = passengers::where('phone',$request->phone)->where('otp',$request->otp)->first();
+            if ($user->image != '' || !empty($user->image))
+            {
+                $user->image = asset('public/avatars').'/'.$user->image;
+            }
             if ($user->exists_user == 1)
             {
                 $response['status'] = "success";
@@ -141,9 +151,9 @@ class passengerApiController extends Controller
             return $response;
         }
         $mNumber = $request->phone;
-        if (passengers::where('phone',$mNumber)->exists())
+        if (passengers::whereId($request->userid)->where('phone',$mNumber)->exists())
         {
-            $user = passengers::where('phone',$mNumber)->first();
+            $user = passengers::whereId($request->userid)->where('phone',$mNumber)->first();
             $update = $request->except('except','password','confirm_password');
             if (isset($request->password) && $request->password != '')
             {
@@ -160,6 +170,11 @@ class passengerApiController extends Controller
             }
             $update['exists_user'] = 1;
             $user = passengers::whereId($user->id)->update($update);
+            $user = passengers::whereId($request->userid)->where('phone',$mNumber)->first();
+            if ($user->image != '' || !empty($user->image))
+            {
+                $user->image = asset('public/avatars').'/'.$user->image;
+            }
             $response['status'] = "Success";
             $response['code'] = 200;
             $response['Message'] = "User Registered Successfully";
@@ -170,6 +185,30 @@ class passengerApiController extends Controller
             $response['status'] = "failed";
             $response['code'] = 500;
             $response['Message'] = "User Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+    public function userDetails(Request $request)
+    {
+        if (passengers::whereId($request->userid)->exists())
+        {
+            $user = passengers::whereId($request->userid)->first();
+            if ($user->image != '' || !empty($user->image))
+            {
+                $user->image = asset('public/avatars').'/'.$user->image;
+            }
+            $user = $user->makeHidden(['remember_token','email_verified_at','otp']);
+            $response['code'] = 200;
+            $response['status'] = "Success";
+            $response['message'] = "User details fetched successfully";
+            $response['data'] = $user;
+        }
+        else
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "User not Found";
             $response['data'] = [];
         }
         return $response;
@@ -217,6 +256,10 @@ class passengerApiController extends Controller
         }
 
         $user = passengers::create(['phone'=>$mNumber,'otp'=>$otp,'email'=>$request->email]);
+        if ($user->image != '' || !empty($user->image))
+        {
+            $user->image = asset('public/avatars').'/'.$user->image;
+        }
         $response['status'] = "Success";
         $response['code'] = 200;
         $response['Message'] = "User Registered Successfully";
@@ -252,544 +295,6 @@ class passengerApiController extends Controller
             $response['status'] = "failed";
             $response['code'] = 500;
             $response['Message'] = "User Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function booking(Request $request)
-    {
-        if (passengers::whereId($request->userid)->where('phone',$request->phone)->exists())
-        {
-            $input = $request->except('image');
-            $src= explode( ",", $request->source);
-            if ( isset( $src[0] ) && isset( $src[1] ) ) {
-                $latSrc = $src[0];
-                $lonSrc = $src[1];
-            } else {
-                $response['code'] = 500;
-                $response['status']     = 'failed';
-                $response['message']    = 'Enter Valid Source Location.';
-
-                return $response;
-            }
-            $dest = explode( ",", $request->destination );
-            if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
-                $latDest = $dest[0];
-                $lonDest = $dest[1];
-            } else {
-                $response['code'] = 500;
-                $response['status']     = 'failed';
-                $response['message']    = 'Enter Valid Destination Location.';
-
-                return $response;
-            }
-            $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
-            $input['distance'] = $distanceTime['distance'];
-            $input['estimated_time'] = $distanceTime['time'];
-            $input['price'] = $this->calculatePrice($request->categoryId,$input['distance']);
-            if($request->hasFile('image'))
-            {
-                $validator=Validator::make($request->all(), [
-                        'image' => 'mimes:jpg,png,gif,jpeg,PNG,svg',
-                    ]
-                );
-                if ($validator->passes())
-                {
-                    $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
-                    $mime = $request->image->getClientOriginalExtension();
-
-                    $this->compress($request->image, public_path('avatars') . '/' . $photoName, 100, $mime);
-                    $input['image'] = $photoName;
-                }
-                else
-                {
-                    $response['status'] = "failed";
-                    $response['code'] = 500;
-                    $response['Message'] = "Un-Supported Image Format";
-                    $response['Data'] = [];
-                    return $response;
-                }
-            }
-            $booking = booking::create($input);
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['Message'] = "Booking Saved Successfully!";
-            $response['data'] = $booking;
-        }
-        else
-        {
-            $response['status'] = "failed";
-            $response['code'] = 500;
-            $response['Message'] = "User Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function RequestBooking(Request $request)
-    {
-        if (passengers::whereId($request->userid)->where('phone',$request->phone)->exists())
-        {
-            $input = $request->all();
-            $src= explode( ",", $request->source);
-            if ( isset( $src[0] ) && isset( $src[1] ) ) {
-                $latSrc = $src[0];
-                $lonSrc = $src[1];
-            } else {
-                $response['code'] = 500;
-                $response['status']     = 'failed';
-                $response['message']    = 'Enter Valid Source Location.';
-
-                return $response;
-            }
-            $dest = explode( ",", $request->destination );
-            if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
-                $latDest = $dest[0];
-                $lonDest = $dest[1];
-            } else {
-                $response['code'] = 500;
-                $response['status']     = 'failed';
-                $response['message']    = 'Enter Valid Destination Location.';
-
-                return $response;
-            }
-            $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
-            $input['distance'] = $distanceTime['distance'];
-            $input['estimated_time'] = $distanceTime['time'];
-            $input['price'] = $this->calculatePrice($request->categoryId,$input['distance']);
-
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['estimated_price'] = $input['price'];
-            $response['distance'] = $input['distance'];
-            $response['estimated_time'] = $input['estimated_time'];
-            $response['data'] = [];
-        }
-        else
-        {
-            $response['status'] = "failed";
-            $response['code'] = 500;
-            $response['Message'] = "User Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-    public function displayPrice(Request $request)
-    {
-        if (categories::exists() == 0)
-        {
-            $response['code'] = 500;
-            $response['status']     = 'failed';
-            $response['message']    = 'Admin didnt setup any Category';
-            $response['data']    = [];
-        }
-        $src= explode( ",", $request->source);
-        if ( isset( $src[0] ) && isset( $src[1] ) ) {
-            $latSrc = $src[0];
-            $lonSrc = $src[1];
-        } else {
-            $response['code'] = 500;
-            $response['status']     = 'failed';
-            $response['message']    = 'Enter Valid Source Location.';
-
-            return $response;
-        }
-        $dest = explode( ",", $request->destination );
-        if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
-            $latDest = $dest[0];
-            $lonDest = $dest[1];
-        } else {
-            $response['code'] = 500;
-            $response['status']     = 'failed';
-            $response['message']    = 'Enter Valid Destination Location.';
-
-            return $response;
-        }
-        $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
-        $distance = $distanceTime['distance'];
-        $time = $distanceTime['time'];
-        $categories = categories::get();
-        $rideDetails = [];
-        foreach ($categories as $category)
-        {
-            if (price::where('category',$category->id)->exists())
-            {
-                $categoryPrice = price::where('category',$category->id)->first();
-                $totalPrice = (float)$distance*(float)$categoryPrice->amount;
-                $array['category_id'] = $category->id;
-                $array['category_name'] = $category->name;
-                $array['category_image'] = asset('public/avatars').'/'.$category->image;
-                $array['distance'] = $distance;
-                $array['estimated_time'] = $time;
-                $array['estimated_price'] = number_format($totalPrice);
-                array_push($rideDetails,$array);
-            }
-        }
-        $response['code'] = 200;
-        $response['status'] = "Success";
-        $response['message'] = "Ride details fetched";
-        $response['data'] = $rideDetails;
-        return $response;
-    }
-
-    public function editBooking(Request $request)
-    {
-        if (booking::whereId($request->bookingId)->exists())
-        {
-            $update = $request->except('image','bookingId');
-            if((isset($request->source) && isset($request->destination)) || ($request->source != '' && $request->destination != ''))
-            {
-                $src= explode( ",", $request->source);
-                if ( isset( $src[0] ) && isset( $src[1] ) ) {
-                    $latSrc = $src[0];
-                    $lonSrc = $src[1];
-                } else {
-                    $response['code'] = 500;
-                    $response['status']     = 'failed';
-                    $response['message']    = 'Enter Valid Source Location.';
-
-                    return $response;
-                }
-                $dest = explode( ",", $request->destination );
-                if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
-                    $latDest = $dest[0];
-                    $lonDest = $dest[1];
-                } else {
-                    $response['code'] = 500;
-                    $response['status']     = 'failed';
-                    $response['message']    = 'Enter Valid Destination Location.';
-
-                    return $response;
-                }
-                $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
-                $update['distance'] = $distanceTime['distance'];
-                $update['estimated_time'] = $distanceTime['time'];
-                $update['price'] = $this->calculatePrice($request->categoryId,$update['distance']);
-            }
-
-            if($request->hasFile('image'))
-            {
-                $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
-                $mime = $request->image->getClientOriginalExtension();
-                $request->image->move(public_path('avatars'), $photoName);
-                $update['image'] = $photoName;
-            }
-            booking::whereId($request->bookingId)->update($update);
-            $booking = booking::whereId($request->bookingId)->first();
-            $response['status'] = "Success";
-            $response['code'] = 500;
-            $response['message'] = "Booking Edited Successfully";
-            $response['data'] = $booking;
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 200;
-            $response['message'] = "Booking not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function allBooking()
-    {
-        if (booking::exists())
-        {
-            $bookings = booking::get();
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['message'] = "Bookings fetched Successfully";
-            $response['data'] = $bookings;
-        }
-        else
-        {
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['message'] = "No bookings Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function rideHistory($userid)
-    {
-        if (passengers::whereId($userid)->exists())
-        {
-            $user = passengers::whereId($userid)->first();
-            if (booking::where('userid',$user->id)->where('completed',1)->exists())
-            {
-                $bookings = booking::where('userid',$user->id)->where('completed',1)->get();
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "User Ride History";
-                $response['data'] = $bookings;
-            }
-            else
-            {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "User Ride History is Empty!";
-                $response['data'] = [];
-            }
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "User Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function favouriteDriver($userid)
-    {
-        if (passengers::whereId($userid)->exists())
-        {
-            $user = passengers::whereId($userid)->first();
-            if (favDriver::where('userid',$user->id)->exists())
-            {
-                $favourite = favDriver::where('userid',$user->id)->get();
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "User Favourite Driver";
-                $response['data'] = $favourite;
-            }
-            else
-            {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "User Favourite Driver List is Empty!";
-                $response['data'] = [];
-            }
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "User Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function addFavourite(Request $request)
-    {
-        $mNumber = $request->phone;
-        if (passengers::where('phone',$mNumber)->exists())
-        {
-            $user = passengers::where('phone',$mNumber)->first();
-            if (driver::whereId($request->driverid)->exists())
-            {
-                $fav=favDriver::create([
-                    'userid'=>$user->id,
-                    'driverid'=>$request->driverid
-                ]);
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "User Favourite Created Successfully!";
-                $response['data'] = $fav;
-            }
-            else
-            {
-                $response['status'] = "Failed";
-                $response['code'] = 500;
-                $response['Message'] = "Driver Not Found";
-                $response['data'] = [];
-            }
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "User Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function deleteFavourite(Request $request)
-    {
-        if (favDriver::whereId($request->favouriteId)->exists())
-        {
-            $fav = favDriver::whereId($request->favouriteId)->delete();
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['Message'] = "User Favourite Deleted Successfully!";
-            $response['data'] = $fav;
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "Favourite Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function driverDetail(Request $request)
-    {
-        if (driver::whereId($request->driverid)->exists())
-        {
-            $driver = driver::whereId($request->driverid)->first();
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['Message'] = "Driver Detail Fetched Successfully!";
-            $response['data'] = $driver;
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "Driver Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function rateRide(Request $request)
-    {
-        if (booking::whereId($request->bookingId)->where('userid',$request->userid)->exists())
-        {
-            $booking = booking::whereId($request->bookingId)->where('userid',$request->userid)->first();
-            $rate = rating::create([
-                'userid'=>$request->userid,
-                'booking_id'=>$request->bookingId,
-                'driverid'=>$booking->driverid,
-                'rating'=>$booking->rating,
-                'comments'=>$booking->comments,
-            ]);
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['Message'] = "Rating saved Successfully";
-            $response['data'] = $rate;
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "Booking Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function getRideRating(Request $request)
-    {
-        if (booking::whereId($request->bookingId)->exists())
-        {
-            $booking = booking::whereId($request->bookingId)->first();
-            if (rating::where('booking_id',$booking->id)->exists())
-            {
-                $rate = rating::where('booking_id',$booking->id)->first();
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "Rating Fetched Succeessfully";
-                $response['data'] = $rate;
-            }
-            else
-            {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "Rating for Booking is Empty";
-                $response['data'] = [];
-            }
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "Booking Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function driverRating(Request $request)
-    {
-        if (driver::whereId($request->driverid)->exists())
-        {
-            if (rating::where('driverid',$request->driverid)->exists())
-            {
-                $ratings = rating::where('driverid',$request->driverid)->get();
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "Driver data Fetched Successfully";
-                $response['data'] = $ratings;
-            }
-            else
-            {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "No Driver Ratings are Found";
-                $response['data'] = [];
-            }
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "Driver Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function addDriverTips(Request $request)
-    {
-        if (booking::whereId($request->bookingId)->exists())
-        {
-            $booking = booking::whereId($request->bookingId)->first();
-            if (passengers::whereId($booking->userid)->exists())
-            {
-                $booking = booking::whereId($request->bookingId)->update(['driver_tips	'=>$request->driverTips]);
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "Tips added Succeessfully";
-                $response['data'] = $booking;
-            }
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "User Not Found";
-            $response['data'] = [];
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "Booking Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
-
-    public function driverTips(Request $request)
-    {
-        if (driver::whereId($request->driverid)->exists())
-        {
-            if (booking::where('driverid',$request->driverid)->exists())
-            {
-                $drivertips = booking::where('driverid',$request->driverid)->get();
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "Tips fetched Succeessfully";
-                $response['data'] = $drivertips;
-            }
-            else
-            {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "Driver Tips are Empty!";
-                $response['data'] = [];
-            }
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "Driver Not Found";
             $response['data'] = [];
         }
         return $response;
@@ -959,9 +464,105 @@ class passengerApiController extends Controller
         return $response;
     }
 
+//*********************************************************************************************************************
+
+//******************************Functions related to bookings ***********************************************************
+
+    public function driverRating(Request $request)
+    {
+        if (driver::whereId($request->driverid)->exists())
+        {
+            if (rating::where('driverid',$request->driverid)->exists())
+            {
+                $ratings = rating::where('driverid',$request->driverid)->get();
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "Driver data Fetched Successfully";
+                $response['data'] = $ratings;
+            }
+            else
+            {
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "No Driver Ratings are Found";
+                $response['data'] = [];
+            }
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "Driver Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function getNearbyDrievrs(Request $request)
+    {
+        if (isset($request->categoryid) && (!empty($request->categoryid) || $request->categoryid != ''))
+        {
+            if (categories::whereId($request->categoryid)->exists() == 0)
+            {
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['message'] = "Category Not Found";
+                $response['data'] = [];
+                return $response;
+            }
+            if (driverCategory::where('categoryid',$request->categoryid)->exists() == 0)
+            {
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['message'] = "No drivers are found on this category";
+                $response['data'] = [];
+                return $response;
+            }
+        }
+
+        $userDetais = explode('-',$request->user_lat_lng);
+        if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])) || (!isset($userDetais[2]) || $userDetais[2] == '' || empty($userDetais[2])))
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
+            $response['data'] = [];
+            return $response;
+        }
+
+        $lat1 = $userDetais[1];
+        $long1 = $userDetais[2];
+        if (isset($request->categoryid) && (!empty($request->categoryid) || $request->categoryid != ''))
+        {
+            $drivers = $this->driverByCategory($request->categoryid);
+        }
+        else
+        {
+            $drivers = driver::where('isAvailable',1)->get();
+        }
+        if (count($drivers) == 0)
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['message'] = "No drivers are Active at the moment";
+            $response['data'] = [];
+            return $response;
+        }
+        $response = $this->fetchNearbyDrivers($drivers,$lat1,$long1);
+        return $response;
+    }
+
     public function getCategories()
     {
         $categories = categories::get();
+        foreach ($categories as $category)
+        {
+            if ($category->image != '' || !empty($category->image))
+            {
+                $category->image = asset('public/avatars').'/'.$category->image;
+            }
+        }
+
         if (empty($categories))
         {
             $response['status'] = "Success";
@@ -979,62 +580,472 @@ class passengerApiController extends Controller
         return $response;
     }
 
-    public function inviteFriends(Request $request)
+    public function displayPrice(Request $request)
     {
-        $numbers  = explode(',',$request->mobile_numbers);
-
-        $error = [];
-        $invitationid = time().rand(1,5698742);
-        foreach ($numbers as $number)
+        if (categories::exists() == 0)
         {
-            $number1 = str_replace(' ','',$number);
-            $message = "I switched to ChauffeurX. It’s awesome!!! You should download it today";
-            $sid    = "AC7835895b4de3218265df779b550d793b";
-            $token  = "c44245d2f7d682f18eb3a1399d8d5ef6";
-            $twilio = new Client($sid, $token);
-
-            try
-            {
-                $text = $twilio->messages
-                    ->create($number1, // to
-                        array("from" => "+19562759175",
-                            "body" => $message
-                        )
-                    );
-                $input['phone'] = $number1;
-                $input['date'] = new \DateTime();
-                $input['invite_id'] = $invitationid;
-                invitedFriends::create($input);
-            }
-            catch (RestException $ex)
-            {
-                $response['status'] = "Failed";
-                $response['code'] = 500;
-                $response['message'] = "Invitation send Failed";
-                $response['data'] = $ex->getMessage();
-                $response['mobile_number'] = $number;
-                array_push($error,$response);
-                invitedFriends::where('phone',$number)->where('invite_id',$invitationid)->forcedelete();
-//                $error['response'] .= $response;
-            }
-
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'Admin didnt setup any Category';
+            $response['data']    = [];
         }
-        if ($error == '' || empty($error))
-        {
-            $invited_users = invitedFriends::where('invite_id',$invitationid)->get();
-            $response['status'] = "Success";
-            $response['code'] = 200;
-            $response['message'] = "Invitation sent Succesfully";
-            $response['data'] = $invited_users;
+        $src= explode( ",", $request->source);
+        if ( isset( $src[0] ) && isset( $src[1] ) ) {
+            $latSrc = $src[0];
+            $lonSrc = $src[1];
+        } else {
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'Enter Valid Source Location.';
+
             return $response;
+        }
+        $dest = explode( ",", $request->destination );
+        if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
+            $latDest = $dest[0];
+            $lonDest = $dest[1];
+        } else {
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'Enter Valid Destination Location.';
+
+            return $response;
+        }
+        $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
+        $distance = $distanceTime['distance'];
+        $time = $distanceTime['time'];
+        $categories = categories::get();
+        $rideDetails = [];
+        foreach ($categories as $category)
+        {
+            if (price::where('category',$category->id)->exists())
+            {
+                $categoryPrice = price::where('category',$category->id)->first();
+                $totalPrice = (float)$distance*(float)$categoryPrice->amount;
+                $array['category_id'] = $category->id;
+                $array['category_name'] = $category->name;
+                $array['category_image'] = asset('public/avatars').'/'.$category->image;
+                $array['distance'] = $distance;
+                $array['estimated_time'] = $time;
+                $array['estimated_price'] = number_format($totalPrice);
+                array_push($rideDetails,$array);
+            }
+        }
+        $response['code'] = 200;
+        $response['status'] = "Success";
+        $response['message'] = "Ride details fetched";
+        $response['data'] = $rideDetails;
+        return $response;
+    }
+
+    public function validatePromoCode(Request $request)
+    {
+        if (passengers::whereId($request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "User Not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        if (userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Invalid Promo-Code";
+            $response['valid'] = 0;
+            $response['data'] = [];
         }
         else
         {
-            $error['status'] = "Failed";
-            $error['code'] = 500;
-            $error['message'] = "Invitation send Failed";
-            return $error;
+            $userCode = userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->first();
+            if ($userCode->status == 0)
+            {
+                $discountPercentage = (float)str_replace(',','',$userCode->discount);
+                $oldPrice = (float)str_replace(',','',$request->trip_price);
+                $totalDiscount = ($oldPrice*$discountPercentage)/100;
+                $newPrice = $oldPrice-$totalDiscount;
+                $response['code'] = 200;
+                $response['status'] = "Success";
+                $response['message'] = "Promo-code is Valid!";
+                $response['old_trip_price'] = number_format($oldPrice);
+                $response['new_trip_price'] = number_format($newPrice);
+                $response['valid'] = 1;
+                $response['data'] = [];
+            }
+            else
+            {
+                $response['code'] = 500;
+                $response['status'] = "Failed";
+                $response['message'] = "You have already this Promo-Code!";
+                $response['valid'] = 0;
+                $response['data'] = [];
+            }
         }
+        return $response;
+    }
+
+    public function RequestBooking(Request $request)
+    {
+        if (passengers::whereId($request->userid)->where('phone',$request->phone)->exists())
+        {
+            $input = $request->all();
+            $src= explode( ",", $request->source);
+            if ( isset( $src[0] ) && isset( $src[1] ) ) {
+                $latSrc = $src[0];
+                $lonSrc = $src[1];
+            } else {
+                $response['code'] = 500;
+                $response['status']     = 'failed';
+                $response['message']    = 'Enter Valid Source Location.';
+
+                return $response;
+            }
+            $dest = explode( ",", $request->destination );
+            if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
+                $latDest = $dest[0];
+                $lonDest = $dest[1];
+            } else {
+                $response['code'] = 500;
+                $response['status']     = 'failed';
+                $response['message']    = 'Enter Valid Destination Location.';
+
+                return $response;
+            }
+            $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
+            $input['distance'] = $distanceTime['distance'];
+            $input['estimated_time'] = $distanceTime['time'];
+            $price = $discountedPrice = $this->calculatePrice($request->categoryId,$input['distance']);
+            $input['original_price'] = $price;
+            $input['price'] = $price;
+            if (isset($request->promoCode) && ($request->promoCode != '' || !empty($request->promoCode)))
+            {
+                if (userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->exists() == 0)
+                {
+                    $response['status'] = "failed";
+                    $response['code'] = 500;
+                    $response['Message'] = "Invalid Promo-Code";
+                    $response['Data'] = [];
+                    return $response;
+                }
+                else
+                {
+                    $userCode = userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->first();
+                    if ($userCode->status != 0)
+                    {
+                        $response['status'] = "failed";
+                        $response['code'] = 500;
+                        $response['Message'] = "This code has already used";
+                        $response['Data'] = [];
+                        return $response;
+                    }
+                    else
+                    {
+                        $discount = (float)$userCode->discount;
+                        $totalDiscount = ($discount*$price)/100;
+                        $discountedPrice = $price-$totalDiscount;
+//                        $input['price'] = $discountedPrice;
+                    }
+                }
+            }
+
+
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['estimated_price'] = $input['price'];
+            $response['estimated_price_after_discount'] = $discountedPrice;
+            $response['distance'] = $input['distance'];
+            $response['estimated_time'] = $input['estimated_time'];
+            $response['data'] = [];
+        }
+        else
+        {
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['Message'] = "User Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    function assignDriver($driverid)
+    {
+        $lastRide = $this->getDriverLastRide($driverid);
+        echo $lastRide.'<br/>';
+        echo $rating = $this->getDriverRating($driverid).'<br/>';
+        echo $last7 = $this->driverSevenBookings($driverid).'<br/>';
+        echo $penalty = $this->getPenalty($driverid).'<br/>';
+
+        $score = (1/$this->getDriverLastRide($driverid))+($this->getDriverRating($driverid)/10)+($this->driverSevenBookings($driverid)/100)-($this->getPenalty($driverid));
+        return $score;
+    }
+
+    function getDriverLastRide($driverid)
+    {
+//        echo locale_get_default();
+//       date_default_timezone_set('America/Denver');
+
+        $bookings  = booking::where('driverid',$driverid)->orderby('trip_end_time','desc')->first();
+        $lastTrip = strtotime($bookings->trip_end_time);
+        $now = time();
+        $diff = $now-$lastTrip;
+        return $diff;
+    }
+
+    function driverSevenBookings($driverid)
+    {
+        $prev_date = date('d/m/Y',strtotime('-7 days'));
+        $today = date('d/m/Y');
+        $bookings = DB::select('select COUNT(*) as rides from bookings where driverid='.$driverid.' and deleted_at is null and STR_TO_DATE(`trip_date_time`,"%d/%m/%Y") BETWEEN STR_TO_DATE("'.$prev_date.'","%d/%m/%Y") and STR_TO_DATE("'.$today.'","%d/%m/%Y")');
+        foreach ($bookings as $booking)
+        {
+            $rides = $booking->rides;
+            return $rides;
+        }
+    }
+
+    function getPenalty($driverid)
+    {
+        $bookings = booking::where('driverid',$driverid)->get();
+        $penalty = 0;
+        foreach ($bookings as $booking)
+        {
+            $penalty += (float)$booking->penalty;
+        }
+        return $penalty;
+    }
+
+    function getDriverRating($driverid)
+    {
+        $count = rating::where('driverid',$driverid)->count();
+        $totalRating = rating::where('driverid',$driverid)->sum('rating');
+        $rate = (($totalRating/$count)*100)/5;
+        return $rate;
+    }
+
+    public function booking(Request $request)
+    {
+        if (passengers::whereId($request->userid)->where('phone',$request->phone)->exists())
+        {
+            $input = $request->except('image','promoCode');
+            $src= explode( ",", $request->source);
+            if ( isset( $src[0] ) && isset( $src[1] ) ) {
+                $latSrc = $src[0];
+                $lonSrc = $src[1];
+            } else {
+                $response['code'] = 500;
+                $response['status']     = 'failed';
+                $response['message']    = 'Enter Valid Source Location.';
+
+                return $response;
+            }
+            $dest = explode( ",", $request->destination );
+            if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
+                $latDest = $dest[0];
+                $lonDest = $dest[1];
+            } else {
+                $response['code'] = 500;
+                $response['status']     = 'failed';
+                $response['message']    = 'Enter Valid Destination Location.';
+
+                return $response;
+            }
+            $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
+            $input['distance'] = $distanceTime['distance'];
+            $input['estimated_time'] = $distanceTime['time'];
+            $price = $this->calculatePrice($request->categoryId,$input['distance']);
+            $input['original_price'] = $price;
+            $input['price'] = $price;
+            if($request->hasFile('image'))
+            {
+                $validator=Validator::make($request->all(), [
+                        'image' => 'mimes:jpg,png,gif,jpeg,PNG,svg',
+                    ]
+                );
+                if ($validator->passes())
+                {
+                    $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
+                    $mime = $request->image->getClientOriginalExtension();
+
+                    $this->compress($request->image, public_path('avatars') . '/' . $photoName, 100, $mime);
+                    $input['image'] = $photoName;
+                }
+                else
+                {
+                    $response['status'] = "failed";
+                    $response['code'] = 500;
+                    $response['Message'] = "Un-Supported Image Format";
+                    $response['Data'] = [];
+                    return $response;
+                }
+            }
+            if (isset($request->promoCode) && ($request->promoCode != '' || !empty($request->promoCode)))
+            {
+                if (userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->exists() == 0)
+                {
+                    $response['status'] = "failed";
+                    $response['code'] = 500;
+                    $response['Message'] = "Invalid Promo-Code";
+                    $response['Data'] = [];
+                    return $response;
+                }
+                else
+                {
+                    $userCode = userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->first();
+                    if ($userCode->status != 0)
+                    {
+                        $response['status'] = "failed";
+                        $response['code'] = 500;
+                        $response['Message'] = "This code has already used";
+                        $response['Data'] = [];
+                        return $response;
+                    }
+                    else
+                    {
+                        $discount = (float)$userCode->discount;
+                        $totalDiscount = ($discount*$price)/100;
+                        $discountedPrice = $price-$totalDiscount;
+                        $input['price'] = $discountedPrice;
+                    }
+                }
+            }
+
+            $userDetais = explode('-',$request->user_lat_lng);
+            if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])))
+            {
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
+                $response['data'] = [];
+                return $response;
+            }
+
+            $lat1 = $userDetais[0];
+            $long1 = $userDetais[1];
+
+            $drivers = $this->driverByCategory($request->categoryId);
+            if (count($drivers) == 0)
+            {
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['message'] = "No drivers are Active at the moment";
+                $response['data'] = [];
+                return $response;
+            }
+            $response = $this->fetchNearbyDrivers($drivers,$lat1,$long1);
+
+            foreach($response['data'] as $driver)
+            {
+                if (driver::whereId($driver['driverid'])->where('isAvailable',1)->exists())
+                {
+                    $driverDetail = driver::whereId($driver['driverid'])->where('isAvailable',1)->first();
+                    if ($driverDetail->device_token == '' || empty($driverDetail->device_token) || $driverDetail->device_token == null)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        $title = "Booking Request";
+                        $body = "New Booking Request has Made";
+                        $token = $driverDetail->device_token;
+                        $message = $this->pushNotification($title,$body,$token);
+                    }
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            return $response;
+
+
+            $booking = booking::create($input);
+            if (isset($request->promoCode) && ($request->promoCode != '' || !empty($request->promoCode))) {
+                if (userCoupons::where('userid', $request->userid)->where('code', $request->promoCode)->exists())
+                {
+                    userCoupons::where('userid', $request->userid)->where('code', $request->promoCode)->update(['status' => 1]);
+                }
+            }
+            if ($booking->image != '' || !empty($booking->image))
+            {
+                $booking->image = asset('public/avatars').'/'.$booking->image;
+            }
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['Message'] = "Booking Saved Successfully!";
+            $response['data'] = $booking;
+        }
+        else
+        {
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['Message'] = "User Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function editBooking(Request $request)
+    {
+        if (booking::whereId($request->bookingId)->exists())
+        {
+            $update = $request->except('image','bookingId');
+            if((isset($request->source) && isset($request->destination)) || ($request->source != '' && $request->destination != ''))
+            {
+                $src= explode( ",", $request->source);
+                if ( isset( $src[0] ) && isset( $src[1] ) ) {
+                    $latSrc = $src[0];
+                    $lonSrc = $src[1];
+                } else {
+                    $response['code'] = 500;
+                    $response['status']     = 'failed';
+                    $response['message']    = 'Enter Valid Source Location.';
+
+                    return $response;
+                }
+                $dest = explode( ",", $request->destination );
+                if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
+                    $latDest = $dest[0];
+                    $lonDest = $dest[1];
+                } else {
+                    $response['code'] = 500;
+                    $response['status']     = 'failed';
+                    $response['message']    = 'Enter Valid Destination Location.';
+
+                    return $response;
+                }
+                $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
+                $update['distance'] = $distanceTime['distance'];
+                $update['estimated_time'] = $distanceTime['time'];
+                $update['price'] = $this->calculatePrice($request->categoryId,$update['distance']);
+            }
+
+            if($request->hasFile('image'))
+            {
+                $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
+                $mime = $request->image->getClientOriginalExtension();
+                $request->image->move(public_path('avatars'), $photoName);
+                $update['image'] = $photoName;
+            }
+            booking::whereId($request->bookingId)->update($update);
+            $booking = booking::whereId($request->bookingId)->first();
+            if ($booking->image != '' || !empty($booking->image))
+            {
+                $booking->image = asset('public/avatars').'/'.$booking->image;
+            }
+            $response['status'] = "Success";
+            $response['code'] = 500;
+            $response['message'] = "Booking Edited Successfully";
+            $response['data'] = $booking;
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 200;
+            $response['message'] = "Booking not Found";
+            $response['data'] = [];
+        }
+        return $response;
     }
 
     public function cancelBookingFee(Request $request)
@@ -1126,10 +1137,472 @@ class passengerApiController extends Controller
         }
     }
 
+    public function rateRide(Request $request)
+    {
+        if (booking::whereId($request->bookingId)->where('userid',$request->userid)->exists())
+        {
+            $booking = booking::whereId($request->bookingId)->where('userid',$request->userid)->first();
+            $rate = rating::create([
+                'userid'=>$request->userid,
+                'booking_id'=>$request->bookingId,
+                'driverid'=>$booking->driverid,
+                'rating'=>$booking->rating,
+                'comments'=>$booking->comments,
+            ]);
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['Message'] = "Rating saved Successfully";
+            $response['data'] = $rate;
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "Booking Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function allBooking()
+    {
+        if (booking::exists())
+        {
+            $bookings = booking::get();
+            foreach ($bookings as $booking)
+            {
+                if ($booking->image != '' || !empty($booking->image))
+                {
+                    $booking->image = asset('public/avatars').'/'.$booking->image;
+                }
+            }
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['message'] = "Bookings fetched Successfully";
+            $response['data'] = $bookings;
+        }
+        else
+        {
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['message'] = "No bookings Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function rideHistory($userid)
+    {
+        if (passengers::whereId($userid)->exists())
+        {
+            $user = passengers::whereId($userid)->first();
+            if (booking::where('userid',$user->id)->where('completed',1)->exists())
+            {
+                $bookings = booking::where('userid',$user->id)->where('completed',1)->get();
+                foreach ($bookings as $booking)
+                {
+                    if ($booking->image != '' || !empty($booking->image))
+                    {
+                        $booking->image = asset('public/avatars').'/'.$booking->image;
+                    }
+                }
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "User Ride History";
+                $response['data'] = $bookings;
+            }
+            else
+            {
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "User Ride History is Empty!";
+                $response['data'] = [];
+            }
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "User Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function getRideRating(Request $request)
+    {
+        if (booking::whereId($request->bookingId)->exists())
+        {
+            $booking = booking::whereId($request->bookingId)->first();
+            if (rating::where('booking_id',$booking->id)->exists())
+            {
+                $rate = rating::where('booking_id',$booking->id)->first();
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "Rating Fetched Succeessfully";
+                $response['data'] = $rate;
+            }
+            else
+            {
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "Rating for Booking is Empty";
+                $response['data'] = [];
+            }
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "Booking Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function addDriverTips(Request $request)
+    {
+        if (booking::whereId($request->bookingId)->exists())
+        {
+            $booking = booking::whereId($request->bookingId)->first();
+            if (passengers::whereId($booking->userid)->exists())
+            {
+                booking::whereId($request->bookingId)->update(['driver_tips	'=>$request->driverTips]);
+                $booking = booking::whereId($request->bookingId)->first();
+                if ($booking->image != '' || !empty($booking->image))
+                {
+                    $booking->image = asset('public/avatars').'/'.$booking->image;
+                }
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "Tips added Succeessfully";
+                $response['data'] = $booking;
+            }
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "User Not Found";
+            $response['data'] = [];
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "Booking Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+
+//**********************************************************************************************************************
 
 
 
 
+//*************************************************User Driver Relationships********************************************
+
+    public function favouriteDriver($userid)
+    {
+        if (passengers::whereId($userid)->exists())
+        {
+            $user = passengers::whereId($userid)->first();
+            if (favDriver::where('userid',$user->id)->exists())
+            {
+                $drivers = DB::select("select d.* from drivers d,fav_drivers c where d.id=c.driverid and c.userid=$userid and d.deleted_at is null and c.deleted_at is null");
+                foreach ($drivers as $driver) {
+                    if ($driver->image != '' || !empty($driver->image))
+                    {
+                        $driver->image = asset('public/avatars').'/'.$driver->image;
+                    }
+                }
+                $favourite = favDriver::where('userid',$user->id)->get();
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "User Favourite Driver";
+                $response['data'] = $drivers;
+            }
+            else
+            {
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "User Favourite Driver List is Empty!";
+                $response['data'] = [];
+            }
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "User Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function addFavourite(Request $request)
+    {
+        $mNumber = $request->phone;
+        if (passengers::where('phone',$mNumber)->exists())
+        {
+            $user = passengers::where('phone',$mNumber)->first();
+            if (driver::whereId($request->driverid)->exists())
+            {
+                $fav=favDriver::create([
+                    'userid'=>$user->id,
+                    'driverid'=>$request->driverid
+                ]);
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "User Favourite Created Successfully!";
+                $response['data'] = $fav;
+            }
+            else
+            {
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['Message'] = "Driver Not Found";
+                $response['data'] = [];
+            }
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "User Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function deleteFavourite(Request $request)
+    {
+        if (favDriver::whereId($request->favouriteId)->exists())
+        {
+            $fav = favDriver::whereId($request->favouriteId)->delete();
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['Message'] = "User Favourite Deleted Successfully!";
+            $response['data'] = $fav;
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "Favourite Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function driverDetail(Request $request)
+    {
+        if (driver::whereId($request->driverid)->exists())
+        {
+            $driver = driver::whereId($request->driverid)->first();
+            if ($driver->image != '' || !empty($driver->image))
+            {
+                $driver->image = asset('public/avatars').'/'.$driver->image;
+            }
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['Message'] = "Driver Detail Fetched Successfully!";
+            $response['data'] = $driver;
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "Driver Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function driverTips(Request $request)
+    {
+        if (driver::whereId($request->driverid)->exists())
+        {
+            if (booking::where('driverid',$request->driverid)->exists())
+            {
+                $drivertips = booking::where('driverid',$request->driverid)->get();
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "Tips fetched Succeessfully";
+                $response['data'] = $drivertips;
+            }
+            else
+            {
+                $response['status'] = "Success";
+                $response['code'] = 200;
+                $response['Message'] = "Driver Tips are Empty!";
+                $response['data'] = [];
+            }
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "Driver Not Found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
+//**********************************************************************************************************************
+
+
+
+
+//*********88888888888************************User invite's friends*****************************************************
+
+    public function inviteFriends(Request $request)
+    {
+        $numbers  = explode(',',$request->mobile_numbers);
+        $error = [];
+        $invitationid = time().rand(1,5698742);
+        foreach ($numbers as $number)
+        {
+            $number1 = str_replace(' ','',$number);
+            $message = "I switched to ChauffeurX. It’s awesome!!! You should download it today";
+            $sid    = "AC7835895b4de3218265df779b550d793b";
+            $token  = "c44245d2f7d682f18eb3a1399d8d5ef6";
+            $twilio = new Client($sid, $token);
+
+            try
+            {
+                $text = $twilio->messages
+                    ->create($number1, // to
+                        array("from" => "+19562759175",
+                            "body" => $message
+                        )
+                    );
+                $input['phone'] = $number1;
+                $input['date'] = new \DateTime();
+                $input['invite_id'] = $invitationid;
+                invitedFriends::create($input);
+            }
+            catch (RestException $ex)
+            {
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['message'] = "Invitation send Failed";
+                $response['data'] = $ex->getMessage();
+                $response['mobile_number'] = $number;
+                array_push($error,$response);
+                invitedFriends::where('phone',$number)->where('invite_id',$invitationid)->forcedelete();
+//                $error['response'] .= $response;
+            }
+
+        }
+        if ($error == '' || empty($error))
+        {
+            $invited_users = invitedFriends::where('invite_id',$invitationid)->get();
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['message'] = "Invitation sent Succesfully";
+            $response['data'] = $invited_users;
+            return $response;
+        }
+        else
+        {
+            $error['status'] = "Failed";
+            $error['code'] = 500;
+            $error['message'] = "Invitation send Failed";
+            return $error;
+        }
+    }
+    public function inviteFriends1(Request $request)
+    {
+        $userid = $request->userid;
+        $referralCode = $request->code;
+        $numbers  = explode(',',$request->mobile_numbers);
+        $error = [];
+        $invitationid = time().rand(1,5698742);
+        foreach ($numbers as $number)
+        {
+            $number1 = str_replace(' ','',$number);
+            $message = "I switched to ChauffeurX. It’s awesome!!! You should download it today";
+            $sid    = "AC7835895b4de3218265df779b550d793b";
+            $token  = "c44245d2f7d682f18eb3a1399d8d5ef6";
+            $twilio = new Client($sid, $token);
+
+            try
+            {
+                $text = $twilio->messages
+                    ->create($number1, // to
+                        array("from" => "+19562759175",
+                            "body" => $message
+                        )
+                    );
+                $input['phone'] = $number1;
+                $input['date'] = new \DateTime();
+                $input['invite_id'] = $invitationid;
+                $input['invitee'] = $userid;
+                $input['code'] = $referralCode;
+                invitedFriends::create($input);
+            }
+            catch (RestException $ex)
+            {
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['message'] = "Invitation send Failed";
+                $response['data'] = $ex->getMessage();
+                $response['mobile_number'] = $number;
+                array_push($error,$response);
+                invitedFriends::where('phone',$number)->where('invite_id',$invitationid)->forcedelete();
+//                $error['response'] .= $response;
+            }
+
+        }
+        if ($error == '' || empty($error))
+        {
+            $invited_users = invitedFriends::where('invite_id',$invitationid)->get();
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['message'] = "Invitation sent Succesfully";
+            $response['data'] = $invited_users;
+            return $response;
+        }
+        else
+        {
+            $error['status'] = "Failed";
+            $error['code'] = 500;
+            $error['message'] = "Invitation send Failed";
+            return $error;
+        }
+    }
+
+//**********************************************************************************************************************
+
+
+//***********************************************advertisements ************************************************
+
+    function advertisement(Request $request)
+    {
+        $input = $request->except('image');
+        if($request->hasFile('image'))
+        {
+            $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
+            $mime = $request->image->getClientOriginalExtension();
+            $request->image->move(public_path('avatars'), $photoName);
+            $input['image'] = $photoName;
+        }
+        $ads = advertisement::create($input);
+        if ($ads->image != '' || !empty($ads->image))
+        {
+            $ads->image = asset('public/avatars').'/'.$ads->image;
+        }
+        $response['status'] = "Success";
+        $response['code'] = 200;
+        $response['Message'] = "Ads saved Successfully";
+        $response['data'] = $ads;
+        return $response;
+    }
+
+//    ***************************************************************************************************************
+
+
+//**********************************************************Some global functions **************************************
     function compress($source, $destination, $quality,$mime) {
 // Set a maximum height and width
         $width = 200;
@@ -1182,24 +1655,6 @@ class passengerApiController extends Controller
         }
     }
 
-    function advertisement(Request $request)
-    {
-        $input = $request->except('image');
-        if($request->hasFile('image'))
-        {
-            $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
-            $mime = $request->image->getClientOriginalExtension();
-            $request->image->move(public_path('avatars'), $photoName);
-            $input['image'] = $photoName;
-        }
-        $ads = advertisement::create($input);
-        $response['status'] = "Success";
-        $response['code'] = 200;
-        $response['Message'] = "Ads saved Successfully";
-        $response['data'] = $ads;
-        return $response;
-    }
-
     function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
         $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$lat1.",".$lon1."&destinations=".$lat2.",".$lon2."&key=$this->googleMap";
@@ -1249,111 +1704,8 @@ class passengerApiController extends Controller
         return $response_new;
     }
 
-    function assignDriver($driverid)
+    function fetchNearbyDrivers($drivers,$lat1,$long1)
     {
-        $lastRide = $this->getDriverLastRide($driverid);
-        echo $lastRide.'<br/>';
-        echo $rating = $this->getDriverRating($driverid).'<br/>';
-        echo $last7 = $this->driverSevenBookings($driverid).'<br/>';
-        echo $penalty = $this->getPenalty($driverid).'<br/>';
-
-        $score = (1/$this->getDriverLastRide($driverid))+($this->getDriverRating($driverid)/10)+($this->driverSevenBookings($driverid)/100)-($this->getPenalty($driverid));
-        return $score;
-    }
-
-    function getDriverLastRide($driverid)
-    {
-//        echo locale_get_default();
-//       date_default_timezone_set('America/Denver');
-
-        $bookings  = booking::where('driverid',$driverid)->orderby('trip_end_time','desc')->first();
-        $lastTrip = strtotime($bookings->trip_end_time);
-        $now = time();
-        $diff = $now-$lastTrip;
-        return $diff;
-    }
-
-    function driverSevenBookings($driverid)
-    {
-        $prev_date = date('d/m/Y',strtotime('-7 days'));
-        $today = date('d/m/Y');
-        $bookings = DB::select('select COUNT(*) as rides from bookings where driverid='.$driverid.' and deleted_at is null and STR_TO_DATE(`trip_date_time`,"%d/%m/%Y") BETWEEN STR_TO_DATE("'.$prev_date.'","%d/%m/%Y") and STR_TO_DATE("'.$today.'","%d/%m/%Y")');
-        foreach ($bookings as $booking)
-        {
-           $rides = $booking->rides;
-           return $rides;
-        }
-    }
-
-    function getPenalty($driverid)
-    {
-        $bookings = booking::where('driverid',$driverid)->get();
-        $penalty = 0;
-        foreach ($bookings as $booking)
-        {
-            $penalty += (float)$booking->penalty;
-        }
-        return $penalty;
-    }
-
-    function getDriverRating($driverid)
-    {
-        $count = rating::where('driverid',$driverid)->count();
-        $totalRating = rating::where('driverid',$driverid)->sum('rating');
-        $rate = (($totalRating/$count)*100)/5;
-        return $rate;
-    }
-
-    public function getNearbyDrievrs(Request $request)
-    {
-        if (isset($request->categoryid) && (!empty($request->categoryid) || $request->categoryid != ''))
-        {
-            if (categories::whereId($request->categoryid)->exists() == 0)
-            {
-                $response['status'] = "Failed";
-                $response['code'] = 500;
-                $response['message'] = "Category Not Found";
-                $response['data'] = [];
-                return $response;
-            }
-            if (driverCategory::where('categoryid',$request->categoryid)->exists() == 0)
-            {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['message'] = "No drivers are found on this category";
-                $response['data'] = [];
-                return $response;
-            }
-        }
-
-        $userDetais = explode('-',$request->user_lat_lng);
-        if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])) || (!isset($userDetais[2]) || $userDetais[2] == '' || empty($userDetais[2])))
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
-            $response['data'] = [];
-            return $response;
-        }
-
-        $lat1 = $userDetais[1];
-        $long1 = $userDetais[2];
-        if (isset($request->categoryid) && (!empty($request->categoryid) || $request->categoryid != ''))
-        {
-             $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$request->categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1");
-        }
-        else
-        {
-            $drivers = driver::where('isAvailable',1)->get();
-        }
-        if (count($drivers) == 0)
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['message'] = "No drivers are Active at the moment";
-            $response['data'] = [];
-            return $response;
-        }
         $driverLatLng = [];
         foreach ($drivers as $driver)
         {
@@ -1394,6 +1746,11 @@ class passengerApiController extends Controller
                 if ((float)$Totaldistance['distance'] <= (float)$max_distance)
                 {
                     $distance[$id] = $Totaldistance['distance'];
+                    $array['lat'] = $lat2;
+                    $array['long'] = $long2;
+                    $array['driverid'] = $id;
+                    $array['driverId'] = $driver['driverId'];
+                    $latLng[$id] = $array;
                 }
             }
         }
@@ -1404,14 +1761,18 @@ class passengerApiController extends Controller
             {
                 $output = array_slice($distance,0,10,true);
             }
-            else
-            {
+            else {
                 $output = $distance;
+            }
+            $nearbyDriver = [];
+            foreach ($output as $key => $value)
+            {
+                array_push($nearbyDriver,$latLng[$key]);
             }
             $response['code'] = 200;
             $response['status'] = "Success";
             $response['message'] = "Nearby drievrs are fetched successfully!";
-            $response['data'] = $output;
+            $response['data'] = $nearbyDriver;
             return $response;
         }
         else
@@ -1422,97 +1783,34 @@ class passengerApiController extends Controller
             $response['data'] = [];
             return $response;
         }
-
     }
 
-//    public function getNearbyDrievrs(Request $request)
-//    {
-//        $userDetais = explode('-',$request->user_lat_lng);
-//        if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])) || (!isset($userDetais[2]) || $userDetais[2] == '' || empty($userDetais[2])))
-//        {
-//            $response['status'] = "Failed";
-//            $response['code'] = 500;
-//            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
-//            $response['data'] = [];
-//            return $response;
-//        }
-//        else
-//        {
-//            $lat1 = $userDetais[1];
-//            $long1 = $userDetais[2];
-//        }
-//        $drivers = explode(',',$request->driver_lat_lng);
-//        foreach ($drivers as $driver)
-//        {
-//            $details = explode('-',$driver);
-//            if ((!isset($details[0]) || $details[0] == '' || empty($details[0])) || (!isset($details[1]) || $details[1] == '' || empty($details[1])) || (!isset($details[2]) || $details[2] == '' || empty($details[2])))
-//            {
-//                $response['status'] = "Failed";
-//                $response['code'] = 500;
-//                $response['message'] = "Invalid driver data Received! Format- driver_lat_long = 'driverid-lat-lng'";
-//                $response['data'] = [];
-//                return $response;
-//            }
-//            else
-//            {
-//                $id = $details[0];
-//                $lat2 = $details[1];
-//                $long2 = $details[2];
-//                if (driver::whereId($id)->exists() == 0)
-//                {
-//                    $response['status'] = "Failed";
-//                    $response['code'] = 500;
-//                    $response['message'] = "Driver with id = $id not Found";
-//                    $response['data'] = [];
-//                    return $response;
-//                }
-//            }
-//            if (isset($lat1) && isset($long1) && isset($lat2) && isset($long2))
-//            {
-//                $Totaldistance = $this->calculateDistance($lat1,$long1,$lat2,$long2);
-//                if (DB::table('maximum_distance')->exists())
-//                {
-//                    $max_distance = DB::table('maximum_distance')->first();
-//                    $max_distance = (float)$max_distance->distance;
-//                }
-//                else
-//                {
-//                    $max_distance = 10;
-//                }
-//                if ((float)$Totaldistance['distance'] <= (float)$max_distance)
-//                {
-//                    $distance[$id] = $Totaldistance['distance'];
-//                }
-//            }
-//        }
-//        if (isset($distance) && ($distance != '' || !empty($distance)))
-//        {
-//            asort($distance);
-//            if (count($distance) > 0)
-//            {
-//                $output = array_slice($distance,0,10,true);
-//            }
-//            else
-//            {
-//                $output = $distance;
-//            }
-//            $response['code'] = 200;
-//            $response['status'] = "Success";
-//            $response['message'] = "Driver with distance fetched successfully!";
-//            $response['data'] = $output;
-//            return $response;
-//        }
-//        else
-//        {
-//            $response['code'] = 200;
-//            $response['status'] = "Success";
-//            $response['message'] = "No nearby drivers are found with the provided category!";
-//            $response['data'] = [];
-//            return $response;
-//        }
-//
-//    }
+    function driverByCategory($categoryid)
+    {
+        $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1");
+        return $drivers;
+    }
 
+    public function pushNotification($title,$body, $token,$driver)
+    {
+        $push = new PushNotification('fcm');
+        $push->setMessage( [
+            'aps' => [
+                'alert' => [
+                    'title' => $title,
+                    'body'  => $driver->name . $body,
+                    'pushFor' => 'accept'
+                ],
+                'sound' => 'default',
+                'badge' => 1
+
+            ]
+        ] )
+            ->setDevicesToken( $token )
+            ->send();
+    }
+
+//**********************************************************************************************************************
 
 
     public function whatsappDemo()
