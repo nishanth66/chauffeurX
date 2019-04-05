@@ -55,14 +55,26 @@ Route::get('/getDriversByFilter', 'api\passengerApiController@getDriversByFilter
 Route::get('/driverBookings/{id}', 'api\passengerApiController@driverBookings')->name('driverBookings');
 Route::get('/getPenalty/{id}', 'api\passengerApiController@getPenalty')->name('getPenalty');
 Route::post('/getDistance1', 'api\passengerApiController@calculateDistance')->name('getDistance');
-Route::post('/getAddress', 'api\passengerApiController@getAddress')->name('getAddress');
-Route::get('/getDriverLastRide/{id}', 'api\passengerApiController@getDriverLastRide')->name('getDriverLastRide');
+
+Route::get('/getDriverWaitTime/{id}/{lat}/{long}', 'api\passengerApiController@getDriverWaitTime')->name('getDriverWaitTime');
 Route::get('/getDriverRating/{id}', 'api\passengerApiController@getDriverRating')->name('getDriverRating');
-Route::get('/assignDriver/{id}', 'api\passengerApiController@assignDriver')->name('assignDriver');
+Route::get('/assignDriver/{id}/{lat}/{long}', 'api\passengerApiController@assignDriver')->name('assignDriver');
 Route::get('/getPaymentMethods', 'api\passengerApiController@getPaymentMethods')->name('getPaymentMethods');
 Route::get('/getCategories', 'api\passengerApiController@getCategories')->name('getCategories');
+
+
+
 Route::post('/getNearbyDrievrs', 'api\passengerApiController@getNearbyDrievrs')->name('getNearbyDrievrs');
 Route::post('/validatePromoCode', 'api\passengerApiController@validatePromoCode')->name('validatePromoCode');
+
+
+
+
+
+
+Route::get('/getAddress/{id1}/{id2}', 'api\passengerApiController@getAddress')->name('getAddress');
+Route::get('/driverSevenBookings/{id}', 'api\passengerApiController@driverSevenBookings')->name('driverSevenBookings');
+Route::get('/calculateDistance/{id1}/{id2}/{id3}/{id4}', 'api\passengerApiController@calculateDistance')->name('calculateDistance');
 //Route::post('/getNearbyDrievrs', 'api\passengerApiController@getNearbyDrievrs')->name('getNearbyDrievrs');
 Route::get('/whatsappDemo', 'api\passengerApiController@whatsappDemo')->name('whatsappDemo');
 

@@ -3,6 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="428e11ee-e902-46e4-ae1d-1b694fe7b928" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Controllers/api/driverApiController.php" afterPath="$PROJECT_DIR$/app/Http/Controllers/api/driverApiController.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Controllers/api/passengerApiController.php" afterPath="$PROJECT_DIR$/app/Http/Controllers/api/passengerApiController.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Models/booking.php" afterPath="$PROJECT_DIR$/app/Models/booking.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Models/driver.php" afterPath="$PROJECT_DIR$/app/Models/driver.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Models/invitedFriends.php" afterPath="$PROJECT_DIR$/app/Models/invitedFriends.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Models/passengers.php" afterPath="$PROJECT_DIR$/app/Models/passengers.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/routes/api.php" afterPath="$PROJECT_DIR$/routes/api.php" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -185,6 +192,86 @@
               <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Http" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Http" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Controllers" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="chauffeur" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Http" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Controllers" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="api" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
       <pane id="Scope" />
@@ -320,12 +407,12 @@
       <workItem from="1554263205704" duration="371000" />
       <workItem from="1554263932912" duration="23220000" />
       <workItem from="1554349900966" duration="23699000" />
-      <workItem from="1554436179087" duration="8687000" />
+      <workItem from="1554436179087" duration="9384000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="378778000" />
+    <option name="totallyTimeSpent" value="379475000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -414,11 +501,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/HomeController.php" />
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/passengersController.php" />
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/driverApiController.php" />
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/categoriesController.php" />
-    <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/fields.blade.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/show_fields.blade.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/table.blade.php" />
     <entry file="file://$USER_HOME$/AppData/Local/Temp/fz3temp-3/.env" />
@@ -601,56 +683,10 @@
           <caret line="63" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="1843" selection-end-column="0" />
           <folding>
             <element signature="e#44#73#0#PHP" expanded="false" />
-            <element signature="e#1010#3747#0#PHP" expanded="false" />
-            <element signature="e#3885#5356#0#PHP" expanded="false" />
-            <element signature="e#5362#6532#0#PHP" expanded="false" />
-            <element signature="e#6538#8556#0#PHP" expanded="false" />
-            <element signature="e#8561#9435#0#PHP" expanded="false" />
-            <element signature="e#9441#11319#0#PHP" expanded="false" />
-            <element signature="e#11325#12561#0#PHP" expanded="false" />
-            <element signature="e#12567#15646#0#PHP" expanded="false" />
-            <element signature="e#15652#17072#0#PHP" expanded="false" />
-            <element signature="e#17078#18103#0#PHP" expanded="false" />
-            <element signature="e#18109#18715#0#PHP" expanded="false" />
-            <element signature="e#18965#19969#0#PHP" expanded="false" />
-            <element signature="e#19975#22151#0#PHP" expanded="false" />
-            <element signature="e#22157#22974#0#PHP" expanded="false" />
-            <element signature="e#22980#25239#0#PHP" expanded="false" />
-            <element signature="e#25245#27129#0#PHP" expanded="false" />
-            <element signature="e#27135#30607#0#PHP" expanded="false" />
-            <element signature="e#30613#31139#0#PHP" expanded="false" />
-            <element signature="e#31145#31521#0#PHP" expanded="false" />
-            <element signature="e#31527#32053#0#PHP" expanded="false" />
-            <element signature="e#32059#32323#0#PHP" expanded="false" />
-            <element signature="e#32329#32583#0#PHP" expanded="false" />
-            <element signature="e#32589#39502#0#PHP" expanded="false" />
-            <element signature="e#39508#42235#0#PHP" expanded="false" />
-            <element signature="e#42241#44479#0#PHP" expanded="false" />
-            <element signature="e#44485#45737#0#PHP" expanded="false" />
-            <element signature="e#45743#46722#0#PHP" expanded="false" />
-            <element signature="e#46728#47546#0#PHP" expanded="false" />
-            <element signature="e#47552#48896#0#PHP" expanded="false" />
-            <element signature="e#48902#49965#0#PHP" expanded="false" />
-            <element signature="e#49971#51247#0#PHP" expanded="false" />
-            <element signature="e#51501#52975#0#PHP" expanded="false" />
-            <element signature="e#52981#54137#0#PHP" expanded="false" />
-            <element signature="e#54143#54790#0#PHP" expanded="false" />
-            <element signature="e#54796#55598#0#PHP" expanded="false" />
-            <element signature="e#55604#56603#0#PHP" expanded="false" />
-            <element signature="e#56856#58995#0#PHP" expanded="false" />
-            <element signature="e#59000#61309#0#PHP" expanded="false" />
-            <element signature="e#61552#62373#0#PHP" expanded="false" />
-            <element signature="e#62620#63878#0#PHP" expanded="false" />
-            <element signature="e#63884#64041#0#PHP" expanded="false" />
-            <element signature="e#64047#65058#0#PHP" expanded="false" />
-            <element signature="e#65064#65305#0#PHP" expanded="false" />
-            <element signature="e#65311#66215#0#PHP" expanded="false" />
-            <element signature="e#66221#69279#0#PHP" expanded="false" />
-            <element signature="e#69285#69563#0#PHP" expanded="false" />
-            <element signature="e#70208#71137#0#PHP" expanded="false" />
-            <marker date="1554370117175" expanded="true" signature="31694:31919" ph="select COUNT... bookings" />
-            <marker date="1554370117175" expanded="true" signature="51786:51918" ph="select d.* f... drivers" />
-            <marker date="1554370117175" expanded="true" signature="69361:69529" ph="select d.* f... drivers" />
+            <element signature="e#71413#72367#0#PHP" expanded="false" />
+            <marker date="1554445730732" expanded="true" signature="31694:31919" ph="select COUNT... bookings" />
+            <marker date="1554445730732" expanded="true" signature="51786:51918" ph="select d.* f... drivers" />
+            <marker date="1554445730732" expanded="true" signature="69361:69529" ph="select d.* f... drivers" />
           </folding>
         </state>
       </provider>
@@ -773,6 +809,46 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="238">
           <caret line="23" column="33" lean-forward="false" selection-start-line="23" selection-start-column="14" selection-end-line="23" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/public/pythonsdk3.0/sample/sample.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/public/pythonsdk3.0/Channel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-816">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/public/Baidu-Push-Server-SDK-Php-3.0.1/configure.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-969">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/public/Baidu-Push-Server-SDK-Php-3.0.1/sdk.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/public/Baidu-Push-Server-SDK-Php-3.0.1/demo/hello.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="18" column="26" lean-forward="true" selection-start-line="18" selection-start-column="26" selection-end-line="18" selection-end-column="26" />
           <folding />
         </state>
       </provider>

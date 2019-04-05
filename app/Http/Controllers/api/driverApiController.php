@@ -26,7 +26,7 @@ class driverApiController extends Controller
                 $response['status'] = "Success";
                 $response['message'] = "User Details Fetched successfully";
                 $response['data'] = $driver;
-                driver::whereId($driver->id)->update(['device_token' => $request->device_token]);
+                driver::whereId($driver->id)->update(['device_token' => $request->device_token],['device_type' => $request->device_type]);
             }
             else
             {
@@ -351,6 +351,7 @@ class driverApiController extends Controller
         $response['data'] = $driver;
         return $response;
     }
+
     public function acceptBooking(Request $request)
     {
         if (driver::whereId($request->drievrid)->exists() == 0)
@@ -385,6 +386,31 @@ class driverApiController extends Controller
         $response['data'] = $booking;
         return $response;
     }
+
+    public function rejectBooking(Request $request)
+    {
+        if (driver::whereId($request->drievrid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Driver not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        $penalty['penalty'] = 1;
+        driver::whereId($request->drievrid)->update($penalty);
+        $driver = driver::whereId($request->drievrid)->first();
+        if ($driver->image != '' || !empty($driver->image))
+        {
+            $driver->image = asset('public/avatars').'/'.$driver->image;
+        }
+        $response['code'] = 200;
+        $response['status'] = "Success";
+        $response['message'] = "Booking accepted successfully";
+        $response['data'] = $driver;
+        return $response;
+    }
+
     public function PaymentCompleted(Request $request)
     {
         if (driver::whereId($request->drievrid)->exists() == 0)

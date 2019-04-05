@@ -58,7 +58,8 @@ class booking extends Model
         'estimated_time',
         'categoryId',
         'wait_time',
-        'cancelled_at'
+        'cancelled_at',
+        'original_price',
     ];
 
     /**
@@ -87,6 +88,7 @@ class booking extends Model
         'categoryId' => 'string',
         'wait_time' => 'string',
         'cancelled_at' => 'string',
+        'original_price' => 'string',
     ];
 
     /**

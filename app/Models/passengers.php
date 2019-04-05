@@ -39,7 +39,8 @@ class passengers extends Model
         'otp',
         'exists_user',
         'payment_method',
-        'stripe_id'
+        'stripe_id',
+        'referral_code',
     ];
 
     /**
@@ -56,7 +57,8 @@ class passengers extends Model
         'otp' => 'string',
         'exists_user' => 'string',
         'payment_method' => 'string',
-        'stripe_id' => 'string'
+        'stripe_id' => 'string',
+        'referral_code' => 'string',
     ];
 
     /**

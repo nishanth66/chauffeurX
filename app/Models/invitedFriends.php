@@ -28,7 +28,9 @@ class invitedFriends extends Model
         'name',
         'phone',
         'date',
-        'invite_id'
+        'invite_id',
+        'invitee',
+        'code',
     ];
 
     /**
@@ -41,6 +43,8 @@ class invitedFriends extends Model
         'phone' => 'string',
         'date' => 'string',
         'invite_id' => 'string',
+        'invitee' => 'string',
+        'code' => 'string',
     ];
 
     /**

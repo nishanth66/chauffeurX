@@ -29,6 +29,7 @@ use Twilio\Rest\Client;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\ServiceAccount;
 use Edujugon\PushNotification\PushNotification;
+use \Carbon\Carbon;
 
 class passengerApiController extends Controller
 {
@@ -189,6 +190,7 @@ class passengerApiController extends Controller
         }
         return $response;
     }
+
     public function userDetails(Request $request)
     {
         if (passengers::whereId($request->userid)->exists())
@@ -464,9 +466,9 @@ class passengerApiController extends Controller
         return $response;
     }
 
-//*********************************************************************************************************************
+//**********************************************************************************************************************
 
-//******************************Functions related to bookings ***********************************************************
+//******************************Functions related to bookings **********************************************************
 
     public function driverRating(Request $request)
     {
@@ -768,49 +770,43 @@ class passengerApiController extends Controller
         return $response;
     }
 
-    function assignDriver($driverid)
+    function assignDriver($driverid,$lat1,$long1)
     {
-        $lastRide = $this->getDriverLastRide($driverid);
-        echo $lastRide.'<br/>';
-        echo $rating = $this->getDriverRating($driverid).'<br/>';
-        echo $last7 = $this->driverSevenBookings($driverid).'<br/>';
-        echo $penalty = $this->getPenalty($driverid).'<br/>';
-
-        $score = (1/$this->getDriverLastRide($driverid))+($this->getDriverRating($driverid)/10)+($this->driverSevenBookings($driverid)/100)-($this->getPenalty($driverid));
+        $score[$driverid] = 1/$this->getDriverWaitTime($driverid,$lat1,$long1);
+//        return $score;
+        $score = (1/$this->getDriverWaitTime($driverid,$lat1,$long1))+($this->getDriverRating($driverid)/10)+($this->driverSevenBookings($driverid)/100)-($this->getPenalty($driverid));
         return $score;
     }
 
-    function getDriverLastRide($driverid)
+    function getDriverWaitTime($driverid,$lat1,$long1)
     {
-//        echo locale_get_default();
-//       date_default_timezone_set('America/Denver');
-
-        $bookings  = booking::where('driverid',$driverid)->orderby('trip_end_time','desc')->first();
-        $lastTrip = strtotime($bookings->trip_end_time);
-        $now = time();
-        $diff = $now-$lastTrip;
-        return $diff;
+        $driver = driver::whereId($driverid)->first();
+        $coordinates=$this->database->getReference('online_drivers')->getChild($driver->device_token)->getValue();
+        $lat2 = $coordinates['lat'];
+        $long2 = $coordinates['lng'];
+        $distance = $this->calculateDistance($lat1,$long1,$lat2,$long2);
+        $minutes = $distance['min'];
+        return $minutes;
     }
 
     function driverSevenBookings($driverid)
     {
-        $prev_date = date('d/m/Y',strtotime('-7 days'));
-        $today = date('d/m/Y');
-        $bookings = DB::select('select COUNT(*) as rides from bookings where driverid='.$driverid.' and deleted_at is null and STR_TO_DATE(`trip_date_time`,"%d/%m/%Y") BETWEEN STR_TO_DATE("'.$prev_date.'","%d/%m/%Y") and STR_TO_DATE("'.$today.'","%d/%m/%Y")');
-        foreach ($bookings as $booking)
-        {
-            $rides = $booking->rides;
-            return $rides;
-        }
+        $date = Carbon::today()->subDays(7);
+
+        $bookings = booking::where('driverid',$driverid)->where('trip_end_time','>=',$date)->count();
+        return $bookings;
     }
 
     function getPenalty($driverid)
     {
-        $bookings = booking::where('driverid',$driverid)->get();
-        $penalty = 0;
-        foreach ($bookings as $booking)
+        $driver = driver::whereId($driverid)->first();
+        if ($driver->penalty != '' || !empty($driver->penalty) || $driver->penalty == null)
         {
-            $penalty += (float)$booking->penalty;
+            $penalty = (float)$driver->penalty;
+        }
+        else
+        {
+            $penalty = 0;
         }
         return $penalty;
     }
@@ -818,9 +814,17 @@ class passengerApiController extends Controller
     function getDriverRating($driverid)
     {
         $count = rating::where('driverid',$driverid)->count();
-        $totalRating = rating::where('driverid',$driverid)->sum('rating');
-        $rate = (($totalRating/$count)*100)/5;
+        if ($count > 0)
+        {
+            $totalRating = rating::where('driverid',$driverid)->sum('rating');
+            $rate = (($totalRating/$count)*100)/5;
+        }
+        else
+        {
+            $rate = 0;
+        }
         return $rate;
+
     }
 
     public function booking(Request $request)
@@ -832,7 +836,8 @@ class passengerApiController extends Controller
             if ( isset( $src[0] ) && isset( $src[1] ) ) {
                 $latSrc = $src[0];
                 $lonSrc = $src[1];
-            } else {
+            }
+            else {
                 $response['code'] = 500;
                 $response['status']     = 'failed';
                 $response['message']    = 'Enter Valid Source Location.';
@@ -843,7 +848,8 @@ class passengerApiController extends Controller
             if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
                 $latDest = $dest[0];
                 $lonDest = $dest[1];
-            } else {
+            }
+            else {
                 $response['code'] = 500;
                 $response['status']     = 'failed';
                 $response['message']    = 'Enter Valid Destination Location.';
@@ -933,33 +939,58 @@ class passengerApiController extends Controller
                 return $response;
             }
             $response = $this->fetchNearbyDrivers($drivers,$lat1,$long1);
-
+            $driverScore = [];
+            if ($response['code'] != 200 || count($response['data']) < 1)
+            {
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['message'] = "No drivers are Active at the moment";
+                $response['data'] = [];
+                return $response;
+            }
             foreach($response['data'] as $driver)
             {
                 if (driver::whereId($driver['driverid'])->where('isAvailable',1)->exists())
                 {
-                    $driverDetail = driver::whereId($driver['driverid'])->where('isAvailable',1)->first();
-                    if ($driverDetail->device_token == '' || empty($driverDetail->device_token) || $driverDetail->device_token == null)
+                    $driverid = $driver['driverid'];
+                    $score[$driverid] = $this->assignDriver($driverid,$lat1,$long1);
+                }
+            }
+            if (isset($score) && count($score) > 0)
+            {
+                $driverid = array_search(max($score),$score);
+                $driver_score = max($score);
+//                ******************* Push notification ********************
+//                                    Code to push notification
+                $input['driverid'] = $driverid;
+//********************************************************************************************
+                unset($score[$driverid]);
+                $newScore = "";
+                foreach ($score as $key => $value)
+                {
+                    if ($newScore == "")
                     {
-                        continue;
+                        $newScore .= $key.'-'.$value;
                     }
                     else
                     {
-                        $title = "Booking Request";
-                        $body = "New Booking Request has Made";
-                        $token = $driverDetail->device_token;
-                        $message = $this->pushNotification($title,$body,$token);
+                        $newScore .=','.$key.'-'.$value;
                     }
                 }
-                else
-                {
-                    continue;
-                }
-            }
-            return $response;
 
+            }
+            else
+            {
+                $response['status'] = "Failed";
+                $response['code'] = 500;
+                $response['message'] = "No drivers are Active at the moment";
+                $response['data'] = [];
+                return $response;
+            }
 
             $booking = booking::create($input);
+            DB::table('bookingDriver_push')->insert(['bookingid'=>$booking->id,'array'=>$newScore]);
+
             if (isset($request->promoCode) && ($request->promoCode != '' || !empty($request->promoCode))) {
                 if (userCoupons::where('userid', $request->userid)->where('code', $request->promoCode)->exists())
                 {
@@ -1658,7 +1689,6 @@ class passengerApiController extends Controller
     function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
         $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$lat1.",".$lon1."&destinations=".$lat2.",".$lon2."&key=$this->googleMap";
-//        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$latSrc.",".$lonSrc."&destinations=".$latDest.",".$lonDest."&mode=driving&language=pl-PL";
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -1670,8 +1700,9 @@ class passengerApiController extends Controller
         $response_a = json_decode($response, true);
         $dist = $response_a['rows'][0]['elements'][0]['distance']['value']/1000;
         $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
+        $mins = round(($response_a['rows'][0]['elements'][0]['duration']['value'])/60);
 
-        return array('distance' => $dist, 'time' => $time);
+        return array('distance' => $dist, 'time' => $time ,'city' => $this->getAddress($lat1,$lon1),'min' => $mins);
     }
 
     function calculatePrice($category,$distance)
@@ -1682,11 +1713,9 @@ class passengerApiController extends Controller
         return $price;
     }
 
-    function getAddress(Request $request)
+    function getAddress($lat,$lon)
     {
-        $lat1 = $request->lat;
-        $lon1 = $request->lon;
-        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat1,$lon1&key=$this->googleMap";
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lon&key=$this->googleMap";
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -1697,11 +1726,29 @@ class passengerApiController extends Controller
 //        return $response;
         curl_close($ch);
         $response_a = json_decode($response, true);
-        $response_new['status'] = "Success";
-        $response_new['code'] = 200;
-        $response_new['message'] = "Address fetched Successfully";
-        $response_new['address'] = $response_a['results'][0]['formatted_address'];
-        return $response_new;
+//        return $response_a;
+
+        foreach ($response_a['results'][0]['address_components'] as $address)
+        {
+           if ($address['types'][0] == 'locality')
+           {
+               $city = $address['long_name'];
+               break;
+           }
+           elseif ($address['types'][0] == 'administrative_area_level_2')
+           {
+               $city = $address['long_name'];
+               break;
+           }
+           elseif ($address['types'][0] == 'administrative_area_level_1')
+           {
+               $city = $address['long_name'];
+               break;
+           }
+        }
+        return $city;
+
+//        return $response_a['results'][0]['address_components'];
     }
 
     function fetchNearbyDrivers($drivers,$lat1,$long1)
@@ -1839,5 +1886,6 @@ class passengerApiController extends Controller
             $response['mobile_number'] = +919591949175;
             return $response;
         }
+        return $message;
     }
 }

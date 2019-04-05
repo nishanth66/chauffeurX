@@ -42,6 +42,8 @@ class driver extends Model
         'email',
         'device_token',
         'referal_code',
+        'penalty',
+        'device_type',
     ];
 
     /**
@@ -61,6 +63,8 @@ class driver extends Model
         'device_token' => 'string',
         'email' => 'string',
         'referal_code' => 'string',
+        'device_type' => 'string',
+        'penalty' => 'string',
     ];
 
     /**
