@@ -1329,7 +1329,7 @@ class passengerApiController extends Controller
             }
             else
             {
-                $totalAds[$id] = $ad;
+                array_push($totalAds,$ad);
             }
         }
         if (count($totalAds) < 1)

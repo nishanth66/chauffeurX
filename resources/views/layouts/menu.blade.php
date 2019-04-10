@@ -27,6 +27,9 @@
     <a href="{!! route('prices.index') !!}"><i class="fa fa-money"></i><span>Prices</span></a>
 </li>
 
+<li class="{{ Request::is('templates*') ? 'active' : '' }}">
+    <a href="{!! route('templates.index') !!}"><i class="fa fa-columns"></i><span>Notification Template</span></a>
+</li>
 @if(Auth::user()->status == 1)
 <li class="{{ Request::is('passengerApis*') ? 'active' : '' }}">
     <a href="{!! route('passengerApis.index') !!}"><i class="fa fa-edit"></i><span>Passenger Apis</span></a>
@@ -41,4 +44,11 @@
 {{--<li class="{{ Request::is('filters*') ? 'active' : '' }}">--}}
     {{--<a href="{!! route('filters.index') !!}"><i class="fa fa-filter"></i><span>Filters</span></a>--}}
 {{--</li>--}}
+
+{{--<li class="{{ Request::is('notifications*') ? 'active' : '' }}">--}}
+    {{--<a href="{!! route('notifications.index') !!}"><i class="fa fa-edit"></i><span>Notifications</span></a>--}}
+{{--</li>--}}
+
+
+
 

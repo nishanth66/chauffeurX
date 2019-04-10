@@ -66,3 +66,10 @@ Route::post('ad-distance/save', 'maximumDistanceController@adSave');
 Route::resource('filters', 'filterController');
 Route::get('fireBaseDemo', 'fireBaseController@fireBaseDemo');
 
+
+
+Route::resource('notifications', 'notificationController');
+
+
+
+Route::resource('templates', 'templateController');
