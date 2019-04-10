@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Twilio\Exceptions\RestException;
 use Twilio\Exceptions\TwilioException;
+use Twilio\Jwt\AccessToken;
+use Twilio\Jwt\Grants\ChatGrant;
 use Twilio\Rest\Client;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\ServiceAccount;
@@ -143,6 +145,16 @@ class passengerApiController extends Controller
 
     public function profile(Request $request)
     {
+        $mNumber = $request->phone;
+        if (passengers::whereId($request->userid)->where('phone',$mNumber)->exists() == 0)
+        {
+                $response['status'] = "failed";
+                $response['code'] = 500;
+                $response['Message'] = "User Not Found";
+                $response['data'] = [];
+        }
+        $user = passengers::whereId($request->userid)->where('phone',$mNumber)->first();
+
         if (isset($request->password) && $request->password != $request->confirm_password)
         {
             $response['status'] = "failed";
@@ -151,14 +163,12 @@ class passengerApiController extends Controller
             $response['data'] = [];
             return $response;
         }
-        $mNumber = $request->phone;
-        if (passengers::whereId($request->userid)->where('phone',$mNumber)->exists())
-        {
+
             $user = passengers::whereId($request->userid)->where('phone',$mNumber)->first();
-            $update = $request->except('except','password','confirm_password');
+            $update = $request->except('except','password','confirm_password','userid');
             if (isset($request->password) && $request->password != '')
             {
-                $update['password'] = Hash::make($request->password);
+//                $update['password'] = Hash::make($request->password);
             }
             if($request->hasFile('image'))
             {
@@ -178,16 +188,10 @@ class passengerApiController extends Controller
             }
             $response['status'] = "Success";
             $response['code'] = 200;
-            $response['Message'] = "User Registered Successfully";
+            $response['Message'] = "User Updated Successfully";
             $response['data'] = $user;
-        }
-        else
-        {
-            $response['status'] = "failed";
-            $response['code'] = 500;
-            $response['Message'] = "User Not Found";
-            $response['data'] = [];
-        }
+
+
         return $response;
     }
 
@@ -640,53 +644,6 @@ class passengerApiController extends Controller
         return $response;
     }
 
-    public function validatePromoCode(Request $request)
-    {
-        if (passengers::whereId($request->userid)->exists() == 0)
-        {
-            $response['code'] = 500;
-            $response['status'] = "Failed";
-            $response['message'] = "User Not Found";
-            $response['data'] = [];
-            return $response;
-        }
-        if (userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->exists() == 0)
-        {
-            $response['code'] = 500;
-            $response['status'] = "Failed";
-            $response['message'] = "Invalid Promo-Code";
-            $response['valid'] = 0;
-            $response['data'] = [];
-        }
-        else
-        {
-            $userCode = userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->first();
-            if ($userCode->status == 0)
-            {
-                $discountPercentage = (float)str_replace(',','',$userCode->discount);
-                $oldPrice = (float)str_replace(',','',$request->trip_price);
-                $totalDiscount = ($oldPrice*$discountPercentage)/100;
-                $newPrice = $oldPrice-$totalDiscount;
-                $response['code'] = 200;
-                $response['status'] = "Success";
-                $response['message'] = "Promo-code is Valid!";
-                $response['old_trip_price'] = number_format($oldPrice);
-                $response['new_trip_price'] = number_format($newPrice);
-                $response['valid'] = 1;
-                $response['data'] = [];
-            }
-            else
-            {
-                $response['code'] = 500;
-                $response['status'] = "Failed";
-                $response['message'] = "You have already this Promo-Code!";
-                $response['valid'] = 0;
-                $response['data'] = [];
-            }
-        }
-        return $response;
-    }
-
     public function RequestBooking(Request $request)
     {
         if (passengers::whereId($request->userid)->where('phone',$request->phone)->exists())
@@ -720,36 +677,6 @@ class passengerApiController extends Controller
             $price = $discountedPrice = $this->calculatePrice($request->categoryId,$input['distance']);
             $input['original_price'] = $price;
             $input['price'] = $price;
-            if (isset($request->promoCode) && ($request->promoCode != '' || !empty($request->promoCode)))
-            {
-                if (userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->exists() == 0)
-                {
-                    $response['status'] = "failed";
-                    $response['code'] = 500;
-                    $response['Message'] = "Invalid Promo-Code";
-                    $response['Data'] = [];
-                    return $response;
-                }
-                else
-                {
-                    $userCode = userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->first();
-                    if ($userCode->status != 0)
-                    {
-                        $response['status'] = "failed";
-                        $response['code'] = 500;
-                        $response['Message'] = "This code has already used";
-                        $response['Data'] = [];
-                        return $response;
-                    }
-                    else
-                    {
-                        $discount = (float)$userCode->discount;
-                        $totalDiscount = ($discount*$price)/100;
-                        $discountedPrice = $price-$totalDiscount;
-//                        $input['price'] = $discountedPrice;
-                    }
-                }
-            }
 
 
             $response['status'] = "Success";
@@ -829,9 +756,10 @@ class passengerApiController extends Controller
 
     public function booking(Request $request)
     {
+//        return $request->all();
         if (passengers::whereId($request->userid)->where('phone',$request->phone)->exists())
         {
-            $input = $request->except('image','promoCode');
+            $input = $request->except('image','discount');
             $src= explode( ",", $request->source);
             if ( isset( $src[0] ) && isset( $src[1] ) ) {
                 $latSrc = $src[0];
@@ -859,6 +787,7 @@ class passengerApiController extends Controller
             $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
             $input['distance'] = $distanceTime['distance'];
             $input['estimated_time'] = $distanceTime['time'];
+
             $price = $this->calculatePrice($request->categoryId,$input['distance']);
             $input['original_price'] = $price;
             $input['price'] = $price;
@@ -885,36 +814,6 @@ class passengerApiController extends Controller
                     return $response;
                 }
             }
-            if (isset($request->promoCode) && ($request->promoCode != '' || !empty($request->promoCode)))
-            {
-                if (userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->exists() == 0)
-                {
-                    $response['status'] = "failed";
-                    $response['code'] = 500;
-                    $response['Message'] = "Invalid Promo-Code";
-                    $response['Data'] = [];
-                    return $response;
-                }
-                else
-                {
-                    $userCode = userCoupons::where('userid',$request->userid)->where('code',$request->promoCode)->first();
-                    if ($userCode->status != 0)
-                    {
-                        $response['status'] = "failed";
-                        $response['code'] = 500;
-                        $response['Message'] = "This code has already used";
-                        $response['Data'] = [];
-                        return $response;
-                    }
-                    else
-                    {
-                        $discount = (float)$userCode->discount;
-                        $totalDiscount = ($discount*$price)/100;
-                        $discountedPrice = $price-$totalDiscount;
-                        $input['price'] = $discountedPrice;
-                    }
-                }
-            }
 
             $userDetais = explode('-',$request->user_lat_lng);
             if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])))
@@ -928,8 +827,23 @@ class passengerApiController extends Controller
 
             $lat1 = $userDetais[0];
             $long1 = $userDetais[1];
-
-            $drivers = $this->driverByCategory($request->categoryId);
+            if (isset($request->payment_method_id)  && $request->payment_method_id != '' || !empty($request->payment_method_id))
+            {
+                $drivers = $this->driverByCategory($request->categoryId,$request->payment_method_id);
+                if (DB::table('payment_methods')->whereId($request->payment_method_id)->exists() == 0)
+                {
+                    $response['status'] = "Failed";
+                    $response['code'] = 500;
+                    $response['message'] = "This payment method is not Accepted";
+                    $response['data'] = [];
+                    return $response;
+                }
+                $input['payment_method'] = $request->payment_method_id;
+            }
+            else
+            {
+                $drivers = $this->driverByCategory($request->categoryId);
+            }
             if (count($drivers) == 0)
             {
                 $response['status'] = "Failed";
@@ -991,26 +905,20 @@ class passengerApiController extends Controller
             $booking = booking::create($input);
             DB::table('bookingDriver_push')->insert(['bookingid'=>$booking->id,'array'=>$newScore]);
 
-            if (isset($request->promoCode) && ($request->promoCode != '' || !empty($request->promoCode))) {
-                if (userCoupons::where('userid', $request->userid)->where('code', $request->promoCode)->exists())
-                {
-                    userCoupons::where('userid', $request->userid)->where('code', $request->promoCode)->update(['status' => 1]);
-                }
-            }
             if ($booking->image != '' || !empty($booking->image))
             {
                 $booking->image = asset('public/avatars').'/'.$booking->image;
             }
             $response['status'] = "Success";
             $response['code'] = 200;
-            $response['Message'] = "Booking Saved Successfully!";
+            $response['message'] = "Booking Saved Successfully!";
             $response['data'] = $booking;
         }
         else
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "User Not Found";
+            $response['message'] = "User Not Found";
             $response['data'] = [];
         }
         return $response;
@@ -1139,6 +1047,7 @@ class passengerApiController extends Controller
 
     public function cancelBooking(Request $request)
     {
+        $now = time();
         if (booking::whereId($request->bookingid)->where('userid',$request->userid)->exists() == 0)
         {
             $response['status'] = "Failed";
@@ -1149,14 +1058,31 @@ class passengerApiController extends Controller
         }
         elseif(booking::whereId($request->bookingid)->where('userid',$request->userid)->where('cancelled_at',null)->orWhere('cancelled_at','')->exists())
         {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['message'] = "Booking is already Cancelled";
-            $request['data'] = [];
-            return $response;
-        }
-        else
-        {
+            $booking = booking::whereId($request->bookingid)->where('userid',$request->userid)->where('cancelled_at',null)->orWhere('cancelled_at','')->first();
+            $then = strtotime($booking->created_at);
+            $totalTime = ($now-$then)/60;
+
+            if (cencellation::exists())
+            {
+                $cancellTime = cencellation::first();
+                $totalMin = (float)$cancellTime->max_time;
+                $totalPrice = (float)$cancellTime->amount;
+            }
+            else
+            {
+                $totalMin=1;
+                $totalPrice=0;
+            }
+            if ($totalTime > $totalMin && $totalPrice > 0)
+            {
+                $response['code'] = 400;
+                $response['success'] = "Failed";
+                $response['message'] = "Cancellation time is exceeded";
+                $response['cancellation_fee'] = $totalPrice;
+                $response['data'] = [];
+                return $response;
+            }
+
             $updateBooking['status'] = "cancelled";
             $updateBooking['cancelled_at'] = new \DateTime();
             booking::whereId($request->bookingid)->update($updateBooking);
@@ -1164,6 +1090,14 @@ class passengerApiController extends Controller
             $response['code'] = 200;
             $response['message'] = "Booking Cancelled Successfully!";
             $response['data'] = booking::whereId($request->bookingid)->first();
+            return $response;
+        }
+        else
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['message'] = "Booking is already Cancelled";
+            $request['data'] = [];
             return $response;
         }
     }
@@ -1222,41 +1156,50 @@ class passengerApiController extends Controller
         return $response;
     }
 
-    public function rideHistory($userid)
+    public function rideHistory(Request $request)
     {
-        if (passengers::whereId($userid)->exists())
-        {
-            $user = passengers::whereId($userid)->first();
-            if (booking::where('userid',$user->id)->where('completed',1)->exists())
-            {
-                $bookings = booking::where('userid',$user->id)->where('completed',1)->get();
-                foreach ($bookings as $booking)
-                {
-                    if ($booking->image != '' || !empty($booking->image))
-                    {
-                        $booking->image = asset('public/avatars').'/'.$booking->image;
-                    }
-                }
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "User Ride History";
-                $response['data'] = $bookings;
-            }
-            else
-            {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "User Ride History is Empty!";
-                $response['data'] = [];
-            }
-        }
-        else
+        $userid = $request->userid;
+        $toDate = strtotime(str_replace('/','-',$request->date));
+        if (passengers::whereId($userid)->exists() == 0)
         {
             $response['status'] = "Failed";
             $response['code'] = 500;
             $response['Message'] = "User Not Found";
             $response['data'] = [];
+            return $response;
         }
+        if (booking::where('userid',$userid)->exists() ==0)
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['Message'] = "User have not booked any ride till now";
+            $response['data'] = [];
+            return $response;
+        }
+        $bookings = booking::where('userid',$userid)->get();
+        $myBookings= [];
+        foreach ($bookings as $booking)
+        {
+            $date = $booking->created_at;
+            $tripDate = strtotime($date);
+            $tripDate = strtotime(date('d-m-Y',$tripDate));
+            if ($toDate == $tripDate)
+            {
+                array_push($myBookings,$booking);
+            }
+        }
+        if (empty($myBookings) || count($myBookings) < 1)
+        {
+            $response['status'] = "Success";
+            $response['code'] = 200;
+            $response['message'] = "No Bookings are found on that day";
+            $response['data'] = [];
+            return $response;
+        }
+        $response['status'] = "Success";
+        $response['code'] = 200;
+        $response['message'] = "Driver Bookings fetched Successfully";
+        $response['data'] = $myBookings;
         return $response;
     }
 
@@ -1320,6 +1263,88 @@ class passengerApiController extends Controller
             $response['code'] = 500;
             $response['Message'] = "Booking Not Found";
             $response['data'] = [];
+        }
+        return $response;
+    }
+
+    public function fetchNearbyAds(Request $request)
+    {
+        if (!isset($request->lat) || ($request->lat == '' || empty($request->lat)))
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Destination latitude can not be empty";
+            $response['data'] = [];
+            return $response;
+        }
+        if (!isset($request->lng) || ($request->lng == '' || empty($request->lng)))
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Destination longitude can not be empty";
+            $response['data'] = [];
+            return $response;
+        }
+        if(DB::table('maximum_distance')->exists())
+        {
+            $max = DB::table('maximum_distance')->first();
+            if ($max->ads == '' || $max->ads == null || empty($max->ads) || $max->ads == 0)
+            {
+                $maxDistance = 10;
+            }
+            else
+            {
+                $maxDistance = $max->ads;
+            }
+        }
+        else
+        {
+            $maxDistance = 10;
+        }
+        $ads = advertisement::get();
+        if (count($ads) < 1)
+        {
+            $response['code'] = 200;
+            $response['status'] = "Success";
+            $response['message'] = "No advertisements Found";
+            $response['data'] = [];
+            return $response;
+        }
+        $lat1 = $request->lat;
+        $long1 = $request->lng;
+        $totalAds = [];
+        foreach ($ads as $ad)
+        {
+            if (isset($ad->image) || ($ad->image != '') || !empty($ad->image))
+            {
+                $ad->image = asset('public/avatars').'/'.$ad->image;
+            }
+            $id = $ad->id;
+            $lat2 = $ad->lat;
+            $long2 = $ad->lng;
+            $distance = $this->calculateDistance($lat1,$long1,$lat2,$long2);
+            if ($distance['distance'] > $maxDistance)
+            {
+                continue;
+            }
+            else
+            {
+                $totalAds[$id] = $ad;
+            }
+        }
+        if (count($totalAds) < 1)
+        {
+            $response['code'] = 200;
+            $response['status'] = "Success";
+            $response['message'] = "No advertisements Found";
+            $response['data'] = [];
+        }
+        else
+        {
+            $response['code'] = 200;
+            $response['status'] = "Success";
+            $response['message'] = "Advertisements fetched successfully";
+            $response['data'] = $totalAds;
         }
         return $response;
     }
@@ -1832,9 +1857,16 @@ class passengerApiController extends Controller
         }
     }
 
-    function driverByCategory($categoryid)
+    function driverByCategory($categoryid,$payment=null)
     {
-        $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1");
+        if ($payment == null || $payment == '')
+        {
+            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1");
+        }
+        else
+        {
+            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1");
+        }
         return $drivers;
     }
 
@@ -1887,5 +1919,46 @@ class passengerApiController extends Controller
             return $response;
         }
         return $message;
+    }
+    public function twilioDemo()
+    {
+        $message = "Im just trying for the Whatsapp Demo using Twilio. Thank u have a nice day!!";
+        $sid    = "AC465cbf46932d06fcc92a3b6b018dc484";
+        $TWILIO_ACCOUNT_SID = "AC465cbf46932d06fcc92a3b6b018dc484";
+        $TWILIO_API_KEY = "SK3061ffe8d3f496d8bc4322584b8431bd";
+        $TWILIO_API_SECRET = "Qkbjj9yPq5KkvKcOIRp6OvOeA9x6saPv";
+
+        $token = new AccessToken(
+            $TWILIO_ACCOUNT_SID,
+            $TWILIO_API_KEY,
+            $TWILIO_API_SECRET,
+            3600
+        );
+        return $token;
+    }
+    public function generateChat(Request $request, AccessToken $accessToken, ChatGrant $chatGrant)
+    {
+        return $accessToken;
+        $appName = "TwilioChat";
+        $deviceId = $request->input("device");
+        $identity = $request->input("identity");
+
+        $TWILIO_CHAT_SERVICE_SID = "IS8b0fb27a38494898ae4137077d936dbd";
+
+        $endpointId = $appName . ":" . $identity . ":" . $deviceId;
+
+        $accessToken->setIdentity($identity);
+
+        $chatGrant->setServiceSid($TWILIO_CHAT_SERVICE_SID);
+        $chatGrant->setEndpointId($endpointId);
+
+        $accessToken->addGrant($chatGrant);
+
+        $response = array(
+            'identity' => $identity,
+            'token' => $accessToken->toJWT()
+        );
+
+        return response()->json($response);
     }
 }

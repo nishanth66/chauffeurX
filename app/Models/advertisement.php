@@ -30,8 +30,9 @@ class advertisement extends Model
         'name',
         'description',
         'image',
-        'place',
-        'lat'
+        'address',
+        'lat',
+        'lng',
     ];
 
     /**
@@ -43,8 +44,9 @@ class advertisement extends Model
         'name' => 'string',
         'description' => 'string',
         'image' => 'string',
-        'place' => 'string',
-        'lat' => 'string'
+        'address' => 'string',
+        'lat' => 'string',
+        'lng' => 'string',
     ];
 
     /**
@@ -53,7 +55,6 @@ class advertisement extends Model
      * @var array
      */
     public static $rules = [
-        'lat' => 'lon text text'
     ];
 
     

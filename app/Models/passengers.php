@@ -41,6 +41,8 @@ class passengers extends Model
         'payment_method',
         'stripe_id',
         'referral_code',
+        'gender',
+        'passengers',
     ];
 
     /**
@@ -59,6 +61,8 @@ class passengers extends Model
         'payment_method' => 'string',
         'stripe_id' => 'string',
         'referral_code' => 'string',
+        'gender' => 'string',
+        'passengers' => 'string',
     ];
 
     /**

@@ -172,15 +172,15 @@ class driverApiController extends Controller
                 $toDate = strtotime(str_replace('/','-',$request->date));
                 foreach ($bookings as $booking)
                 {
-
-                    $date = explode(' ',$booking->trip_date_time);
-                    $tripDate = strtotime(str_replace('/','-',$date[0]));
+                    $date = $booking->created_at;
+                    $tripDate = strtotime($date);
+                    $tripDate = strtotime(date('d-m-Y',$tripDate));
                     if ($toDate == $tripDate)
                     {
                         array_push($myBookings,$booking);
                     }
                 }
-                if (empty($myBookings))
+                if (empty($myBookings) || count($myBookings) < 1)
                 {
                     $response['status'] = "Success";
                     $response['code'] = 200;

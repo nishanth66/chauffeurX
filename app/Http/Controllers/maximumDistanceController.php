@@ -14,14 +14,45 @@ class maximumDistanceController extends Controller
     }
     public function index()
     {
-        if (DB::table('maximum_distance')->exists())
+        if (DB::table('maximum_distance')->where('distance','!=',null)->orWhere('distance','!=','')->exists())
         {
             $distance = DB::table('maximum_distance')->first();
             return view('distance.edit',compact('distance'));
         }
         else
         {
-            return view('distance.create');
+            $distance = DB::table('maximum_distance')->first();
+            $distance->distance = 0;
+            return view('distance.edit',compact('distance'));
+        }
+    }
+    public function adIndex()
+    {
+        if (DB::table('maximum_distance')->where('ads','!=',null)->orWhere('ads','!=','')->exists())
+        {
+            $distance = DB::table('maximum_distance')->first();
+            $distance = $distance->ads;
+            return view('distance.edit2',compact('distance'));
+        }
+        else
+        {
+            $distance = 0;
+            return view('distance.edit2',compact('distance'));
+        }
+    }
+    public function adSave(Request $request)
+    {
+        if (DB::table('maximum_distance')->exists())
+        {
+            DB::table('maximum_distance')->whereId(1)->update(['ads'=>$request->ads]);
+            Flash::success("Maximun Distance Updated Successfully");
+            return redirect()->back();
+        }
+        else
+        {
+            DB::table('maximum_distance')->whereId(1)->create(['ads'=>$request->ads]);
+            Flash::success("Maximun Distance Updated Successfully");
+            return redirect()->back();
         }
     }
     public function create()
@@ -43,8 +74,17 @@ class maximumDistanceController extends Controller
     public function update($id,Request $request)
     {
         $input['distance'] = $request->distance;
-        DB::table('maximum_distance')->whereId($id)->update($input);
+        if (DB::table('maximum_distance')->exists())
+        {
+            DB::table('maximum_distance')->whereId($id)->update($input);
+        }
+        else
+        {
+            DB::table('maximum_distance')->create($input);
+        }
+
         Flash::success('Maximum Distance Updated Successfully!');
         return redirect(route('driverDistance.index'));
     }
+
 }

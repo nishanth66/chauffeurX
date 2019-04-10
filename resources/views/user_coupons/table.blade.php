@@ -6,7 +6,7 @@
             <th>Status</th>
             <th>Discount</th>
             <th>Expire</th>
-            <th colspan="3">Action</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -16,7 +16,11 @@
             <td>{!! $userCoupons->code !!}</td>
             <td>{!! $userCoupons->status !!}</td>
             <td>{!! $userCoupons->discount !!}%</td>
-            <td>{!! date('d/M/Y',$userCoupons->expire) !!}</td>
+            @if(!empty($userCoupons->expire))
+                <td>{!! date('d/M/Y',$userCoupons->expire) !!}</td>
+            @else
+                <td>NA</td>
+            @endif
             <td>
                 {!! Form::open(['route' => ['userCoupons.destroy', $userCoupons->id], 'method' => 'delete']) !!}
                 <div class='btn-group'>

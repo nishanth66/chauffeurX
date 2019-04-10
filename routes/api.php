@@ -19,10 +19,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('/verificationCode', 'api\passengerApiController@login')->name('sendVerification');
 Route::post('/verify', 'api\passengerApiController@verify')->name('verify');
 Route::post('/userDetails', 'api\passengerApiController@userDetails')->name('userDetails');
-Route::post('/profile', 'api\passengerApiController@register')->name('profile');
+Route::post('/profile', 'api\passengerApiController@profile')->name('profile');
 Route::post('/register', 'api\passengerApiController@register')->name('register');
 Route::post('/editProfile', 'api\passengerApiController@editProfile')->name('editProfile');
-Route::get('/rideHistory/{id}', 'api\passengerApiController@rideHistory')->name('rideHistory');
+Route::post('/rideHistory', 'api\passengerApiController@rideHistory')->name('rideHistory');
 Route::get('/favouriteDriver/{id}', 'api\passengerApiController@favouriteDriver')->name('favouriteDriver');
 Route::post('/addFavourite', 'api\passengerApiController@addFavourite')->name('addFavourite');
 Route::post('/deleteFavourite', 'api\passengerApiController@deleteFavourite')->name('deleteFavourite');
@@ -66,6 +66,7 @@ Route::get('/getCategories', 'api\passengerApiController@getCategories')->name('
 
 Route::post('/getNearbyDrievrs', 'api\passengerApiController@getNearbyDrievrs')->name('getNearbyDrievrs');
 Route::post('/validatePromoCode', 'api\passengerApiController@validatePromoCode')->name('validatePromoCode');
+Route::post('/fetchNearbyAds', 'api\passengerApiController@fetchNearbyAds')->name('fetchNearbyAds');
 
 
 
@@ -77,6 +78,9 @@ Route::get('/driverSevenBookings/{id}', 'api\passengerApiController@driverSevenB
 Route::get('/calculateDistance/{id1}/{id2}/{id3}/{id4}', 'api\passengerApiController@calculateDistance')->name('calculateDistance');
 //Route::post('/getNearbyDrievrs', 'api\passengerApiController@getNearbyDrievrs')->name('getNearbyDrievrs');
 Route::get('/whatsappDemo', 'api\passengerApiController@whatsappDemo')->name('whatsappDemo');
+
+Route::get('/twilioDemo', 'api\passengerApiController@twilioDemo')->name('twilioDemo');
+Route::post('/generateChat', 'api\passengerApiController@generateChat')->name('generateChat');
 
 Route::prefix('driver')->group(function () {
     Route::group(['namespace' => 'api'], function()

@@ -2,11 +2,12 @@
     <thead>
         <tr>
             <th>Name</th>
-        <th>Description</th>
-        <th>Image</th>
-        <th>Place</th>
-        <th>Lat</th>
-            <th colspan="3">Action</th>
+            <th>Description</th>
+            <th>Image</th>
+            <th>Address</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -14,9 +15,16 @@
         <tr>
             <td>{!! $advertisement->name !!}</td>
             <td>{!! $advertisement->description !!}</td>
-            <td>{!! $advertisement->image !!}</td>
-            <td>{!! $advertisement->place !!}</td>
+            <td>
+                @if(isset($advertisement->image) && $advertisement->image != '' || !empty($advertisement->image))
+                    <img src="{{asset('public/avatars').'/'.$advertisement->image }}" class="show-image">
+                @else
+                    <img src="{{asset('public/image/default.png')}}" class="show-image">
+                @endif
+            </td>
+            <td>{!! $advertisement->address !!}</td>
             <td>{!! $advertisement->lat !!}</td>
+            <td>{!! $advertisement->lng !!}</td>
             <td>
                 {!! Form::open(['route' => ['advertisements.destroy', $advertisement->id], 'method' => 'delete']) !!}
                 <div class='btn-group'>

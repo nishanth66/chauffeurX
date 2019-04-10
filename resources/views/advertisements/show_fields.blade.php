@@ -19,19 +19,30 @@
 <!-- Image Field -->
 <div class="form-group">
     {!! Form::label('image', 'Image:') !!}
-    <p>{!! $advertisement->image !!}</p>
+    <p>
+        @if($advertisement->image != '' || !empty($advertisement->image))
+            <img src="{{asset('public/avatars').'/'.$advertisement->image}}" class="show-image">
+        @else
+            <img src="{{asset('public/image/default.png')}}" class="show-image">
+        @endif
+    </p>
 </div>
 
 <!-- Place Field -->
 <div class="form-group">
     {!! Form::label('place', 'Place:') !!}
-    <p>{!! $advertisement->place !!}</p>
+    <p>{!! $advertisement->address !!}</p>
 </div>
 
 <!-- Lat Field -->
 <div class="form-group">
-    {!! Form::label('lat', 'Lat:') !!}
+    {!! Form::label('lat', 'Latitude:') !!}
     <p>{!! $advertisement->lat !!}</p>
+</div>
+<!-- Lat Field -->
+<div class="form-group">
+    {!! Form::label('lng', 'Longitude:') !!}
+    <p>{!! $advertisement->lng !!}</p>
 </div>
 
 <!-- Created At Field -->

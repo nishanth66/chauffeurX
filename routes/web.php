@@ -60,8 +60,9 @@ Route::resource('driverApis', 'driverApiController');
 Route::resource('passengerRatings', 'passenger_ratingController');
 Route::resource('paymentMethod', 'driverTipsController');
 Route::resource('driverDistance', 'maximumDistanceController');
+Route::get('ad-distance', 'maximumDistanceController@adIndex');
+Route::post('ad-distance/save', 'maximumDistanceController@adSave');
 
 Route::resource('filters', 'filterController');
 Route::get('fireBaseDemo', 'fireBaseController@fireBaseDemo');
 
-Route::resource('userCoupons', 'userCouponsController');

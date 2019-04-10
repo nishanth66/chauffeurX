@@ -20,8 +20,10 @@ require_once '../sdk.php';
 
 // 创建SDK对象.
 $sdk = new PushSDK();
-
-$channelId = '3785562685113372034';
+//$channelId = '3785562685113372034';
+$channelId = class_exists('BAIDU_PUSH_CONFIG') ? BAIDU_PUSH_CONFIG::test_channel_id : true;
+echo $channelId;
+exit;
 
 // message content.
 $message = array (
