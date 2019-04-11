@@ -11,7 +11,12 @@
 <!-- Title Field -->
 <div class="form-group col-sm-12">
     {!! Form::label('title', 'Title:') !!}
-    {!! Form::text('title', null, ['class' => 'form-control']) !!}
+    <select name="title" class="form-control">
+        <option value="" selected disabled>Select a Title</option>
+        <option value="Booking Confirm" <?php if (isset($template) && $template->title == 'Booking Confirm') { echo "selected";}?>>Booking Confirm</option>
+        <option value="Booking Cancel" <?php if (isset($template) && $template->title == 'Booking Cancel') { echo "selected";}?>>Select a Title</option>
+    </select>
+{{--    {!! Form::text('title', null, ['class' => 'form-control']) !!}--}}
 </div>
 
 <!-- Image Field -->

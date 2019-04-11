@@ -81,6 +81,10 @@ Route::get('/assignDriver/{id}/{lat}/{long}', 'api\bookingApiController@assignDr
 Route::get('/getDriverWaitTime/{id}/{lat}/{long}', 'api\bookingApiController@getDriverWaitTime')->name('getDriverWaitTime');
 Route::get('/getDriverRating/{id}', 'api\bookingApiController@getDriverRating')->name('getDriverRating');
 Route::get('/getPenalty/{id}', 'api\bookingApiController@getPenalty')->name('getPenalty');
+Route::post('/addEmergencyContacts', 'api\emergencyContactsAPIController@addEmergencyContacts')->name('addEmergencyContacts');
+Route::post('/fetchEmergencyContacts', 'api\emergencyContactsAPIController@fetchEmergencyContacts')->name('fetchEmergencyContacts');
+Route::post('/editEmergencyContact', 'api\emergencyContactsAPIController@editEmergencyContact')->name('editEmergencyContact');
+Route::post('/deleteEmergencyContact', 'api\emergencyContactsAPIController@deleteEmergencyContact')->name('deleteEmergencyContact');
 
 
 

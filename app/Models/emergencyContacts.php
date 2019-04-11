@@ -25,7 +25,8 @@ class emergencyContacts extends Model
 
     public $fillable = [
         'name',
-        'phone'
+        'phone',
+        'userid',
     ];
 
     /**
@@ -35,7 +36,8 @@ class emergencyContacts extends Model
      */
     protected $casts = [
         'name' => 'string',
-        'phone' => 'string'
+        'phone' => 'string',
+        'userid' => 'string',
     ];
 
     /**

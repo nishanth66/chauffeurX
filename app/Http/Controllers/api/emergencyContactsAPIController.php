@@ -1,15 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\api;
 
-use App\Http\Requests\API\CreateemergencyContactsAPIRequest;
-use App\Http\Requests\API\UpdateemergencyContactsAPIRequest;
+
 use App\Models\emergencyContacts;
+use App\Models\passengers;
 use App\Repositories\emergencyContactsRepository;
 use Illuminate\Http\Request;
-use App\Http\Controllers\AppBaseController;
-use InfyOm\Generator\Criteria\LimitOffsetCriteria;
-use Prettus\Repository\Criteria\RequestCriteria;
 use Response;
 
 /**
@@ -17,113 +14,93 @@ use Response;
  * @package App\Http\Controllers\API
  */
 
-class emergencyContactsAPIController extends AppBaseController
+class emergencyContactsAPIController extends Controller
 {
     /** @var  emergencyContactsRepository */
-    private $emergencyContactsRepository;
-
-    public function __construct(emergencyContactsRepository $emergencyContactsRepo)
+    public function addEmergencyContacts(Request $request)
     {
-        $this->emergencyContactsRepository = $emergencyContactsRepo;
-    }
-
-    /**
-     * Display a listing of the emergencyContacts.
-     * GET|HEAD /emergencyContacts
-     *
-     * @param Request $request
-     * @return Response
-     */
-    public function index(Request $request)
-    {
-        $this->emergencyContactsRepository->pushCriteria(new RequestCriteria($request));
-        $this->emergencyContactsRepository->pushCriteria(new LimitOffsetCriteria($request));
-        $emergencyContacts = $this->emergencyContactsRepository->all();
-
-        return $this->sendResponse($emergencyContacts->toArray(), 'Emergency Contacts retrieved successfully');
-    }
-
-    /**
-     * Store a newly created emergencyContacts in storage.
-     * POST /emergencyContacts
-     *
-     * @param CreateemergencyContactsAPIRequest $request
-     *
-     * @return Response
-     */
-    public function store(CreateemergencyContactsAPIRequest $request)
-    {
+        if (passengers::whereId($request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "User not Found";
+            $response['data'] = [];
+            return $response;
+        }
         $input = $request->all();
-
-        $emergencyContacts = $this->emergencyContactsRepository->create($input);
-
-        return $this->sendResponse($emergencyContacts->toArray(), 'Emergency Contacts saved successfully');
+        $emergency = emergencyContacts::create($input);
+        $response['code'] = 200;
+        $response['status'] = "Success";
+        $response['message'] = "Emergency contacts added Successfully";
+        $response['data'] = $emergency;
+        return $response;
     }
-
-    /**
-     * Display the specified emergencyContacts.
-     * GET|HEAD /emergencyContacts/{id}
-     *
-     * @param  int $id
-     *
-     * @return Response
-     */
-    public function show($id)
+    public function fetchEmergencyContacts(Request $request)
     {
-        /** @var emergencyContacts $emergencyContacts */
-        $emergencyContacts = $this->emergencyContactsRepository->findWithoutFail($id);
-
-        if (empty($emergencyContacts)) {
-            return $this->sendError('Emergency Contacts not found');
+        if (passengers::whereId($request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "User not Found";
+            $response['data'] = [];
+            return $response;
         }
-
-        return $this->sendResponse($emergencyContacts->toArray(), 'Emergency Contacts retrieved successfully');
+        if (emergencyContacts::where('userid',$request->userid)->exists() == 0)
+        {
+            $response['code'] =200;
+            $response['status'] = "Success";
+            $response['message'] = "No emergency contacts Found";
+            $response['data'] = [];
+            return $response;
+        }
+        $emergency = emergencyContacts::where('userid',$request->userid)->get();
+        $response['code'] =200;
+        $response['status'] = "Success";
+        $response['message'] = "Emergency contacts Fetched Successfully!";
+        $response['data'] = $emergency;
+        return $response;
     }
-
-    /**
-     * Update the specified emergencyContacts in storage.
-     * PUT/PATCH /emergencyContacts/{id}
-     *
-     * @param  int $id
-     * @param UpdateemergencyContactsAPIRequest $request
-     *
-     * @return Response
-     */
-    public function update($id, UpdateemergencyContactsAPIRequest $request)
+    public function editEmergencyContact(Request $request)
     {
-        $input = $request->all();
-
-        /** @var emergencyContacts $emergencyContacts */
-        $emergencyContacts = $this->emergencyContactsRepository->findWithoutFail($id);
-
-        if (empty($emergencyContacts)) {
-            return $this->sendError('Emergency Contacts not found');
+        if (passengers::whereId($request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "User not Found";
+            $response['data'] = [];
+            return $response;
         }
-
-        $emergencyContacts = $this->emergencyContactsRepository->update($input, $id);
-
-        return $this->sendResponse($emergencyContacts->toArray(), 'emergencyContacts updated successfully');
+        if (emergencyContacts::whereId($request->contact_id)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Emergency Contact Not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        $input = $request->except('contact_id');
+        $emergency = emergencyContacts::whereId($request->contact_id)->update($input);
+        $response['code'] = 200;
+        $response['status'] = "Success";
+        $response['message'] = "Emergency contacts updated Successfully";
+        $response['data'] = $emergency;
+        return $response;
     }
-
-    /**
-     * Remove the specified emergencyContacts from storage.
-     * DELETE /emergencyContacts/{id}
-     *
-     * @param  int $id
-     *
-     * @return Response
-     */
-    public function destroy($id)
+    public function deleteEmergencyContact(Request $request)
     {
-        /** @var emergencyContacts $emergencyContacts */
-        $emergencyContacts = $this->emergencyContactsRepository->findWithoutFail($id);
-
-        if (empty($emergencyContacts)) {
-            return $this->sendError('Emergency Contacts not found');
+        if (emergencyContacts::whereId($request->contact_id)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Emergency Contact Not Found";
+            $response['data'] = [];
+            return $response;
         }
-
-        $emergencyContacts->delete();
-
-        return $this->sendResponse($id, 'Emergency Contacts deleted successfully');
+        emergencyContacts::whereId($request->contact_id)->forcedelete();
+        $response['code'] = 200;
+        $response['status'] = "Success";
+        $response['message'] = "Emergency Contact Deleted Successfully";
+        $response['data'] = [];
+        return $response;
     }
 }
