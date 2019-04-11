@@ -438,4 +438,31 @@ class driverApiController extends Controller
         return $response;
     }
 
+    public function verifyBookingOtp(Request $request)
+    {
+        if (booking::whereId($request->bookingid)->where('phone',$request->phone)->where('otp',$request->otp)->exists())
+        {
+            $update['status'] = "ongoing";
+            $update['trip_start_time'] = new \DateTime();
+            booking::whereId($request->bookingid)->update($update);
+            $booking = booking::whereId($request->bookingid)->first();
+            if (isset($booking->image) || ($booking->image != '' || !empty($booking->image)))
+            {
+                $booking->image = asset('public/avatars').'/'.$booking->image;
+            }
+            $response['code'] = 200;
+            $response['status'] = "Success";
+            $response['message'] = "OTP verified successfully";
+            $response['data'] = $booking;
+        }
+        else
+        {
+            $response['code'] = 500;
+            $response['status'] = "Failed";
+            $response['message'] = "Invalid OTP";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+
 }

@@ -40,6 +40,7 @@ class booking extends Model
     public $fillable = [
         'userid',
         'phone',
+        'otp',
         'completed',
         'source',
         'destination',
@@ -70,6 +71,7 @@ class booking extends Model
     protected $casts = [
         'userid' => 'string',
         'phone' => 'string',
+        'otp' => 'string',
         'completed' => 'string',
         'source' => 'string',
         'destination' => 'string',

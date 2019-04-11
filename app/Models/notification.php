@@ -28,6 +28,7 @@ class notification extends Model
 
     public $fillable = [
         'type',
+        'userid',
         'title',
         'image',
         'message',
@@ -41,6 +42,7 @@ class notification extends Model
      */
     protected $casts = [
         'type' => 'string',
+        'userid' => 'string',
         'title' => 'string',
         'image' => 'string',
         'message' => 'string',
