@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
-class CreateemergencyContactsTable extends Migration
+class CreatefavoriteAddressesTable extends Migration
 {
 
     /**
@@ -13,10 +13,13 @@ class CreateemergencyContactsTable extends Migration
      */
     public function up()
     {
-        Schema::create('emergency_contacts', function (Blueprint $table) {
+        Schema::create('favorite_addresses', function (Blueprint $table) {
             $table->increments('id');
-            $table->text('name');
-            $table->text('phone');
+            $table->text('title');
+            $table->text('lat');
+            $table->text('lng');
+            $table->text('address');
+            $table->text('image');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -29,6 +32,6 @@ class CreateemergencyContactsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('emergency_contacts');
+        Schema::drop('favorite_addresses');
     }
 }
