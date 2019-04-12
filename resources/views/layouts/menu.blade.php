@@ -70,3 +70,7 @@
 
 
 
+<li class="{{ Request::is('ranks*') ? 'active' : '' }}">
+    <a href="{!! route('ranks.index') !!}"><i class="fa fa-edit"></i><span>Ranks</span></a>
+</li>
+

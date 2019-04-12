@@ -102,3 +102,5 @@ Route::post('deleteSaveCoins', 'coins@deleteAppCoinsSave');
 
 Route::get('newCategoryCoins', 'coins@newCategoryCoins');
 Route::post('categorySaveCoins', 'coins@newCategoryCoinsSave');
+
+Route::resource('ranks', 'rankController');
