@@ -133,3 +133,5 @@ Route::prefix('driver')->group(function () {
 Route::resource('emergency_contacts', 'emergencyContactsAPIController');
 
 Route::resource('favorite_addresses', 'favoriteAddressAPIController');
+
+Route::resource('preferences', 'preferencesAPIController');
