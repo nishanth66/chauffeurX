@@ -42,6 +42,14 @@ class favoriteAddressAPIController extends Controller
             $response['data'] = [];
             return $response;
         }
+        if (favoriteAddress::where('userid',$request->userid)->where('lat',$request->lat)->where('lng',$request->lng)->exists())
+        {
+            $response['code'] = 500;
+            $response['status'] = "success";
+            $response['message'] = "This address is already exists!";
+            $response['data'] = [];
+            return $response;
+        }
         $address=app('App\Http\Controllers\api\bookingApiController')->getFormattedAddress($request->lat,$request->lng);
         $input = $request->all();
         $input['address'] = $address;
@@ -139,5 +147,9 @@ class favoriteAddressAPIController extends Controller
         $response['message'] = "Address Deleted Successfully";
         $response['data'] = [];
         return $response;
+    }
+    public function addPreference(Request $request)
+    {
+        
     }
 }

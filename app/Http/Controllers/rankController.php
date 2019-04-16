@@ -11,7 +11,7 @@ use Flash;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Response;
 
-class rankController extends AppBaseController
+class rankController extends Controller
 {
     /** @var  rankRepository */
     private $rankRepository;
@@ -55,7 +55,14 @@ class rankController extends AppBaseController
      */
     public function store(CreaterankRequest $request)
     {
-        $input = $request->all();
+        $input = $request->except('image');
+
+        if ($request->hasFile('image'))
+        {
+            $photoName = rand(1,7257361) . time() . '.' . $request->image->getClientOriginalExtension();
+            $request->image->move(public_path('avatars'), $photoName);
+            $input['image'] = $photoName;
+        }
 
         $rank = $this->rankRepository->create($input);
 
@@ -121,8 +128,14 @@ class rankController extends AppBaseController
 
             return redirect(route('ranks.index'));
         }
-
-        $rank = $this->rankRepository->update($request->all(), $id);
+        $input = $request->except('image');
+        if ($request->hasFile('image'))
+        {
+            $photoName = rand(1,7257361) . time() . '.' . $request->image->getClientOriginalExtension();
+            $request->image->move(public_path('avatars'), $photoName);
+            $input['image'] = $photoName;
+        }
+        $rank = $this->rankRepository->update($input, $id);
 
         Flash::success('Rank updated successfully.');
 

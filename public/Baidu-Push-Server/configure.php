@@ -53,7 +53,7 @@ class BAIDU_PUSH_CONFIG {
      * 
      * @var string
      */
-    const test_channel_id = '';
+    const test_channel_id = '13';
     
     /**
      * log级别常量.

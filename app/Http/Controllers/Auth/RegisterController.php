@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\driver;
 use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
 
@@ -28,6 +30,8 @@ class RegisterController extends Controller
      *
      * @var string
      */
+    protected $sid    = "AC7835895b4de3218265df779b550d793b";
+    protected $token  = "c44245d2f7d682f18eb3a1399d8d5ef6";
     protected $redirectTo = '/home';
 
     /**
@@ -49,24 +53,53 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
     }
 
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return \App\User
-     */
     protected function create(array $data)
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
+        if ($data['status'] == 1)
+        {
+            $array['email'] = $data['email'];
+            $array['phone'] = $data['code'].$data['phone'];
+            $phone_otp = substr(str_shuffle("012345678901234567890123456789"), 0, 6);
+            $email_otp = substr(str_shuffle("012345678901234567890123456789"), 0, 6);
+            $array['otp'] = $email_otp;
+            $input['password'] = Hash::make($data['password']);
+            $input['code'] = $data['code'];
+            $input['phone'] = $data['code'].$data['phone'];
+            $input['email'] = $data['email'];
+            $input['email_otp'] = $email_otp;
+            $input['phone_otp'] = $phone_otp;
+            Mail::send('emails.verify', ['array' => $array], function ($message) use ($array) {
+                $message->to($array['email'])->subject("Verify Email");
+            });
+            $response=app('App\Http\Controllers\api\Controller')->sendOtp($this->sid,$this->token,$array['phone'],$phone_otp);
+            $driver = driver::create($input);
+        }
+        if ($data['status'] == 1)
+        {
+            return User::create([
+                'email' => $data['email'],
+                'phone' => $data['code'].$data['phone'],
+                'password' => Hash::make($data['password']),
+                'status' => $data['status'],
+
+            ]);
+        }
+        else
+        {
+            return User::create([
+
+                'fname' => $data['name'],
+                'lname' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'password' => Hash::make($data['password']),
+                'status' => $data['status'],
+            ]);
+        }
     }
 }

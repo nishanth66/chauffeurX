@@ -5,16 +5,22 @@
         <th>Image</th>
         <th>Points</th>
         <th>Discount</th>
-            <th colspan="3">Action</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
     @foreach($ranks as $rank)
         <tr>
             <td>{!! $rank->name !!}</td>
-            <td>{!! $rank->image !!}</td>
+            <td>
+                @if(!empty($rank->image))
+                    <img src="{{asset('public/avatars').'/'.$rank->image}}" class="show-image">
+                @else
+                    <img src="{{asset('public/image/default.png')}}" class="show-image">
+                @endif
+            </td>
             <td>{!! $rank->points !!}</td>
-            <td>{!! $rank->discount !!}</td>
+            <td>{!! $rank->discount !!}%</td>
             <td>
                 {!! Form::open(['route' => ['ranks.destroy', $rank->id], 'method' => 'delete']) !!}
                 <div class='btn-group'>

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\driver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
@@ -24,7 +26,38 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        if (Auth::user()->status == 0 || Auth::user()->status == 10)
+        {
+            return view('home');
+        }
+        elseif (Auth::user()->status == 1)
+        {
+            $driver = driver::where('userid',Auth::user()->id)->first();
+            if ($driver->activated != 1)
+            {
+                return redirect('driver/verify');
+            }
+            elseif($driver->basic_details != 1)
+            {
+                return redirect('driver/profile');
+            }
+            elseif($driver->address_details != 1)
+            {
+                return redirect('driver/address');
+            }
+            elseif ($driver->licence_details != 1)
+            {
+                return redirect('driver/verifyLicence');
+            }
+            elseif ($driver->documents != 1)
+            {
+                return redirect('driver/documents');
+            }
+            elseif ($driver->status != 'accepted')
+            {
+
+            }
+        }
     }
     public function method()
     {

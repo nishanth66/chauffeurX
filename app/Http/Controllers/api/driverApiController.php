@@ -70,7 +70,7 @@ class driverApiController extends Controller
             if (isset($request->payment_methid_id) && ($request->payment_methid_id != '' || !empty($request->payment_methid_id)))
             {
                 $inputPayment['driverid'] = $request->driverid;
-                $inputPayment['payment_methid_id'] = $request->payment_methid_id;
+                $inputPayment['payment_method_id'] = $request->payment_methid_id;
                 DB::table('driver_payment_method')->insert($inputPayment);
             }
             $response['status'] = "Success";

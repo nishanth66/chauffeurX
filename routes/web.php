@@ -27,8 +27,6 @@ Route::resource('drivers', 'driverController');
 
 Route::resource('ratings', 'ratingController');
 
-//Route::resource('driverTips', 'driverTipsController');
-
 Route::resource('cencellations', 'cencellationController');
 
 Route::resource('passengerStripes', 'passengerStripeController');
@@ -41,7 +39,7 @@ Route::resource('categories', 'categoriesController');
 
 Route::resource('prices', 'priceController');
 
-Route::resource('prices', 'priceController');
+//Route::resource('prices', 'priceController');
 
 Route::resource('passengerApis', 'passengerApiController');
 
@@ -104,3 +102,41 @@ Route::get('newCategoryCoins', 'coins@newCategoryCoins');
 Route::post('categorySaveCoins', 'coins@newCategoryCoinsSave');
 
 Route::resource('ranks', 'rankController');
+
+
+Route::prefix('driver/')->group(function () {
+//    login/register
+    Route::get('register','frontEnd@register');
+    Route::get('login','frontEnd@login');
+
+//    verify
+    Route::get('verify','driverController@verification');
+    Route::post('verify','driverController@verifyOtp');
+    Route::get('resendOtp','driverController@resendOtp');
+
+//    basic details
+    Route::get('profile','driverController@profile');
+    Route::post('profile','driverController@saveProfile');
+
+//    address
+    Route::get('address','driverController@address');
+    Route::post('address','driverController@saveAddress');
+
+    Route::get('verifyLicence','driverController@verifyLicence');
+    Route::post('verifyLicence','driverController@SaveverifyLicence');
+
+    Route::get('documents','driverController@documents');
+
+
+
+    Route::get('SubmitDocument','frontEnd@SubmitDocument');
+
+    Route::get('profile/5',function () {
+        return view('drivers.FrontEnd.profile_5');
+    });
+    Route::get('profile/8',function () {
+        return view('drivers.FrontEnd.profile_8');
+    });
+});
+
+Route::resource('musicPreferences', 'musicPreferenceController');

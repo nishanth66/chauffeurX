@@ -41,7 +41,7 @@ class driverTipsController extends Controller
      */
     public function create()
     {
-        return view('paymentMethod.index');
+        return view('payments.create');
     }
 
     /**
@@ -59,7 +59,7 @@ class driverTipsController extends Controller
 
         Flash::success('Payment Methods saved successfully.');
 
-        return redirect(route('paymentMethod.index'));
+        return redirect('paymentMethod');
     }
 
     /**
@@ -76,10 +76,10 @@ class driverTipsController extends Controller
         if (empty($payments)) {
             Flash::error('Payment Method not found');
 
-            return redirect(route('paymentMethod.index'));
+            return redirect('paymentMethod');
         }
 
-        return view('payments.show')->with('driverTips', $payments);
+        return view('payments.show')->with('payments', $payments);
     }
 
     /**
@@ -96,7 +96,7 @@ class driverTipsController extends Controller
         if (empty($payments)) {
             Flash::error('Payment Method not found');
 
-            return redirect(route('paymentMethod.index'));
+            return redirect('paymentMethod');
         }
 
         return view('payments.edit')->with('payments', $payments);
@@ -117,14 +117,14 @@ class driverTipsController extends Controller
         if (empty($payments)) {
             Flash::error('Payment Method not found');
 
-            return redirect(route('paymentMethod.index'));
+            return redirect('paymentMethod');
         }
 
         $payments = DB::table('payment_methods')->whereId($id)->update($update);
 
         Flash::success('Payment Method updated successfully.');
 
-        return redirect(route('paymentMethod.index'));
+        return redirect('paymentMethod');
     }
 
     /**
@@ -141,13 +141,13 @@ class driverTipsController extends Controller
         if (empty($payments)) {
             Flash::error('Payment Method not found');
 
-            return redirect(route('paymentMethod.index'));
+            return redirect('paymentMethod');
         }
 
         DB::table('payment_methods')->whereId($id)->delete();
 
         Flash::success('Payment Method deleted successfully.');
 
-        return redirect(route('paymentMethod.index'));
+        return redirect('paymentMethod');
     }
 }

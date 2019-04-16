@@ -105,9 +105,9 @@ class favDriverApiController extends Controller
     public function addFavourite(Request $request)
     {
         $mNumber = $request->phone;
-        if (passengers::where('phone',$mNumber)->exists())
+        if (passengers::whereId($request->userid)->where('phone',$mNumber)->exists())
         {
-            $user = passengers::where('phone',$mNumber)->first();
+            $user = passengers::whereId($request->userid)->where('phone',$mNumber)->first();
             if (driver::whereId($request->driverid)->exists())
             {
                 $fav=favDriver::create([

@@ -30,6 +30,12 @@
 <li class="{{ Request::is('templates*') ? 'active' : '' }}">
     <a href="{!! route('templates.index') !!}"><i class="fa fa-columns"></i><span>Notification Template</span></a>
 </li>
+<li class="{{ Request::is('ranks*') ? 'active' : '' }}">
+    <a href="{!! route('ranks.index') !!}"><i class="fa fa-trophy"></i><span>Ranks</span></a>
+</li>
+<li class="{{ Request::is('musicPreferences*') ? 'active' : '' }}">
+    <a href="{!! route('musicPreferences.index') !!}"><i class="fa fa-music"></i><span>Music Preferences</span></a>
+</li>
 <li class="treeview {{ Request::is('createAccountCoins') || Request::is('invitingCoins') || Request::is('sharingCoins') || Request::is('kiloMetreCoins') || Request::is('ridesCoins')|| Request::is('tippingCoins')|| Request::is('addFavoriteCoins')|| Request::is('newCityCoins')|| Request::is('deleteAppCoins')|| Request::is('newCategoryCoins') ? 'active' : '' }}">
     <a href="#"><i class="fa fa-cog"></i> <span>Coins Settings</span>
         <span class="pull-right-container">
@@ -68,9 +74,4 @@
 {{--</li>--}}
 
 
-
-
-<li class="{{ Request::is('ranks*') ? 'active' : '' }}">
-    <a href="{!! route('ranks.index') !!}"><i class="fa fa-edit"></i><span>Ranks</span></a>
-</li>
 

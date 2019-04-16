@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,7 +31,7 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-
+    @include('drivers.FrontEnd.topbar')
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
@@ -40,14 +41,12 @@
 
     <!-- /.login-logo -->
     <div class="login-box-body">
-        <p class="login-box-msg">Sign in to start your session</p>
-
-        <form method="post" action="{{ url('/login') }}">
+        <center>
+            <form method="post" action="{{ url('/login') }}">
             {!! csrf_field() !!}
 
             <div class="form-group has-feedback {{ $errors->has('email') ? ' has-error' : '' }}">
-                <input type="email" class="form-control" name="email" value="{{ old('email') }}" placeholder="Email">
-                <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+                <input type="email" class="form-control1" name="email" value="{{ old('email') }}" placeholder="Your Email">
                 @if ($errors->has('email'))
                     <span class="help-block">
                     <strong>{{ $errors->first('email') }}</strong>
@@ -56,8 +55,7 @@
             </div>
 
             <div class="form-group has-feedback{{ $errors->has('password') ? ' has-error' : '' }}">
-                <input type="password" class="form-control" placeholder="Password" name="password">
-                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                <input type="password" class="form-control1" placeholder="Your Password" name="password">
                 @if ($errors->has('password'))
                     <span class="help-block">
                     <strong>{{ $errors->first('password') }}</strong>
@@ -65,29 +63,28 @@
                 @endif
 
             </div>
-            <div class="row">
-                <div class="col-xs-8">
-                    <div class="checkbox icheck">
-                        <label>
-                            <input type="checkbox" name="remember"> Remember Me
-                        </label>
-                    </div>
-                </div>
-                <!-- /.col -->
-                <div class="col-xs-4">
-                    <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
-                </div>
-                <!-- /.col -->
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-auth">Login</button>
             </div>
-        </form>
+            <center>
+                <div class="col-md-12">
+                    <div class="g-recaptcha" data-sitekey="6Lc-gZYUAAAAAExms1i-_hJmtwQJ3CFMGLdrYunM"></div>
+                </div>
+            </center>
 
-        <a href="{{ url('/password/reset') }}">I forgot my password</a><br>
-        <a href="{{ url('/register') }}" class="text-center">Register a new membership</a>
+        <div class="loginForgot">
+            <a class="loginAnchor" href="{{ url('/password/reset') }}">I forgot my password</a><br>
+            <a href="#" class="text-center loginAnchor">Do you want to drive on ChauffeurX?</a>
+        </div>
+        </form>
+        </center>
+
 
     </div>
     <!-- /.login-box-body -->
 </div>
 <!-- /.login-box -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>

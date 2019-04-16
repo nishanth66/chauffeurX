@@ -13,7 +13,13 @@
 <!-- Image Field -->
 <div class="form-group">
     {!! Form::label('image', 'Image:') !!}
-    <p>{!! $rank->image !!}</p>
+    <p>
+        @if(isset($rank->image) && ($rank->image != '' || !empty($rank->image)))
+            <img src="{{asset('public/avatars').'/'.$rank->image}}" class="show-image">
+        @else
+            <img src="{{asset('public/image/default.jpg')}}" class="show-image">
+        @endif
+    </p>
 </div>
 
 <!-- Points Field -->
