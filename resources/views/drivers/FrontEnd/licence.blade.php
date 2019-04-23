@@ -13,10 +13,11 @@
             <br>
             <center>
                 <div class="col-md-12">
+                    @include('flash::message')
                     <form method="post" action="{{url('driver/verifyLicence')}}">
                         {{csrf_field()}}
                         <div class="form-group">
-                            <input class="form-control1" type="text" value="{{$driver->license}}" name="licence" placeholder="Your Driver License Number" required>
+                            <input class="form-control1" type="text" value="{{$driver->licence}}" name="licence" placeholder="Your Driver License Number" required>
                         </div>
                         <div class="form-group"> <!-- Date input -->
                             <input class="form-control1" value="{{$driver->licence_expire}}" id="date" name="date" placeholder="Expiry Date" readonly type="text"/>

@@ -134,7 +134,7 @@ class bookingApiController extends Controller
         return $response;
     }
 
-    public function displayPrice(Request $request)
+    public function displayPriceOld(Request $request)
     {
         if (categories::exists() == 0)
         {
@@ -190,6 +190,142 @@ class bookingApiController extends Controller
         $response['message'] = "Ride details fetched";
         $response['data'] = $rideDetails;
         return $response;
+    }
+    public function displayPrice(Request $request)
+    {
+        if (passengers::whereId($request->userid)->where('phone',$request->phone)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'User not found';
+            $response['data']    = [];
+        }
+        $src= explode( ",", $request->source);
+        if ( isset( $src[0] ) && isset( $src[1] ) ) {
+            $latSrc = $src[0];
+            $lonSrc = $src[1];
+        }
+        else {
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'Enter Valid Source Location.';
+
+            return $response;
+        }
+        $dest = explode( ",", $request->destination );
+        if ( isset( $dest[0] ) && isset( $dest[1] ) ) {
+            $latDest = $dest[0];
+            $lonDest = $dest[1];
+        }
+        else {
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'Enter Valid Destination Location.';
+
+            return $response;
+        }
+        $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
+        $input['distance'] = $distanceTime['distance'];
+        $input['estimated_time'] = $distanceTime['time'];
+
+        if (categories::exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status']     = 'failed';
+            $response['message']    = 'Admin didnt setup any Category';
+            $response['data']    = [];
+        }
+        $userDetais = explode('-',$request->user_lat_lng);
+        if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])))
+        {
+            $response['status'] = "Failed";
+            $response['code'] = 500;
+            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'lat-lng'";
+            $response['data'] = [];
+            return $response;
+        }
+        if (!isset($request->payment_method_id) || $request->payment_method_id == '' || empty($request->payment_method_id))
+        {
+            $drivers=$this->getDriver($request->discount,$request->favoriteDriver,$request->userid);
+
+            if ($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 0)
+            {
+                $response['code'] = 500;
+                $response['status'] = "Failed";
+                $response['message'] = "No Favorite Drivers are Found!";
+                $response['favorite_driver_filter'] = 0;
+                $response['discount_available_filter'] = 0;
+                $response['data'] = [];
+                return $response;
+            }
+            elseif($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 1)
+            {
+                $response['code'] = 500;
+                $response['status'] = "Failed";
+                $response['message'] = "No Favorite Drivers with Offering Discount are Found!";
+                $response['favorite_driver_filter'] = 0;
+                $response['discount_available_filter'] = 0;
+                $response['data'] = [];
+                return $response;
+
+            }
+            elseif (count($drivers) < 1)
+            {
+                $response['code'] = 500;
+                $response['status'] = "Failed";
+                $response['message'] = "No Drivers are Found!";
+                $response['favorite_driver_filter'] = 0;
+                $response['discount_available_filter'] = 0;
+                $response['data'] = [];
+                return $response;
+            }
+        }
+        else
+        {
+            $drivers=$this->getDriver($request->discount,$request->favoriteDriver,$request->userid,$request->payment_method_id);
+
+            if ($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 0)
+            {
+                $response['code'] = 500;
+                $response['status'] = "Failed";
+                $response['message'] = "No Favorite Drivers are Found!";
+                $response['favorite_driver_filter'] = 0;
+                $response['discount_available_filter'] = 0;
+                $response['data'] = [];
+                return $response;
+
+            }
+            elseif($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 1)
+            {
+                $response['code'] = 500;
+                $response['status'] = "Failed";
+                $response['message'] = "No Favorite Drivers with Offering Discount are Found!";
+                $response['favorite_driver_filter'] = 0;
+                $response['discount_available_filter'] = 0;
+                $response['data'] = [];
+                return $response;
+
+            }
+            elseif (count($drivers) < 1)
+            {
+                $response['code'] = 500;
+                $response['status'] = "Failed";
+                $response['message'] = "No Drivers are Found!";
+                $response['favorite_driver_filter'] = 0;
+                $response['discount_available_filter'] = 0;
+                $response['data'] = [];
+                return $response;
+            }
+        }
+        $latSrc = $userDetais[0];
+        $lonSrc = $userDetais[1];
+        $responseDriver=app('App\Http\Controllers\api\bookingDriverApiController')->fetchNearbyDrivers($drivers,$latSrc,$lonSrc);
+        $drivers = $responseDriver['data'];
+
+        $fetchedDrivers = $this->getFilteredDriver($drivers,$request,$distanceTime);
+        return $fetchedDrivers;
+
+
     }
 
     public function RequestBooking(Request $request)
@@ -312,7 +448,7 @@ class bookingApiController extends Controller
             {
                 $response['status'] = "Failed";
                 $response['code'] = 500;
-                $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
+                $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'lat-lng'";
                 $response['data'] = [];
                 return $response;
             }
@@ -321,8 +457,6 @@ class bookingApiController extends Controller
             $long1 = $userDetais[1];
             if (isset($request->payment_method_id)  && $request->payment_method_id != '' || !empty($request->payment_method_id))
             {
-                $drivers=app('App\Http\Controllers\api\bookingDriverApiController')->driverByCategory($request->categoryId,$request->payment_method_id);
-//                $drivers = $this->driverByCategory($request->categoryId,$request->payment_method_id);
                 if (DB::table('payment_methods')->whereId($request->payment_method_id)->exists() == 0)
                 {
                     $response['status'] = "Failed";
@@ -331,20 +465,74 @@ class bookingApiController extends Controller
                     $response['data'] = [];
                     return $response;
                 }
+                $drivers=app('App\Http\Controllers\api\bookingDriverApiController')->driverByCategory($request->categoryId,$request->favoriteDriver,$request->discount,$request->userid,$request->payment_method_id);
                 $input['payment_method'] = $request->payment_method_id;
+                if ($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 0)
+                {
+                    $response['code'] = 500;
+                    $response['status'] = "Failed";
+                    $response['message'] = "No Favorite Drivers are Found!";
+                    $response['favorite_driver_filter'] = 0;
+                    $response['discount_available_filter'] = 0;
+                    $response['data'] = [];
+                    return $response;
+                }
+                elseif($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 1)
+                {
+                    $response['code'] = 500;
+                    $response['status'] = "Failed";
+                    $response['message'] = "No Favorite Drivers with Offering Discount are Found!";
+                    $response['favorite_driver_filter'] = 0;
+                    $response['discount_available_filter'] = 0;
+                    $response['data'] = [];
+                    return $response;
+
+                }
+                elseif (count($drivers) < 1)
+                {
+                    $response['code'] = 500;
+                    $response['status'] = "Failed";
+                    $response['message'] = "No Drivers are Found!";
+                    $response['favorite_driver_filter'] = 0;
+                    $response['discount_available_filter'] = 0;
+                    $response['data'] = [];
+                    return $response;
+                }
             }
             else
             {
-                $drivers=app('App\Http\Controllers\api\bookingDriverApiController')->driverByCategory($request->categoryId);
-//                $drivers = $this->driverByCategory($request->categoryId);
-            }
-            if (count($drivers) == 0)
-            {
-                $response['status'] = "Failed";
-                $response['code'] = 500;
-                $response['message'] = "No drivers are Active at the moment";
-                $response['data'] = [];
-                return $response;
+                $drivers=app('App\Http\Controllers\api\bookingDriverApiController')->driverByCategory($request->categoryId,$request->favoriteDriver,$request->discount,$request->userid);
+                if ($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 0)
+                {
+                    $response['code'] = 500;
+                    $response['status'] = "Failed";
+                    $response['message'] = "No Favorite Drivers are Found!";
+                    $response['favorite_driver_filter'] = 0;
+                    $response['discount_available_filter'] = 0;
+                    $response['data'] = [];
+                    return $response;
+                }
+                elseif($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 1)
+                {
+                    $response['code'] = 500;
+                    $response['status'] = "Failed";
+                    $response['message'] = "No Favorite Drivers with Offering Discount are Found!";
+                    $response['favorite_driver_filter'] = 0;
+                    $response['discount_available_filter'] = 0;
+                    $response['data'] = [];
+                    return $response;
+
+                }
+                elseif (count($drivers) < 1)
+                {
+                    $response['code'] = 500;
+                    $response['status'] = "Failed";
+                    $response['message'] = "No Drivers are Found!";
+                    $response['favorite_driver_filter'] = 0;
+                    $response['discount_available_filter'] = 0;
+                    $response['data'] = [];
+                    return $response;
+                }
             }
 //            $response = $this->fetchNearbyDrivers($drivers,$lat1,$long1);
             $response=app('App\Http\Controllers\api\bookingDriverApiController')->fetchNearbyDrivers($drivers,$lat1,$long1);
@@ -359,11 +547,10 @@ class bookingApiController extends Controller
             }
             foreach($response['data'] as $driver)
             {
-                if (driver::whereId($driver['driverid'])->where('isAvailable',1)->exists())
+                if (driver::whereId($driver['driverid'])->where('isAvailable',1)->where('status',1)->exists())
                 {
                     $driverid = $driver['driverid'];
                     $score[$driverid] = app('App\Http\Controllers\api\bookingDriverApiController')->assignDriver($driverid,$lat1,$long1);
-//                    $score[$driverid] = $this->assignDriver($driverid,$lat1,$long1);
                 }
             }
             if (isset($score) && count($score) > 0)
@@ -372,7 +559,7 @@ class bookingApiController extends Controller
                 $driver_score = max($score);
 //                ******************* Push notification ********************
 //                                    Code to push notification
-                $input['driverid'] = $driverid;
+//                $input['driverid'] = $driverid;
 //********************************************************************************************
                 unset($score[$driverid]);
                 $newScore = "";
@@ -422,6 +609,7 @@ class bookingApiController extends Controller
 
             $response['status'] = "Success";
             $response['code'] = 200;
+            $response['favorite_driver'] = $request->favoriteDriver;
             $response['message'] = "Booking Saved Successfully!";
             $response['data'] = $booking;
         }
@@ -434,6 +622,7 @@ class bookingApiController extends Controller
         }
         return $response;
     }
+
 
     public function editBooking(Request $request)
     {
@@ -596,6 +785,7 @@ class bookingApiController extends Controller
 
             $updateBooking['status'] = "cancelled";
             $updateBooking['cancelled_at'] = new \DateTime();
+            $updateBooking['cancelled_by'] = "user";
             booking::whereId($request->bookingid)->update($updateBooking);
 
             if (template::where('type','system')->where('title','Booking Cancel')->exists())
@@ -1014,7 +1204,190 @@ class bookingApiController extends Controller
         return $destination;
     }
 
+    function getDriver($discount,$favorite,$userid,$payment=null)
+    {
+        if ($discount == 0)
+        {
+            $drivers = driver::where('status',1)->where('isAvailable',1)->get();
+        }
+        else
+        {
+            $drivers = driver::where('status',1)->where('isAvailable',1)->where('discount','!=',0)->orderby('discount','desc')->get();
+        }
 
+        if($payment != null && $favorite == 0)
+        {
+            $payments = DB::table('driver_payment_method')->where('payment_method_id',$payment)->get();
+            $paymentDrivers = [];
+            foreach ($payments as $payment)
+            {
+                foreach ($drivers as $driver)
+                {
+                    if ($driver->id == $payment->driverid)
+                    {
+                        array_push($paymentDrivers,$driver);
+                        break;
+                    }
+                }
+            }
+            return $paymentDrivers;
+        }
+        elseif (($payment == null || $payment == '') && $favorite == 1)
+        {
+            $all_driver = [];
+            $favDrivers = favDriver::where('userid',$userid)->get();
+            foreach ($favDrivers as $fav)
+            {
+                foreach ($drivers as $driver)
+                {
+                    if ($driver->id == $fav->driverid)
+                    {
+                        array_push($all_driver,$driver);
+                        break;
+                    }
+                }
+            }
+            return $all_driver;
+        }
+        elseif (($payment != null || $payment != '') && $favorite == 1)
+        {
+            $paymentDrivers = DB::table('driver_payment_method')->where('payment_method_id',$payment)->get();
+            $favDrivers = favDriver::where('userid',$userid)->get();
+            $drivers = [];
+            foreach ($paymentDrivers as $pay)
+            {
+                foreach ($favDrivers as $fav)
+                {
+                    if ($fav->driverid == $pay->driverid)
+                    {
+                        if ($discount == 0)
+                        {
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->first();
+                        }
+                        else
+                        {
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('discount','!=',0)->first();
+                        }
+                        if (isset($driverDetail) && !empty($driverDetail))
+                        {
+                            array_push($drivers,$driverDetail);
+                            break;
+                        }
+                    }
+                }
+            }
+            return $drivers;
+        }
+        return $drivers;
+    }
+
+    function getFilteredDriver($drivers,$request,$distanceTime)
+    {
+        $totalDistance = $distanceTime['distance'];
+        $userDetais = explode('-',$request->user_lat_lng);
+        $latSrc = $userDetais[0];
+        $lonSrc = $userDetais[1];
+        $driverDetails = [];
+        foreach ($drivers as $driver)
+        {
+            $latDest = $driver['lat'];
+            $lonDest = $driver['long'];
+            $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
+            if(driverCategory::where('driverid',$driver['driverid'])->exists())
+            {
+                $driverCategories = driverCategory::where('driverid',$driver['driverid'])->first(['categoryid']);
+                $fetchDetails['driverid'] = $driver['driverid'];
+                $fetchDetails['estimated_distance'] = $distanceTime['distance'];
+                $fetchDetails['estimated_time'] = $distanceTime['time'];
+                $fetchDetails['min'] = $distanceTime['min'];
+                if ($request->discount == 1)
+                {
+                    $fetchDetails['discount'] = $driver['discount'];
+                    $fetchDetails['discount_filter_applied'] = 1;
+                }
+                else
+                {
+                    $fetchDetails['discount_filter_applied'] = 0;
+                }
+                if ($request->favoriteDriver == 1)
+                {
+                    $fetchDetails['favorite_driver_filter_applied'] = 1;
+                }
+                else
+                {
+                    $fetchDetails['favorite_driver_filter_applied'] = 0;
+                }
+                $fetchDetails['category'] = $driverCategories->categoryid;
+                $distanceDriver[$fetchDetails['driverid']] = $fetchDetails['min'];
+                array_push($driverDetails,$fetchDetails);
+            }
+            else
+            {
+                continue;
+            }
+
+        }
+        $categories = categories::get();
+        $i=0;
+        while($i < count($driverDetails))
+        {
+            foreach ($categories as $category)
+            {
+                if ($driverDetails[$i]['category'] == $category->id)
+                {
+                    $min = $driverDetails[$i];
+                    foreach ($driverDetails as $driver)
+                    {
+                        if ($request->discount == 0)
+                        {
+                            if (($driver['min'] < $min['min']) && $driver['category'] == $category->id)
+                            {
+                                $min = $driver;
+                            }
+                        }
+                        else
+                        {
+                            if (($driver['discount'] > $min['discount']) && $driver['category'] == $category->id)
+                            {
+                                $min = $driver;
+                            }
+                            elseif (($driver['discount'] == $min['discount']) && $driver['category'] == $category->id)
+                            {
+                                if (($driver['min'] < $min['min']))
+                                {
+                                    $min = $driver;
+                                }
+                            }
+                        }
+                    }
+                    $fetchedDriver[$category->id] = $min;
+                }
+            }
+            $i++;
+        }
+        $fetchedDriverRes = [];
+        foreach ($fetchedDriver as $fetch)
+        {
+            $category = categories::whereId($fetch['category'])->first();
+            $fetch['category_name'] = $category->name;
+            $fetch['category_image'] = asset('public/avatars').'/'.$category->image;
+            $price =($this->calculatePrice($category->id,$totalDistance));
+            $fetch['actual_price'] = number_format($price,2);
+
+            if ($request->discount == 1)
+            {
+                $discount = (float)$fetch['discount'];
+                $totalDiscount = (float)((($price)*($discount))/100);
+                $fetch['discount_price'] = number_format($price-$totalDiscount,2);
+            }
+            else
+            {
+                $fetch['discount_price'] = number_format($price,2);
+            }
+            array_push($fetchedDriverRes,$fetch);
+        }
+        return $fetchedDriverRes;
+    }
 
 
 }

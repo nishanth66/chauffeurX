@@ -11,6 +11,7 @@
             <br>
             <center>
                 <div class="col-md-12">
+                    @include('flash::message')
                     <form method="post" action="{{url('driver/address')}}">
                         {{csrf_field()}}
                         <div class="form-group">

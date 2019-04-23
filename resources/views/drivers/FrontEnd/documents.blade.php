@@ -17,7 +17,8 @@
 <div class="container-fluid">
     <div class="col-md-12 align login-div">
         <center>
-            <form method="post" action="{{url('driver/documents')}}">
+            <form method="post" enctype="multipart/form-data" action="{{url('driver/documents')}}">
+                @include('flash::message')
                 {{csrf_field()}}
                     <div class="col-md-6 col-sm-6" id="doc1">
                         <p class="textclr">Thanks {{$name}}.<br> Now upload your driver's license <br> <br> If you don't have it with you, you can come back later, login and you will get to this very page</p>
@@ -26,7 +27,11 @@
 
                             <div class="col-md-12">
                                 <div class="form-group" style="position: relative;">
-                                    <img src="{{asset('public/image/new-drivers-license-dmv.png')}}" class="license" id="preview">
+                                    @if(isset($driver) && $driver->driving_licence != '' || !empty($driver->driving_licence))
+                                        <img src="{{asset('public/avatars').'/'.$driver->driving_licence}}" class="license" id="preview">
+                                    @else
+                                        <img src="{{asset('public/image/new-drivers-license-dmv.png')}}" class="license" id="preview">
+                                    @endif
                                     <button type="button" class="btn-edit" onclick="triggerUpload()"><i class="fa fa-pencil"></i></button>
                                     <input type="file" name="driving_licence" style="display: none;" id="license" accept="image/*">
                                 </div>
@@ -43,7 +48,11 @@
 
                             <div class="col-md-12">
                                 <div class="form-group" style="position: relative;">
-                                    <img src="{{asset('public/image/insurance.png')}}" class="license" id="preview2">
+                                    @if(isset($driver) && $driver->car_insurance != '' || !empty($driver->car_insurance))
+                                        <img src="{{asset('public/avatars').'/'.$driver->car_insurance}}" class="license" id="preview">
+                                    @else
+                                        <img src="{{asset('public/image/insurance.png')}}" class="license" id="preview2">
+                                    @endif
                                     <button type="button" class="btn-edit" onclick="triggerUpload2()"><i class="fa fa-pencil"></i></button>
                                     <input type="file" name="car_insurance" style="display: none;" id="car_insurance" accept="image/*">
                                 </div>
@@ -61,7 +70,11 @@
 
                             <div class="col-md-12">
                                 <div class="form-group" style="position: relative;">
-                                    <img src="{{asset('public/image/rc.png')}}" class="license" id="preview3">
+                                    @if(isset($driver) && $driver->car_reg != '' || !empty($driver->car_reg))
+                                        <img src="{{asset('public/avatars').'/'.$driver->car_reg}}" class="license" id="preview">
+                                    @else
+                                        <img src="{{asset('public/image/rc.png')}}" class="license" id="preview3">
+                                    @endif
                                     <button type="button" class="btn-edit" onclick="triggerUpload3()"><i class="fa fa-pencil"></i></button>
                                     <input type="file" name="car_reg" style="display: none;" id="car_reg" accept="image/*">
                                 </div>
@@ -79,7 +92,11 @@
 
                             <div class="col-md-12">
                                 <div class="form-group" style="position: relative;">
-                                    <img src="{{asset('public/image/inspect.png')}}" class="license" id="preview4">
+                                    @if(isset($driver) && $driver->car_inspection != '' || !empty($driver->car_inspection))
+                                        <img src="{{asset('public/avatars').'/'.$driver->car_inspection}}" class="license" id="preview">
+                                    @else
+                                        <img src="{{asset('public/image/inspect.png')}}" class="license" id="preview4">
+                                    @endif
                                     <button type="button" class="btn-edit" onclick="triggerUpload4()"><i class="fa fa-pencil"></i></button>
                                     <input type="file" name="car_inspection" style="display: none;" id="car_inspection" accept="image/*">
                                 </div>

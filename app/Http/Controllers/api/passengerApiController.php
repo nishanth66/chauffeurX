@@ -16,6 +16,7 @@ use App\Models\notification;
 use App\Models\passengers;
 use App\Models\passengerStripe;
 use App\Models\price;
+use App\Models\rank;
 use App\Models\rating;
 use App\Models\template;
 use App\Models\userCoupons;
@@ -642,6 +643,60 @@ class passengerApiController extends Controller
             $error['code'] = 500;
             $error['message'] = "Invitation send Failed";
             return $error;
+        }
+    }
+
+    public function discountAvailable(Request $request)
+    {
+        if (passengers::whereId($request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['messgae'] = "User not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        $user = passengers::whereId($request->userid)->first();
+        $ranks = rank::get();
+        $coins = (float)$user->coins;
+        foreach ($ranks as $rank)
+        {
+            $requiredCoin = (float)$rank->points;
+            if (rank::whereId($rank->id +1)->exists())
+            {
+                $nextRank = rank::whereId($rank->id +1)->first();
+                $nextCoin = (float)$nextRank->points;
+                if ($coins >= $requiredCoin && $coins < $nextCoin)
+                {
+                    $update['rankid'] = $rank->id;
+                    passengers::whereId($user->id)->update($update);
+                }
+            }
+            elseif($coins >= $requiredCoin)
+            {
+                $update['rankid'] = $rank->id;
+                passengers::whereId($user->id)->update($update);
+            }
+        }
+        $user = passengers::whereId($user->id)->first();
+        if ($user->rankid != 0)
+        {
+            $rank = rank::whereId($user->rankid)->first(['discount']);
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "Discount Fetched Successfully";
+            $response['discount_available'] = 1;
+            $response['discount'] = $rank->discount;
+            return $response;
+        }
+        else
+        {
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "Discount not available";
+            $response['discount_available'] = 0;
+            $response['discount'] = 0;
+            return $response;
         }
     }
 

@@ -11,7 +11,7 @@ use Flash;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Response;
 
-class musicPreferenceController extends AppBaseController
+class musicPreferenceController extends Controller
 {
     /** @var  musicPreferenceRepository */
     private $musicPreferenceRepository;

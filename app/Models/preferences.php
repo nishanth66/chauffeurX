@@ -26,6 +26,7 @@ class preferences extends Model
 
 
     public $fillable = [
+        'userid',
         'type_of_music',
         'like_to_talk_or_not',
         'like_to_have_the_door_opened',
@@ -38,6 +39,7 @@ class preferences extends Model
      * @var array
      */
     protected $casts = [
+        'userid' => 'string',
         'type_of_music' => 'string',
         'like_to_talk_or_not' => 'string',
         'like_to_have_the_door_opened' => 'string',

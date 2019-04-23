@@ -63,27 +63,20 @@ class RegisterController extends Controller
         if ($data['status'] == 1)
         {
             $array['email'] = $data['email'];
-            $array['phone'] = $data['code'].$data['phone'];
-            $phone_otp = substr(str_shuffle("012345678901234567890123456789"), 0, 6);
             $email_otp = substr(str_shuffle("012345678901234567890123456789"), 0, 6);
             $array['otp'] = $email_otp;
             $input['password'] = Hash::make($data['password']);
-            $input['code'] = $data['code'];
-            $input['phone'] = $data['code'].$data['phone'];
             $input['email'] = $data['email'];
             $input['email_otp'] = $email_otp;
-            $input['phone_otp'] = $phone_otp;
             Mail::send('emails.verify', ['array' => $array], function ($message) use ($array) {
                 $message->to($array['email'])->subject("Verify Email");
             });
-            $response=app('App\Http\Controllers\api\Controller')->sendOtp($this->sid,$this->token,$array['phone'],$phone_otp);
             $driver = driver::create($input);
         }
         if ($data['status'] == 1)
         {
             return User::create([
                 'email' => $data['email'],
-                'phone' => $data['code'].$data['phone'],
                 'password' => Hash::make($data['password']),
                 'status' => $data['status'],
 

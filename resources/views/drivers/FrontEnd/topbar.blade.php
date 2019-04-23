@@ -31,11 +31,16 @@
             font-size: larger;
             width: 75%;
         }
+        img {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 </head>
 <body>
 <div class="container-fluid">
-    <div class="row header align">
+    <div class="row header">
         <img src="{{asset('public/image/chauffeurX.jpg')}}">
     </div>
 </div>

@@ -30,6 +30,7 @@ Route::post('/getNotifications', 'api\passengerApiController@getNotifications')-
 Route::post('/activateCard', 'api\passengerApiController@activateCard')->name('activateCard');
 Route::post('/inviteFriends', 'api\passengerApiController@inviteFriends')->name('inviteFriends');
 Route::post('/addStripeCard', 'api\passengerApiController@addStripeCard')->name('addStripeCard');
+Route::post('/discountAvailable', 'api\passengerApiController@discountAvailable')->name('discountAvailable');
 
 
 
@@ -100,6 +101,10 @@ Route::post('/editFavoriteAddress', 'api\favoriteAddressAPIController@editFavori
 Route::post('/deleteFavoriteAddress', 'api\favoriteAddressAPIController@deleteFavoriteAddress')->name('deleteFavoriteAddress');
 
 
+//*************************************************************Preferences********************************************
+Route::get('/getMusicPreference', 'api\preferencesAPIController@getMusicPreference')->name('getMusicPreference');
+Route::post('/userPreference', 'api\preferencesAPIController@addPreference')->name('addPreference');
+
 
 
 
@@ -125,8 +130,12 @@ Route::prefix('driver')->group(function () {
         Route::post('/myCategories', 'driverApiController@myCategories')->name('myCategories');
         Route::post('/inviteFriends', 'driverApiController@inviteFriends')->name('inviteFriends');
         Route::post('/acceptBooking', 'driverApiController@acceptBooking')->name('acceptBooking');
+        Route::post('/rejectBooking', 'driverApiController@rejectBooking')->name('rejectBooking');
+        Route::post('/cancellRide', 'driverApiController@cancellRide')->name('cancellRide');
+        Route::post('/reachSource', 'driverApiController@reachSource')->name('reachSource');
         Route::post('/PaymentCompleted', 'driverApiController@PaymentCompleted')->name('PaymentCompleted');
         Route::post('/changeAvailableStatus', 'driverApiController@changeAvailableStatus')->name('changeAvailableStatus');
+        Route::post('/userPreferences', 'driverApiController@userPreferences')->name('userPreferences');
     });
 });
 

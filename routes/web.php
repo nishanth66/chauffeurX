@@ -17,6 +17,10 @@ Route::get('/', function () {
 
 Auth::routes();
 
+Route::get('logout',function () {
+    Auth::logout();
+    return redirect('login');
+});
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::resource('bookings', 'bookingController');
@@ -106,6 +110,9 @@ Route::resource('ranks', 'rankController');
 
 Route::prefix('driver/')->group(function () {
 //    login/register
+    Route::get('home','driverController@home');
+    Route::get('approved','driverController@index');
+    Route::get('pending','driverController@pending');
     Route::get('register','frontEnd@register');
     Route::get('login','frontEnd@login');
 
@@ -126,17 +133,29 @@ Route::prefix('driver/')->group(function () {
     Route::post('verifyLicence','driverController@SaveverifyLicence');
 
     Route::get('documents','driverController@documents');
+    Route::post('documents','driverController@savedocuments');
 
+    Route::get('agree','driverController@agree');
+    Route::post('agree','driverController@saveAgree');
 
+    Route::get('SubmitDocument','driverController@SubmitDocument');
 
-    Route::get('SubmitDocument','frontEnd@SubmitDocument');
+    Route::get('licence/{id}','driverController@licenceDetails');
 
-    Route::get('profile/5',function () {
-        return view('drivers.FrontEnd.profile_5');
-    });
-    Route::get('profile/8',function () {
-        return view('drivers.FrontEnd.profile_8');
-    });
+    Route::get('accept/{id}','driverController@accept');
+
+    Route::get('reject/{id}','driverController@reject');
 });
 
 Route::resource('musicPreferences', 'musicPreferenceController');
+Route::resource('availableCities', 'availableCitiesController');
+
+Route::resource('pricePerMinutes', 'pricePerMinuteController');
+
+
+
+Route::resource('basicFares', 'basicFareController');
+
+Route::resource('minimumFares', 'minimumFareController');
+
+Route::resource('serviceFees', 'serviceFeeController');

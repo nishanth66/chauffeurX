@@ -66,6 +66,7 @@ class driver extends Model
         'documents',
         'phone_otp',
         'email_otp',
+        'signature',
     ];
 
     /**
@@ -110,6 +111,7 @@ class driver extends Model
         'documents' => 'string',
         'phone_otp' => 'string',
         'email_otp' => 'string',
+        'signature' => 'string',
     ];
 
     /**

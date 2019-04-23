@@ -1,7 +1,10 @@
 
-@if(Auth::user()->status == 0 || Auth::user()->status == 1)
-<li class="{{ Request::is('cencellations*') ? 'active' : '' }}">
-    <a href="{!! url('cencellations') !!}"><i class="fa fa-gift"></i><span>Cancellation</span></a>
+@if(Auth::user()->status == 0)
+<li class="{{ Request::is('driver/approved*') ? 'active' : '' }}">
+    <a href="{!! url('driver/approved') !!}"><i class="fa fa-user"></i><span>Approved Drivers</span></a>
+</li>
+<li class="{{ Request::is('driver/pending*') ? 'active' : '' }}">
+    <a href="{!! url('driver/pending') !!}"><i class="fa fa-user"></i><span>Pending Drivers</span></a>
 </li>
 
 <li class="{{ Request::is('driverDistance*') ? 'active' : '' }}">
@@ -35,6 +38,20 @@
 </li>
 <li class="{{ Request::is('musicPreferences*') ? 'active' : '' }}">
     <a href="{!! route('musicPreferences.index') !!}"><i class="fa fa-music"></i><span>Music Preferences</span></a>
+</li>
+<li class="treeview {{ Request::is('basicFares*') || Request::is('pricePerMinutes*') || Request::is('serviceFees*') || Request::is('minimumFares*') || Request::is('ridesCoins')|| Request::is('tippingCoins')|| Request::is('addFavoriteCoins')|| Request::is('newCityCoins')|| Request::is('deleteAppCoins')|| Request::is('newCategoryCoins') ? 'active' : '' }}">
+    <a href="#"><i class="fa fa-cog"></i> <span>Prices</span>
+        <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+              </span>
+    </a>
+    <ul class="treeview-menu">
+        <li class="{{Request::is('basicFares*') ? 'active' : '' }}"><a href="{!! route('basicFares.index') !!}"><i class="fa fa-angle-right"></i>Basic Fare</a></li>
+        <li class="{{Request::is('serviceFees*') ? 'active' : '' }}"><a href="{!! route('serviceFees.index') !!}"><i class="fa fa-angle-right"></i>Service Fee</a></li>
+        <li class="{{Request::is('minimumFares*') ? 'active' : '' }}"><a href="{!! route('minimumFares.index') !!}"><i class="fa fa-angle-right"></i>Minimum Fare</a></li>
+        <li class="{{Request::is('prices*') ? 'active' : '' }}"><a href="{!! route('prices.index') !!}"><i class="fa fa-angle-right"></i>Price Per kilometre</a></li>
+        <li class="{{Request::is('pricePerMinutes*') ? 'active' : '' }}"><a href="{!! route('pricePerMinutes.index') !!}"><i class="fa fa-angle-right"></i>Price Per Minute</a></li>
+    </ul>
 </li>
 <li class="treeview {{ Request::is('createAccountCoins') || Request::is('invitingCoins') || Request::is('sharingCoins') || Request::is('kiloMetreCoins') || Request::is('ridesCoins')|| Request::is('tippingCoins')|| Request::is('addFavoriteCoins')|| Request::is('newCityCoins')|| Request::is('deleteAppCoins')|| Request::is('newCategoryCoins') ? 'active' : '' }}">
     <a href="#"><i class="fa fa-cog"></i> <span>Coins Settings</span>
@@ -74,4 +91,25 @@
 {{--</li>--}}
 
 
+
+<li class="{{ Request::is('availableCities*') ? 'active' : '' }}">
+    <a href="{!! route('availableCities.index') !!}"><i class="fa fa-edit"></i><span>Available Cities</span></a>
+</li>
+
+<li class="{{ Request::is('pricePerMinutes*') ? 'active' : '' }}">
+    <a href="{!! route('pricePerMinutes.index') !!}"><i class="fa fa-edit"></i><span>Price Per Minutes</span></a>
+</li>
+
+
+<li class="{{ Request::is('basicFares*') ? 'active' : '' }}">
+    <a href="{!! route('basicFares.index') !!}"><i class="fa fa-edit"></i><span>Basic Fares</span></a>
+</li>
+
+<li class="{{ Request::is('minimumFares*') ? 'active' : '' }}">
+    <a href="{!! route('minimumFares.index') !!}"><i class="fa fa-edit"></i><span>Minimum Fares</span></a>
+</li>
+
+<li class="{{ Request::is('serviceFees*') ? 'active' : '' }}">
+    <a href="{!! route('serviceFees.index') !!}"><i class="fa fa-edit"></i><span>Service Fees</span></a>
+</li>
 

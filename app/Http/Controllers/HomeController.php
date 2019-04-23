@@ -53,9 +53,17 @@ class HomeController extends Controller
             {
                 return redirect('driver/documents');
             }
+            elseif (empty($driver->signature) || $driver->signature == '')
+            {
+                return redirect('driver/agree');
+            }
             elseif ($driver->status != 'accepted')
             {
-
+                return redirect('driver/SubmitDocument');
+            }
+            else
+            {
+                return redirect('driver/home');
             }
         }
     }

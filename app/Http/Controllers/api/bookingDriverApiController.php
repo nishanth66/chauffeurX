@@ -10,6 +10,7 @@ use App\Models\driver;
 use App\Models\driverCategory;
 use App\Models\driverTips;
 use App\Models\favDriver;
+use App\Models\favoriteAddress;
 use App\Models\filter;
 use App\Models\invitedFriends;
 use App\Models\notification;
@@ -243,6 +244,7 @@ class bookingDriverApiController extends Controller
                 continue;
             }
             $coordinates['driverid'] = $driver->id;
+            $coordinates['discount'] = $driver->discount;
             array_push($driverLatLng,$coordinates);
         }
         foreach ($driverLatLng as $driver)
@@ -277,7 +279,7 @@ class bookingDriverApiController extends Controller
                     $array['lat'] = $lat2;
                     $array['long'] = $long2;
                     $array['driverid'] = $id;
-                    $array['driverId'] = $driver['driverId'];
+                    $array['discount'] = $driver['discount'];
                     $latLng[$id] = $array;
                 }
             }
@@ -285,7 +287,7 @@ class bookingDriverApiController extends Controller
         if (isset($distance) && ($distance != '' || !empty($distance)))
         {
             asort($distance);
-            if (count($distance) > 0)
+            if (count($distance) > 10)
             {
                 $output = array_slice($distance,0,10,true);
             }
@@ -312,18 +314,83 @@ class bookingDriverApiController extends Controller
             return $response;
         }
     }
-    function driverByCategory($categoryid,$payment=null)
+
+    function driverByCategory($categoryid,$fav,$discount,$userid,$payment=null)
     {
-        if ($payment == null || $payment == '')
+        if ($discount == 0)
         {
-            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1");
+            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1'");
         }
         else
         {
-            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1");
+            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1' and discount != 0");
+        }
+        if($payment != null && $fav == 0)
+        {
+            $payments = DB::table('driver_payment_method')->where('payment_method_id',$payment)->get();
+            $paymentDrivers = [];
+            foreach ($payments as $payment)
+            {
+                foreach ($drivers as $driver)
+                {
+                    if ($driver->id == $payment->driverid)
+                    {
+                        array_push($paymentDrivers,$driver);
+                        break;
+                    }
+                }
+            }
+            return $paymentDrivers;
+        }
+        elseif (($payment == null || $payment == '') && $fav == 1)
+        {
+            $all_driver = [];
+            $favDrivers = favDriver::where('userid',$userid)->get();
+            foreach ($favDrivers as $fav)
+            {
+                foreach ($drivers as $driver)
+                {
+                    if ($driver->id == $fav->driverid)
+                    {
+                        array_push($all_driver,$driver);
+                        break;
+                    }
+                }
+            }
+            return $all_driver;
+        }
+        elseif (($payment != null || $payment != '') && $fav == 1)
+        {
+            $paymentDrivers = DB::table('driver_payment_method')->where('payment_method_id',$payment)->get();
+            $favDrivers = favDriver::where('userid',$userid)->get();
+            $drivers = [];
+            foreach ($paymentDrivers as $pay)
+            {
+                foreach ($favDrivers as $fav)
+                {
+                    if ($fav->driverid == $pay->driverid)
+                    {
+                        if ($discount == 0)
+                        {
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->first();
+                        }
+                        else
+                        {
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('discount','!=',0)->first();
+                        }
+                        if (isset($driverDetail) && !empty($driverDetail))
+                        {
+                            array_push($drivers,$driverDetail);
+                            break;
+                        }
+                    }
+                }
+            }
+            return $drivers;
         }
         return $drivers;
     }
+
     function assignDriver($driverid,$lat1,$long1)
     {
         $score[$driverid] = 1/$this->getDriverWaitTime($driverid,$lat1,$long1);

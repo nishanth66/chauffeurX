@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Http\Requests\API\CreatefavoriteAddressAPIRequest;
 use App\Http\Requests\API\UpdatefavoriteAddressAPIRequest;
 use App\Models\favoriteAddress;
+use App\Models\musicPreference;
 use App\Models\passengers;
 use App\Repositories\favoriteAddressRepository;
 use Illuminate\Http\Request;
@@ -147,9 +148,5 @@ class favoriteAddressAPIController extends Controller
         $response['message'] = "Address Deleted Successfully";
         $response['data'] = [];
         return $response;
-    }
-    public function addPreference(Request $request)
-    {
-        
     }
 }

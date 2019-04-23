@@ -11,7 +11,7 @@
             <div class="box-body">
                 <div class="row" style="padding-left: 20px">
                     @include('drivers.show_fields')
-                    <a href="{!! route('drivers.index') !!}" class="btn btn-default">Back</a>
+                    <a href="javascript:history.back()" class="btn btn-default">Back</a>
                 </div>
             </div>
         </div>

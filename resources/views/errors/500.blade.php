@@ -1,11 +1,10 @@
-@extends('errors::illustrated-layout')
-
-@section('code', '500')
-@section('title', __('Error'))
-
-@section('image')
-    <div style="background-image: url({{ asset('/svg/500.svg') }});" class="absolute pin bg-cover bg-no-repeat md:bg-left lg:bg-center">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<div class="page_content_wrap">
+    <div class="content_wrap">
+        <div class="col-md-12" style="display:flex;align-items: center;justify-content: center">
+            <div class="col-md-8">
+                <img src="{{asset('public/errors/500.png')}}" style="width: 100%;">
+            </div>
+        </div>
     </div>
-@endsection
-
-@section('message', __('Whoops, something went wrong on our servers.'))
+</div>

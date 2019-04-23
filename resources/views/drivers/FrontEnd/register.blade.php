@@ -31,37 +31,7 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     @include('drivers.FrontEnd.topbar')
-    <style>
-        .input-group>.input-group-append>.btn, .input-group>.input-group-append>.input-group-text, .input-group>.input-group-prepend:first-child>.btn:not(:first-child), .input-group>.input-group-prepend:first-child>.input-group-text:not(:first-child), .input-group>.input-group-prepend:not(:first-child)>.btn, .input-group>.input-group-prepend:not(:first-child)>.input-group-text{
-            border-top-left-radius: 8px;
-            border-bottom-left-radius: 8px;
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-            background-color: white;
-            border-color: #4d68b0;
-            width: 60px;
-        }
 
-        .input-group>.custom-select:not(:first-child), .input-group>.form-control1:not(:first-child){
-            border-top-left-radius: 0 !important;
-            border-bottom-left-radius: 0 !important;
-        }
-        .input-group{
-            width: 75%;
-        }
-        .Code{
-            border: none !important;
-            height: 30px !important;
-            padding: 0 !important;
-            width: 100% !important;
-        }
-        .input-group-text{
-            padding: 0 !important;
-        }
-        .country{
-            width: 50% !important;
-        }
-    </style>
 </head>
 <body class="hold-transition register-page">
 <div class="register-box">
@@ -87,20 +57,7 @@
                 @endif
             </div>
 
-                <div class="input-group mb-2 form-group">
-                    <div class="input-group-append">
-                        <span class="input-group-text" id="basic-addon2">
-                            <select class="form-control1 Code" id="country" onchange="myFunc()" required>
-                            <option value="" selected disabled>Select a Country</option>
-                                @foreach($array as $country)
-                                    <option value="{{$country->code}}" <?php if ($code == $country->code) { echo "selected"; } ?>>{{$country->name}}({{$country->code}})</option>
-                                @endforeach
-                        </select>
-                        </span>
-                    </div>
-                    <input type="hidden" name="code" value="{{$code}}" id="code">
-                    <input type="text" class="form-control form-control1 country" placeholder="your phone" name="phone" aria-describedby="basic-addon2">
-                </div>
+
 
 
                 <div class="form-group has-feedback{{ $errors->has('password') ? ' has-error' : '' }}">
@@ -158,23 +115,6 @@
             increaseArea: '20%' // optional
         });
     });
-    $(document).ready(function() {
-        $('select option')[0].value=$('select option:selected').val();
-        $('select option')[0].innerHTML=$('select option:selected').val();
-        $("select").val($('select option:selected').val());
-
-        $('select').change(function() {
-            $('select option')[0].value=$('select option:selected').val();
-            $('select option')[0].innerHTML=$('select option:selected').val();
-            $("select").val($('select option:selected').val());
-        });
-    });
-    function myFunc()
-    {
-        var code = $('#country').val();
-//        console.log(code);
-        $('#code').val(code);
-    }
 </script>
 </body>
 </html>

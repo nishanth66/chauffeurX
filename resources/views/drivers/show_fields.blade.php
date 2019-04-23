@@ -1,55 +1,19 @@
-<!-- Id Field -->
-<div class="form-group">
-    {!! Form::label('id', 'Id:') !!}
-    <p>{!! $driver->id !!}</p>
-</div>
 
 <!-- Fname Field -->
 <div class="form-group">
-    {!! Form::label('fname', 'Fname:') !!}
-    <p>{!! $driver->fname !!}</p>
+    {!! Form::label('fname', 'First Name:') !!}
+    <p>{!! $driver->first_name !!}</p>
 </div>
 
 <!-- Lname Field -->
 <div class="form-group">
-    {!! Form::label('lname', 'Lname:') !!}
-    <p>{!! $driver->lname !!}</p>
+    {!! Form::label('lname', 'Middle Name:') !!}
+    <p>{!! $driver->middle_name !!}</p>
 </div>
 
-<!-- Image Field -->
 <div class="form-group">
-    {!! Form::label('image', 'Image:') !!}
-    <p>{!! $driver->image !!}</p>
-</div>
-
-<!-- Phone Field -->
-<div class="form-group">
-    {!! Form::label('phone', 'Phone:') !!}
-    <p>{!! $driver->phone !!}</p>
-</div>
-
-<!-- Car No Field -->
-<div class="form-group">
-    {!! Form::label('car_no', 'Car No:') !!}
-    <p>{!! $driver->car_no !!}</p>
-</div>
-
-<!-- Licence Field -->
-<div class="form-group">
-    {!! Form::label('licence', 'Licence:') !!}
-    <p>{!! $driver->licence !!}</p>
-</div>
-
-<!-- Isavailable Field -->
-<div class="form-group">
-    {!! Form::label('isAvailable', 'Isavailable:') !!}
-    <p>{!! $driver->isAvailable !!}</p>
-</div>
-
-<!-- Status Field -->
-<div class="form-group">
-    {!! Form::label('status', 'Status:') !!}
-    <p>{!! $driver->status !!}</p>
+    {!! Form::label('lname', 'Last Name:') !!}
+    <p>{!! $driver->last_name !!}</p>
 </div>
 
 <!-- Email Field -->
@@ -58,15 +22,16 @@
     <p>{!! $driver->email !!}</p>
 </div>
 
-<!-- Created At Field -->
+<!-- Phone Field -->
 <div class="form-group">
-    {!! Form::label('created_at', 'Created At:') !!}
-    <p>{!! $driver->created_at !!}</p>
+    {!! Form::label('phone', 'Phone:') !!}
+    <p>{!! $driver->phone !!}</p>
 </div>
 
-<!-- Updated At Field -->
+<!-- Licence Field -->
 <div class="form-group">
-    {!! Form::label('updated_at', 'Updated At:') !!}
-    <p>{!! $driver->updated_at !!}</p>
+    {!! Form::label('licence', 'Licence/Car Details:') !!}
+    <p><a href="{{url('driver/licence').'/'.$driver->id}}" class="btn btn-info">Details</a></p>
 </div>
+
 
