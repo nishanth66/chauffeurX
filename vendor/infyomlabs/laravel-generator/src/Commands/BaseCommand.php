@@ -136,7 +136,7 @@ class BaseCommand extends Command
         }
 
         if ($runMigration) {
-            if ($this->commandData->config->forceMigrate) {
+            if ($this->commandData->getOption('forceMigrate')) {
                 $this->call('migrate');
             } elseif (!$this->commandData->getOption('fromTable') and !$this->isSkip('migration')) {
                 if ($this->commandData->getOption('jsonFromGUI')) {
@@ -228,8 +228,10 @@ class BaseCommand extends Command
         return [
             ['fieldsFile', null, InputOption::VALUE_REQUIRED, 'Fields input as json file'],
             ['jsonFromGUI', null, InputOption::VALUE_REQUIRED, 'Direct Json string while using GUI interface'],
+            ['plural', null, InputOption::VALUE_REQUIRED, 'Plural Model name'],
             ['tableName', null, InputOption::VALUE_REQUIRED, 'Table Name'],
             ['fromTable', null, InputOption::VALUE_NONE, 'Generate from existing table'],
+            ['ignoreFields', null, InputOption::VALUE_REQUIRED, 'Ignore fields while generating from table'],
             ['save', null, InputOption::VALUE_NONE, 'Save model schema to file'],
             ['primary', null, InputOption::VALUE_REQUIRED, 'Custom primary key'],
             ['prefix', null, InputOption::VALUE_REQUIRED, 'Prefix for all files'],
@@ -238,6 +240,8 @@ class BaseCommand extends Command
             ['datatables', null, InputOption::VALUE_REQUIRED, 'Override datatables settings'],
             ['views', null, InputOption::VALUE_REQUIRED, 'Specify only the views you want generated: index,create,edit,show'],
             ['relations', null, InputOption::VALUE_NONE, 'Specify if you want to pass relationships for fields'],
+            ['softDelete', null, InputOption::VALUE_NONE, 'Soft Delete Option'],
+            ['forceMigrate', null, InputOption::VALUE_NONE, 'Specify if you want to run migration or not'],
         ];
     }
 

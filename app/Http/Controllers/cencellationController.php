@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatecencellationRequest;
 use App\Http\Requests\UpdatecencellationRequest;
+use App\Models\availableCities;
 use App\Models\cencellation;
 use App\Repositories\cencellationRepository;
 use App\Http\Controllers\AppBaseController;
@@ -30,15 +31,8 @@ class cencellationController extends Controller
      */
     public function index()
     {
-        if(cencellation::exists())
-        {
-            $cencellation = cencellation::first();
-            return view('cencellations.edit')->with('cencellation', $cencellation);
-        }
-        else
-        {
-            return view('cencellations.create');
-        }
+        $cencellations = cencellation::get();
+        return view('cencellations.index',compact('cencellations'));
     }
 
     /**
@@ -48,7 +42,8 @@ class cencellationController extends Controller
      */
     public function create()
     {
-        return view('cencellations.create');
+        $cities = availableCities::get();
+        return view('cencellations.create',compact('cities'));
     }
 
     /**
@@ -60,13 +55,20 @@ class cencellationController extends Controller
      */
     public function store(CreatecencellationRequest $request)
     {
-        $input = $request->all();
-
-        $cencellation = $this->cencellationRepository->create($input);
+        $input = $request->except('_token');
+        if (cencellation::where('city', $request->city)->exists())
+        {
+            Flash::error("The Entry for ".$request->city." is already Exists! Please try Editing it");
+            return redirect(route('cancellations.index'));
+        }
+        else
+        {
+            $cencellation = cencellation::create($input);
+        }
 
         Flash::success('Cancellation saved successfully.');
 
-        return redirect(route('cencellations.index'));
+        return redirect(route('cancellations.index'));
     }
 
     /**
@@ -83,7 +85,7 @@ class cencellationController extends Controller
         if (empty($cencellation)) {
             Flash::error('Cancellation not found');
 
-            return redirect(route('cencellations.index'));
+            return redirect(route('cancellations.index'));
         }
 
         return view('cencellations.show')->with('cencellation', $cencellation);
@@ -99,14 +101,14 @@ class cencellationController extends Controller
     public function edit($id)
     {
         $cencellation = $this->cencellationRepository->findWithoutFail($id);
-
+        $cities = availableCities::get();
         if (empty($cencellation)) {
             Flash::error('Cancellation not found');
 
-            return redirect(route('cencellations.index'));
+            return redirect(route('cancellations.index'));
         }
 
-        return view('cencellations.edit')->with('cencellation', $cencellation);
+        return view('cencellations.edit',compact('cencellation','cities'));
     }
 
     /**
@@ -124,14 +126,21 @@ class cencellationController extends Controller
         if (empty($cencellation)) {
             Flash::error('Cancellation not found');
 
-            return redirect(route('cencellations.index'));
+            return redirect(route('cancellations.index'));
         }
-
-        $cencellation = $this->cencellationRepository->update($request->all(), $id);
+        if (cencellation::where('city',$request->city)->where('id','!=',$id)->exists())
+        {
+            Flash::error("The Entry for ".$request->city." is already Exists! Please try Editing it");
+            return redirect(route('cancellations.index'));
+        }
+        else
+        {
+            $cencellation = $this->cencellationRepository->update($request->all(), $id);
+        }
 
         Flash::success('Cancellation updated successfully.');
 
-        return redirect(route('cencellations.index'));
+        return redirect(route('cancellations.index'));
     }
 
     /**
@@ -148,13 +157,13 @@ class cencellationController extends Controller
         if (empty($cencellation)) {
             Flash::error('Cancellation not found');
 
-            return redirect(route('cencellations.index'));
+            return redirect(route('cancellations.index'));
         }
 
         $this->cencellationRepository->delete($id);
 
         Flash::success('Cancellation deleted successfully.');
 
-        return redirect(route('cencellations.index'));
+        return redirect(route('cancellations.index'));
     }
 }

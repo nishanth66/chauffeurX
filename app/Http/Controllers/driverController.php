@@ -4,15 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatedriverRequest;
 use App\Http\Requests\UpdatedriverRequest;
+use App\Models\availableCities;
+use App\Models\booking;
 use App\Models\driver;
 use App\Models\driverBasicDetails;
+use App\Models\driverStripe;
 use App\Models\driverVerification;
+use App\Models\rating;
 use App\Repositories\driverRepository;
 use App\Http\Controllers\AppBaseController;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Flash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\ServiceAccount;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Response;
 
@@ -22,9 +31,33 @@ class driverController extends Controller
     private $driverRepository;
     protected $sid    = "AC7835895b4de3218265df779b550d793b";
     protected $token  = "c44245d2f7d682f18eb3a1399d8d5ef6";
+    private $database;
 
     public function __construct(driverRepository $driverRepo)
     {
+        $config = array(
+            "type"=> "service_account",
+            "project_id"=> "driverapp-master-bb0a8",
+            "private_key_id"=> "5133dcc7296c8d6c3c5344f2442ac8108958e788",
+            "private_key"=> "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDJxY02bLvVQMRN\nSQRwQNjjzzYKx3CTvb418mmg60TYiFCjx8U9EO4JrqtEl6rbttKC55gYD7TTUH3c\nPQMfhKybk4wEBRYFDtNAVNVlQW+W3EzqoN2sXxCaDbr644CAGW40GIq+MSo+HGxU\n13TifJ4FB3lCj2xSLY7XtaUAiyCZ9AiW/wlFd5GuF+gjIagkb2kPGuocg9WM1qvs\nWTDxtIcubnmQXz2xOATnIS1c9s4oNcI7DxfdTxSzB9AZ0bZUvTF+OzEGIz3gARqq\nlqDyE+LejdBtm18q0uHFSRKrtmfRnr8GWpe1QpoKIZ/kTEKpdlUYGUC97mZFjo7S\nify8LrV/AgMBAAECggEAGn5/v+VANszV2eYcGJdTQ3qaeIjere+s0c2edBxggmRH\n3nGlYxLdhtTyNUQLEeWsN7csYABz+IlptWknh1R3C8iwiniWfxyGvbxF9xFEE1Wj\nHe34naEv/2KNKlOENI3iTCHq2fV/u/8kdHGELhc58qQcFpLZoOLNjmKSI4OhSMWo\nSS0s6pHF56H3cixgueCTwTAzURcIdvzfFo2PE0QrPbTEoC+0AA+hvfBTtS/Zf94A\nulg5Eh6TBC1Qzjt6EyuVJ/HldmCRG97XUUY09q99szWmVLO1ANulYlCuRLGeTtlf\nLWW1YRYJIWJfVVa8vnosl/HAWtt8FKPqJxV2SatobQKBgQDkVeEDiOpZm7ox3zqj\nbFVv7rTLSjq9hZHk6Gh77oaxnOlmH4gih8mGh/z5Qyi4R9y5zXeOJHuJg72mnqsK\nGEMZ5nVPpKwRE4N1mSPw0Y/uVeNmyVDhWFmdu9XIpj49XAGMXr54kLjQSZ1IoueE\nB0WZ7cAxKYu5TzgTnIgQev4BZQKBgQDiN8M2bWpLj0xhlQvlA74e+Ti5YrQkVCiH\nbi6vIJ9p2mc2qg0ysymxAFiWDAtvnvIhXJ83MI81IUSwWBWLHzMluPh8No10/DVw\nlqkiqV/YEtJg4qCucar7qQEJsbODjpFQBfXZemE8DD3Q1LhwemOwI94K0Q/nCtWp\ndHX9eZ3/EwKBgH7B5h5uPZrtRpo1EHp0w6FV5OwOEznvEqT/GDHkosWrFC7rRknV\nE90pVRiTXeGfkztagwpX2nTmu7vpzY3XFjkkpO9HvXXlXU9Fapxf2gU3jPwcule/\nElDsW6v+DgNGNl3UouyPeum2VChktx2mY88mG1GvfK+s+LZ6aVas0KG5AoGBAJtn\nr2XOmL07vj8zQy6a+ZsRntRMaHCkmAshuFR61sjDTzCQdeykhDmigTjjIWAXE0Oz\n+3TQmTDon+V9PZ+LWXnKrnm2iEsbkCK+fYbgUIWBuKDyT2xHjizAl4PvXeE8qbsN\nvS0gE3hK+JRj7ijnC2DP4xQPNxuDp/B3ny74w3+dAoGBALjSMp+8nOxWE2sco4wS\nIzOprQ10K54naiy6xx6VsNamaqe9r4KiXXT9qpSjfCg3yMD5swtWVIcwwk0VM8J3\nj/8sgwfGCepyzcmXxZKqmJmfHlxr6Hd+/AA4Nm/MEbeWG+o3eMmZ4LzSS0sSH/fC\nO+f511UqvJxT2UvDVRtJcO70\n-----END PRIVATE KEY-----\n",
+            "client_email"=> "driverapp-master-bb0a8@appspot.gserviceaccount.com",
+            "client_id"=> "117555270648372527156",
+            "auth_uri"=> "https://accounts.google.com/o/oauth2/auth",
+            "token_uri"=> "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url"=> "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url"=> "https://www.googleapis.com/robot/v1/metadata/x509/driverapp-master-bb0a8%40appspot.gserviceaccount.com"
+        );
+
+
+        $serviceAccount = ServiceAccount::fromArray($config);
+
+        $firebase = (new Factory())
+            ->withServiceAccount($serviceAccount)
+            ->create();
+
+
+        $this->database = $firebase->getDatabase();
+
         $this->middleware('auth');
         $this->driverRepository = $driverRepo;
     }
@@ -39,29 +72,156 @@ class driverController extends Controller
     {
         if (Auth::user()->status == 0)
         {
-            $drivers = driver::where('status',1)->get();
+            $code = 1;
+            if ($message = Session::get(''.$code.''))
+            {
+                $msg = explode('-',$message);
+                $sessionCode = $msg[1];
+                if ($sessionCode == $msg[1])
+                {
+                    $Sessioncity = $msg[0];
+                    if ($Sessioncity == 'all')
+                    {
+                        $drivers = driver::where('status',1)->get();
+                    }
+                    else
+                    {
+                        $driverCity = driverBasicDetails::where('city','like',$Sessioncity)->get();
+                        $drivers = [];
+                        foreach ($driverCity as $driversCity)
+                        {
+                            if (driver::whereId($driversCity->driverid)->where('status',1)->exists())
+                            {
+                                array_push($drivers,driver::whereId($driversCity->driverid)->where('status',1)->first());
+                            }
+                        }
+                    }
 
-            return view('drivers.index')
-                ->with('drivers', $drivers);
+                }
+            }
+            else
+            {
+                $drivers = driver::where('status',1)->get();
+            }
+            $cities = availableCities::get();
+            return view('drivers.index',compact('drivers','cities','code'));
         }
         else
         {
             return view('errors.404');
         }
     }
+
     public function pending()
     {
         if (Auth::user()->status == 0)
         {
             $code = 0;
-            $drivers = driver::where('status', '!=', 1)
-                ->where('activated', 1)
-                ->where('basic_details', 1)
-                ->where('address_details', 1)
-                ->where('licence_details', 1)
-                ->where('documents', 1)
-                ->get();
-            return view('drivers.index', compact('drivers', 'code'));
+            if ($message = Session::get(''.$code.''))
+            {
+                $msg = explode('-',$message);
+                $sessionCode = $msg[1];
+                if ($sessionCode == $msg[1])
+                {
+                    $Sessioncity = $msg[0];
+                    if ($Sessioncity != 'all')
+                    {
+                        $driverCity = driverBasicDetails::where('city','like',$Sessioncity)->get();
+                        $drivers = [];
+                        foreach ($driverCity as $driversCity)
+                        {
+                            if (driver::whereId($driversCity->driverid)->where('status',0)
+                                ->where('activated', 1)
+                                ->where('basic_details', 1)
+                                ->where('address_details', 1)
+                                ->where('licence_details', 1)
+                                ->where('documents', 1)
+                                ->exists())
+                            {
+                                array_push($drivers,driver::whereId($driversCity->driverid)->where('status',0)
+                                    ->where('activated', 1)
+                                    ->where('basic_details', 1)
+                                    ->where('address_details', 1)
+                                    ->where('licence_details', 1)
+                                    ->where('documents', 1)
+                                    ->first());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $drivers = driver::where('status', 0)
+                            ->where('activated', 1)
+                            ->where('basic_details', 1)
+                            ->where('address_details', 1)
+                            ->where('licence_details', 1)
+                            ->where('documents', 1)
+                            ->get();
+                    }
+
+                }
+            }
+            else
+            {
+                $drivers = driver::where('status', 0)
+                    ->where('activated', 1)
+                    ->where('basic_details', 1)
+                    ->where('address_details', 1)
+                    ->where('licence_details', 1)
+                    ->where('documents', 1)
+                    ->get();
+            }
+
+            $cities = availableCities::get();
+
+            return view('drivers.index',compact('drivers','cities','code'));
+        }
+        else
+        {
+            return view('errors.404');
+        }
+    }
+
+    public function rejected()
+    {
+        if (Auth::user()->status == 0)
+        {
+            $code = 2;
+            if ($message = Session::get(''.$code.''))
+            {
+                $msg = explode('-',$message);
+                $sessionCode = $msg[1];
+                if ($sessionCode == $msg[1])
+                {
+                    $Sessioncity = $msg[0];
+                    if ($Sessioncity == 'all')
+                    {
+                        $drivers = driver::where('status',2)->get();
+                    }
+                    else
+                    {
+                        $driverCity = driverBasicDetails::where('city','like',$Sessioncity)->get();
+                        $drivers = [];
+                        foreach ($driverCity as $driversCity)
+                        {
+                            if (driver::whereId($driversCity->driverid)->where('status',2)->exists())
+                            {
+                                array_push($drivers,driver::whereId($driversCity->driverid)->where('status',2)->first());
+                            }
+                        }
+                    }
+
+                }
+            }
+            else
+            {
+                $drivers = driver::where('status', 2)
+                    ->get();
+            }
+
+            $cities = availableCities::get();
+
+            return view('drivers.index',compact('drivers','cities','code'));
         }
         else
         {
@@ -179,17 +339,21 @@ class driverController extends Controller
             return redirect(route('drivers.index'));
         }
 
-        $this->driverRepository->delete($id);
+        driver::whereId($id)->forcedelete();
 
         Flash::success('Driver deleted successfully.');
 
-        return redirect(route('drivers.index'));
+        return redirect()->back();
     }
     public function verification()
     {
         if (driver::where('userid',Auth::user()->id)->exists())
         {
             $driver = driver::where('userid',Auth::user()->id)->first();
+            if ($driver->activated == 1)
+            {
+                return redirect('driver/profile');
+            }
             return view('drivers.FrontEnd.verification_code',compact('driver'));
         }
         else
@@ -1426,6 +1590,9 @@ class driverController extends Controller
             {
                 return redirect('driver/verify');
             }
+            if ($driver->basic_details == 1) {
+                return redirect('driver/address');
+            }
             return view('drivers.FrontEnd.basic',compact('driver','code','array'));
         }
         else
@@ -1436,11 +1603,35 @@ class driverController extends Controller
     public function saveProfile(Request $request)
     {
         $input = $request->except('_token','phone');
-        $input['phone'] = $request->code.$request->phone;
+        $reference = $this->database->getReference('user');
+        $input['phone'] = $request->phone;
         $input['basic_details'] = 1;
         if (driver::where('userid',Auth::user()->id)->exists())
         {
             driver::where('userid',Auth::user()->id)->update($input);
+
+            $driver = driver::where('userid',Auth::user()->id)->first();
+            $postData = [
+                'userid' => 'driver_'.$driver->id,
+                'username'=> $driver->first_name,
+                'usertype'=> 'driver',
+                'email' => $driver->email,
+                'message' => [
+                    'idSender' => '',
+                    'idReceiver' => '',
+                    'text' => '',
+                    'timestamp' => '',
+                ],
+                'status' => [
+                    'isOnline' => true,
+                    'timestamp' => ''
+                ]
+            ];
+            $reference // this is the root reference
+            ->update([
+                $driver->firebase_key => $postData
+            ]);
+
             Flash::success("Profile Saved Successfully");
             return redirect('driver/address');
         }
@@ -1703,6 +1894,9 @@ class driverController extends Controller
             } elseif ($driver->basic_details != 1) {
                 return redirect('driver/profile');
             }
+            if ($driver->address_details == 1) {
+                return redirect('driver/verifyLicence');
+            }
             $name = $driver->first_name;
             if (driverBasicDetails::where('driverid', $driver->id)->exists() == 0) {
                 driverBasicDetails::create(['driverid' => $driver->id]);
@@ -1746,7 +1940,10 @@ class driverController extends Controller
             {
                 return redirect('driver/address');
             }
-
+            if ($driver->licence_details == 1)
+            {
+                return redirect('driver/documents');
+            }
             if (driverVerification::where('driverid', $driver->id)->exists() == 0) {
                 driverVerification::create(['driverid' => $driver->id]);
             }
@@ -1798,7 +1995,10 @@ class driverController extends Controller
             {
                 return redirect('driver/verifyLicence');
             }
-
+            if ($driver->documents == 1)
+            {
+                return redirect('driver/agree');
+            }
             if (driverVerification::where('driverid', $driver->id)->exists() == 0) {
                 driverVerification::create(['driverid' => $driver->id]);
             }
@@ -1899,7 +2099,7 @@ class driverController extends Controller
         }
         if (driver::where('userid',Auth::user()->id)->exists())
         {
-            driver::where('userid',Auth::user()->id)->update(['signature'=>$request->signature]);
+            driver::where('userid',Auth::user()->id)->update(['signature'=>$request->signature,'status'=>0]);
             Flash::success("Licence Details saved Successfully");
             return redirect('driver/SubmitDocument');
         }
@@ -1924,7 +2124,62 @@ class driverController extends Controller
 
     public function home()
     {
-        return view('home');
+        $driver = driver::where('userid',Auth::user()->id)->first();
+        if ($driver->activated != 1)
+        {
+            return redirect('driver/verify');
+        }
+        elseif($driver->basic_details != 1)
+        {
+            return redirect('driver/profile');
+        }
+        elseif($driver->address_details != 1)
+        {
+            return redirect('driver/address');
+        }
+        elseif ($driver->licence_details != 1)
+        {
+            return redirect('driver/verifyLicence');
+        }
+        elseif ($driver->documents != 1)
+        {
+            return redirect('driver/documents');
+        }
+        elseif (empty($driver->signature) || $driver->signature == '')
+        {
+            return redirect('driver/agree');
+        }
+        elseif ($driver->status != '1')
+        {
+            return redirect('driver/SubmitDocument');
+        }
+        else
+        {
+            $driver = driver::where('userid',Auth::user()->id)->first();
+            $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
+            $revenue = 0;
+            $rides = 0;
+            $distance = 0;
+            if (booking::where('driverid',$driver->id)->where('trip_end_time', '>=', Carbon::now()->subDays(7))->exists())
+            {
+                $DriverBookings = booking::where('driverid',$driver->id)->where('trip_end_time', '>=', Carbon::now()->subDays(7))->get();
+                foreach ($DriverBookings as $booking)
+                {
+                    $rides++;
+                    $revenue = $revenue+(float)$booking->price+(float)$booking->driver_tips;
+                    $distance +=(float)$booking->distance;
+                }
+            }
+            $distance = $distance*0.621371;
+            $rating = 0;
+            if (rating::where('driverid',$driver->id)->whereDate('created_at','>=',Carbon::now()->subDays(7))->exists())
+            {
+                $rating = rating::where('driverid',$driver->id)->whereDate('created_at','>=',Carbon::now()->subDays(7))->sum('rating');
+                $count = rating::where('driverid',$driver->id)->whereDate('created_at','>=',Carbon::now()->subDays(7))->count();
+                $rating = ($rating*100)/($count*5);
+            }
+            return view('drivers.FrontEnd.home',compact('driver','driver_name','rides','revenue','distance','rating'));
+        }
     }
 
     public function licenceDetails($id)
@@ -1966,7 +2221,7 @@ class driverController extends Controller
     {
         if (Auth::user()->status == 0)
         {
-            driver::whereId($id)->update(['status' => 0,'licence_details'=>0,'documents'=>0]);
+            driver::whereId($id)->update(['status' => 2,'licence_details'=>0,'documents'=>0]);
             $driver = driver::whereId($id)->first();
             $array['email'] = $driver->email;
             $array['name'] = $driver->first_name;
@@ -1980,6 +2235,1654 @@ class driverController extends Controller
         else
         {
             return view('errors.404');
+        }
+    }
+
+    public function penalty()
+    {
+        if (DB::table('driver_penalty')->exists())
+        {
+            $penalty = DB::table('driver_penalty')->first();
+            $city = $penalty->city;
+            $penalty = $penalty->penalty;
+        }
+        else
+        {
+            $penalty = 0;
+            $city = "";
+        }
+        return view('drivers.penalty',compact('penalty','city'));
+    }
+
+    public function savePenalty(Request $request)
+    {
+        if (DB::table('driver_penalty')->exists())
+        {
+            DB::table('driver_penalty')->whereId(1)->update(['penalty'=>$request->penalty,'id'=>1,'city'=>$request->city]);
+        }
+        else
+        {
+            DB::table('driver_penalty')->insert(['penalty'=>$request->penalty,'id'=>1,'city'=>$request->city]);
+        }
+        Flash::success("Driver Penalty Updated Successfully");
+        return redirect()->back();
+    }
+
+    public function changeCity($city,$code)
+    {
+        Session::put(''.$code.'', $city.'-'.$code);
+        if ($city == 'all')
+        {
+            $result['code'] = 500;
+            return $result;
+        }
+        else
+        {
+            $drivers = driverBasicDetails::where('city','like',$city)->get();
+        }
+        $result['code'] = 200;
+        $result['data'] = $this->getDriverTable($drivers,$code);
+        return $result;
+    }
+
+    function getDriverTable($drivers,$code)
+    {
+        $html = <<<EOD
+        <!--<table class="table table-responsive" id="drivers-table">-->
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Licence</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+EOD;
+                foreach ($drivers as $driver)
+                {
+                    if ($code == 0)
+                    {
+                        $driverDetails = driver::whereId($driver->driverid)
+                                ->where('status', '!=', 1)
+                                ->where('activated', 1)
+                                ->where('basic_details', 1)
+                                ->where('address_details', 1)
+                                ->where('licence_details', 1)
+                                ->where('documents', 1)
+                                ->first();
+                    }
+                    elseif ($code == 1)
+                    {
+                        $driverDetails = driver::whereId($driver->driverid)
+                            ->where('status',1)
+                            ->first();
+                    }
+                    else
+                    {
+                        $driverDetails = driver::whereId($driver->driverid)
+                            ->where('status',2)
+                            ->first();
+                    }
+                    if (!empty($driverDetails))
+                    {
+                        $licenceUrl = url('driver/licence') . '/' . $driverDetails->id;
+                        $acceptUrl = url('driver/accept') . '/' . $driverDetails->id;
+                        $rejectUrl = url('driver/reject') . '/' . $driverDetails->id;
+                        $formUrl = url('driver/delete').'/'.$driverDetails->id;
+                        $editUrl = route('drivers.show', $driverDetails->id);
+                        $html .= <<<EOD
+                    <tr>
+                        <td>$driverDetails->first_name</td>
+                        <td>$driverDetails->middle_name</td>
+                        <td>$driverDetails->last_name</td>
+                        <td>$driverDetails->email</td>
+                        <td>$driverDetails->phone</td>
+                    <td>
+                         <a href="$licenceUrl" class="btn btn-info">Details</a>
+                        <td>
+EOD;
+                            if ($driverDetails->status == 0)
+                            {
+                $html .= <<<EOD
+                            <a href="$acceptUrl" class="btn btn-success btn-flat btn-xs" title="Accept the Driver" onclick='return confirm("Are you sure?")'><i class="fa fa-check" aria-hidden="true"></i></a>
+                            <a href="$rejectUrl" class="btn btn-danger btn-flat btn-xs" title="Reject the Driver" onclick='return confirm("Are you sure?")'><i class="fa fa-times" aria-hidden="true"></i></a>
+EOD;
+                            }
+                            elseif ($driverDetails->status == 2)
+                            {
+                $html .= <<<EOD
+                            <a href="$acceptUrl" class="btn btn-success btn-flat btn-xs" title="Accept the Driver" onclick='return confirm("Are you sure?")'><i class="fa fa-check" aria-hidden="true"></i></a>
+EOD;
+                            }
+                            else
+                            {
+                 $html .= <<<EOD
+                            <a href="$rejectUrl" class="btn btn-danger btn-flat btn-xs" title="Reject the Driver" onclick='return confirm("Are you sure?")'><i class="fa fa-times" aria-hidden="true"></i></a>
+EOD;
+                            }
+                $html .= <<<EOD
+                        </td>
+EOD;
+
+                $html .= <<<EOD
+                        <td>
+                            <div class='btn-group'>
+                                <a href="$editUrl" class='btn btn-default btn-xs'><i class="glyphicon glyphicon-eye-open"></i></a>
+                                <a href="$formUrl" class="btn btn-danger btn-xs" onclick="return confirm('Are you Sure?')"><i class="glyphicon glyphicon-trash"></i></a>
+                            </div>
+                        </td>
+EOD;
+
+                    }
+                }
+          $html .= <<<EOD
+            </tbody>
+           <!--</table>-->
+EOD;
+    return $html;
+
+    }
+
+    public function delete($id)
+    {
+        driver::whereId($id)->delete();
+        Flash::success("DriverDeleted Successfully");
+        return redirect()->back();
+    }
+
+    public function changeData($value)
+    {
+        $driver = driver::where('userid',Auth::user()->id)->first();
+        $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
+        $revenue = 0;
+        $rides = 0;
+        $distance = 0;
+        $rating = 0;
+        if ($value == 1)
+        {
+            if (booking::where('driverid', $driver->id)->where('trip_end_time','>=', Carbon::today())->exists()) {
+                $DriverBookings = booking::where('driverid', $driver->id)->where('trip_end_time', '>=', Carbon::today())->get();
+                foreach ($DriverBookings as $booking) {
+                    $rides++;
+                    $revenue = $revenue + (float)$booking->price + (float)$booking->driver_tips;
+                    $distance += (float)$booking->distance;
+                }
+            }
+            if (rating::where('driverid', $driver->id)->where('created_at', '>=', Carbon::today())->exists()) {
+                $rating = rating::where('driverid', $driver->id)->where('created_at', '>=', Carbon::today())->sum('rating');
+                $count = rating::where('driverid', $driver->id)->where('created_at', '>=', Carbon::today())->count();
+                $rating = ($rating*100)/($count*5);
+            }
+        }
+        elseif ($value == 2)
+        {
+            if (booking::where('driverid',$driver->id)->where('trip_end_time', '>=', Carbon::now()->subDays(7))->exists())
+            {
+                $DriverBookings = booking::where('driverid',$driver->id)->where('trip_end_time', '>=', Carbon::now()->subDays(7))->get();
+                foreach ($DriverBookings as $booking)
+                {
+                    $rides++;
+                    $revenue = $revenue+(float)$booking->price+(float)$booking->driver_tips;
+                    $distance +=(float)$booking->distance;
+                }
+            }
+            if (rating::where('driverid',$driver->id)->where('created_at','>=',Carbon::now()->subDays(7))->exists())
+            {
+                $rating = rating::where('driverid',$driver->id)->where('created_at','>=',Carbon::now()->subDays(7))->sum('rating');
+                $count = rating::where('driverid',$driver->id)->where('created_at','>=',Carbon::now()->subDays(7))->count();
+                $rating = ($rating*100)/($count*5);
+            }
+        }
+        elseif ($value ==3)
+        {
+            if (booking::where('driverid',$driver->id)->where('trip_end_time', '>=', Carbon::now()->subDays(30))->exists())
+            {
+                $DriverBookings = booking::where('driverid',$driver->id)->where('trip_end_time', '>=', Carbon::now()->subDays(30))->get();
+                foreach ($DriverBookings as $booking)
+                {
+                    $rides++;
+                    $revenue = $revenue+(float)$booking->price+(float)$booking->driver_tips;
+                    $distance +=(float)$booking->distance;
+                }
+            }
+            if (rating::where('driverid',$driver->id)->where('created_at','>=',Carbon::now()->subDays(30))->exists())
+            {
+                $rating = rating::where('driverid',$driver->id)->where('created_at','>=',Carbon::now()->subDays(30))->sum('rating');
+                $count = rating::where('driverid',$driver->id)->where('created_at','>=',Carbon::now()->subDays(30))->count();
+                $rating = ($rating*100)/($count*5);
+            }
+        }
+        else
+        {
+            if (booking::where('driverid',$driver->id)->whereYear('trip_end_time',Carbon::now()->year)->whereMonth('trip_end_time', Carbon::now()->month)->exists())
+            {
+                $DriverBookings = booking::where('driverid',$driver->id)->whereYear('trip_end_time',Carbon::now()->year)->whereMonth('trip_end_time', Carbon::now()->month)->get();
+                foreach ($DriverBookings as $booking)
+                {
+                    $rides++;
+                    $revenue = $revenue+(float)$booking->price+(float)$booking->driver_tips;
+                    $distance +=(float)$booking->distance;
+                }
+            }
+            if (rating::where('driverid',$driver->id)->whereYear('created_at',Carbon::now()->year)->whereMonth('created_at', Carbon::now()->month)->exists())
+            {
+                $rating = rating::where('driverid',$driver->id)->whereYear('created_at',Carbon::now()->year)->whereMonth('created_at', Carbon::now()->month)->sum('rating');
+                $count = rating::where('driverid',$driver->id)->whereYear('created_at',Carbon::now()->year)->whereMonth('created_at', Carbon::now()->month)->count();
+                $rating = ($rating*100)/($count*5);
+            }
+        }
+        $distance = $distance * 0.621371;
+        $result['revenue'] = '$'.number_format($revenue);
+        $result['distance'] = number_format($distance,'2').' Miles';
+        $result['rating'] = $rating.'%';
+        $result['rides'] = number_format($rides);
+        return $result;
+    }
+    public function editProfile()
+    {
+        if (Auth::user()->status == 1)
+        {
+            $driver = driver::where('userid',Auth::user()->id)->first();
+            if ($driver->activated != 1)
+            {
+                return redirect('driver/verify');
+            }
+            elseif($driver->basic_details != 1)
+            {
+                return redirect('driver/profile');
+            }
+            elseif($driver->address_details != 1)
+            {
+                return redirect('driver/address');
+            }
+            elseif ($driver->licence_details != 1)
+            {
+                return redirect('driver/verifyLicence');
+            }
+            elseif ($driver->documents != 1)
+            {
+                return redirect('driver/documents');
+            }
+            elseif (empty($driver->signature) || $driver->signature == '')
+            {
+                return redirect('driver/agree');
+            }
+            elseif ($driver->status != '1')
+            {
+                return redirect('driver/SubmitDocument');
+            }
+            else
+            {
+                $countries = array("AF" => "Afghanistan",
+                    "AX" => "Åland Islands",
+                    "AL" => "Albania",
+                    "DZ" => "Algeria",
+                    "AS" => "American Samoa",
+                    "AD" => "Andorra",
+                    "AO" => "Angola",
+                    "AI" => "Anguilla",
+                    "AQ" => "Antarctica",
+                    "AG" => "Antigua and Barbuda",
+                    "AR" => "Argentina",
+                    "AM" => "Armenia",
+                    "AW" => "Aruba",
+                    "AU" => "Australia",
+                    "AT" => "Austria",
+                    "AZ" => "Azerbaijan",
+                    "BS" => "Bahamas",
+                    "BH" => "Bahrain",
+                    "BD" => "Bangladesh",
+                    "BB" => "Barbados",
+                    "BY" => "Belarus",
+                    "BE" => "Belgium",
+                    "BZ" => "Belize",
+                    "BJ" => "Benin",
+                    "BM" => "Bermuda",
+                    "BT" => "Bhutan",
+                    "BO" => "Bolivia",
+                    "BA" => "Bosnia and Herzegovina",
+                    "BW" => "Botswana",
+                    "BV" => "Bouvet Island",
+                    "BR" => "Brazil",
+                    "IO" => "British Indian Ocean Territory",
+                    "BN" => "Brunei Darussalam",
+                    "BG" => "Bulgaria",
+                    "BF" => "Burkina Faso",
+                    "BI" => "Burundi",
+                    "KH" => "Cambodia",
+                    "CM" => "Cameroon",
+                    "CA" => "Canada",
+                    "CV" => "Cape Verde",
+                    "KY" => "Cayman Islands",
+                    "CF" => "Central African Republic",
+                    "TD" => "Chad",
+                    "CL" => "Chile",
+                    "CN" => "China",
+                    "CX" => "Christmas Island",
+                    "CC" => "Cocos (Keeling) Islands",
+                    "CO" => "Colombia",
+                    "KM" => "Comoros",
+                    "CG" => "Congo",
+                    "CD" => "Congo, The Democratic Republic of The",
+                    "CK" => "Cook Islands",
+                    "CR" => "Costa Rica",
+                    "CI" => "Cote D'ivoire",
+                    "HR" => "Croatia",
+                    "CU" => "Cuba",
+                    "CY" => "Cyprus",
+                    "CZ" => "Czech Republic",
+                    "DK" => "Denmark",
+                    "DJ" => "Djibouti",
+                    "DM" => "Dominica",
+                    "DO" => "Dominican Republic",
+                    "EC" => "Ecuador",
+                    "EG" => "Egypt",
+                    "SV" => "El Salvador",
+                    "GQ" => "Equatorial Guinea",
+                    "ER" => "Eritrea",
+                    "EE" => "Estonia",
+                    "ET" => "Ethiopia",
+                    "FK" => "Falkland Islands (Malvinas)",
+                    "FO" => "Faroe Islands",
+                    "FJ" => "Fiji",
+                    "FI" => "Finland",
+                    "FR" => "France",
+                    "GF" => "French Guiana",
+                    "PF" => "French Polynesia",
+                    "TF" => "French Southern Territories",
+                    "GA" => "Gabon",
+                    "GM" => "Gambia",
+                    "GE" => "Georgia",
+                    "DE" => "Germany",
+                    "GH" => "Ghana",
+                    "GI" => "Gibraltar",
+                    "GR" => "Greece",
+                    "GL" => "Greenland",
+                    "GD" => "Grenada",
+                    "GP" => "Guadeloupe",
+                    "GU" => "Guam",
+                    "GT" => "Guatemala",
+                    "GG" => "Guernsey",
+                    "GN" => "Guinea",
+                    "GW" => "Guinea-bissau",
+                    "GY" => "Guyana",
+                    "HT" => "Haiti",
+                    "HM" => "Heard Island and Mcdonald Islands",
+                    "VA" => "Holy See (Vatican City State)",
+                    "HN" => "Honduras",
+                    "HK" => "Hong Kong",
+                    "HU" => "Hungary",
+                    "IS" => "Iceland",
+                    "IN" => "India",
+                    "ID" => "Indonesia",
+                    "IR" => "Iran, Islamic Republic of",
+                    "IQ" => "Iraq",
+                    "IE" => "Ireland",
+                    "IM" => "Isle of Man",
+                    "IL" => "Israel",
+                    "IT" => "Italy",
+                    "JM" => "Jamaica",
+                    "JP" => "Japan",
+                    "JE" => "Jersey",
+                    "JO" => "Jordan",
+                    "KZ" => "Kazakhstan",
+                    "KE" => "Kenya",
+                    "KI" => "Kiribati",
+                    "KP" => "Korea, Democratic People's Republic of",
+                    "KR" => "Korea, Republic of",
+                    "KW" => "Kuwait",
+                    "KG" => "Kyrgyzstan",
+                    "LA" => "Lao People's Democratic Republic",
+                    "LV" => "Latvia",
+                    "LB" => "Lebanon",
+                    "LS" => "Lesotho",
+                    "LR" => "Liberia",
+                    "LY" => "Libyan Arab Jamahiriya",
+                    "LI" => "Liechtenstein",
+                    "LT" => "Lithuania",
+                    "LU" => "Luxembourg",
+                    "MO" => "Macao",
+                    "MK" => "Macedonia, The Former Yugoslav Republic of",
+                    "MG" => "Madagascar",
+                    "MW" => "Malawi",
+                    "MY" => "Malaysia",
+                    "MV" => "Maldives",
+                    "ML" => "Mali",
+                    "MT" => "Malta",
+                    "MH" => "Marshall Islands",
+                    "MQ" => "Martinique",
+                    "MR" => "Mauritania",
+                    "MU" => "Mauritius",
+                    "YT" => "Mayotte",
+                    "MX" => "Mexico",
+                    "FM" => "Micronesia, Federated States of",
+                    "MD" => "Moldova, Republic of",
+                    "MC" => "Monaco",
+                    "MN" => "Mongolia",
+                    "ME" => "Montenegro",
+                    "MS" => "Montserrat",
+                    "MA" => "Morocco",
+                    "MZ" => "Mozambique",
+                    "MM" => "Myanmar",
+                    "NA" => "Namibia",
+                    "NR" => "Nauru",
+                    "NP" => "Nepal",
+                    "NL" => "Netherlands",
+                    "AN" => "Netherlands Antilles",
+                    "NC" => "New Caledonia",
+                    "NZ" => "New Zealand",
+                    "NI" => "Nicaragua",
+                    "NE" => "Niger",
+                    "NG" => "Nigeria",
+                    "NU" => "Niue",
+                    "NF" => "Norfolk Island",
+                    "MP" => "Northern Mariana Islands",
+                    "NO" => "Norway",
+                    "OM" => "Oman",
+                    "PK" => "Pakistan",
+                    "PW" => "Palau",
+                    "PS" => "Palestinian Territory, Occupied",
+                    "PA" => "Panama",
+                    "PG" => "Papua New Guinea",
+                    "PY" => "Paraguay",
+                    "PE" => "Peru",
+                    "PH" => "Philippines",
+                    "PN" => "Pitcairn",
+                    "PL" => "Poland",
+                    "PT" => "Portugal",
+                    "PR" => "Puerto Rico",
+                    "QA" => "Qatar",
+                    "RE" => "Reunion",
+                    "RO" => "Romania",
+                    "RU" => "Russian Federation",
+                    "RW" => "Rwanda",
+                    "SH" => "Saint Helena",
+                    "KN" => "Saint Kitts and Nevis",
+                    "LC" => "Saint Lucia",
+                    "PM" => "Saint Pierre and Miquelon",
+                    "VC" => "Saint Vincent and The Grenadines",
+                    "WS" => "Samoa",
+                    "SM" => "San Marino",
+                    "ST" => "Sao Tome and Principe",
+                    "SA" => "Saudi Arabia",
+                    "SN" => "Senegal",
+                    "RS" => "Serbia",
+                    "SC" => "Seychelles",
+                    "SL" => "Sierra Leone",
+                    "SG" => "Singapore",
+                    "SK" => "Slovakia",
+                    "SI" => "Slovenia",
+                    "SB" => "Solomon Islands",
+                    "SO" => "Somalia",
+                    "ZA" => "South Africa",
+                    "GS" => "South Georgia and The South Sandwich Islands",
+                    "ES" => "Spain",
+                    "LK" => "Sri Lanka",
+                    "SD" => "Sudan",
+                    "SR" => "Suriname",
+                    "SJ" => "Svalbard and Jan Mayen",
+                    "SZ" => "Swaziland",
+                    "SE" => "Sweden",
+                    "CH" => "Switzerland",
+                    "SY" => "Syrian Arab Republic",
+                    "TW" => "Taiwan, Province of China",
+                    "TJ" => "Tajikistan",
+                    "TZ" => "Tanzania, United Republic of",
+                    "TH" => "Thailand",
+                    "TL" => "Timor-leste",
+                    "TG" => "Togo",
+                    "TK" => "Tokelau",
+                    "TO" => "Tonga",
+                    "TT" => "Trinidad and Tobago",
+                    "TN" => "Tunisia",
+                    "TR" => "Turkey",
+                    "TM" => "Turkmenistan",
+                    "TC" => "Turks and Caicos Islands",
+                    "TV" => "Tuvalu",
+                    "UG" => "Uganda",
+                    "UA" => "Ukraine",
+                    "AE" => "United Arab Emirates",
+                    "GB" => "United Kingdom",
+                    "US" => "United States",
+                    "UM" => "United States Minor Outlying Islands",
+                    "UY" => "Uruguay",
+                    "UZ" => "Uzbekistan",
+                    "VU" => "Vanuatu",
+                    "VE" => "Venezuela",
+                    "VN" => "Viet Nam",
+                    "VG" => "Virgin Islands, British",
+                    "VI" => "Virgin Islands, U.S.",
+                    "WF" => "Wallis and Futuna",
+                    "EH" => "Western Sahara",
+                    "YE" => "Yemen",
+                    "ZM" => "Zambia",
+                    "ZW" => "Zimbabwe");
+                $array = json_decode('[
+    {
+      "code": "+840",
+      "name": "Abkhazia"
+    },
+    {
+      "code": "+93",
+      "name": "Afghanistan"
+    },
+    {
+      "code": "+355",
+      "name": "Albania"
+    },
+    {
+      "code": "+213",
+      "name": "Algeria"
+    },
+    {
+      "code": "+1 684",
+      "name": "American Samoa"
+    },
+    {
+      "code": "+376",
+      "name": "Andorra"
+    },
+    {
+      "code": "+244",
+      "name": "Angola"
+    },
+    {
+      "code": "+1 264",
+      "name": "Anguilla"
+    },
+    {
+      "code": "+1 268",
+      "name": "Antigua and Barbuda"
+    },
+    {
+      "code": "+54",
+      "name": "Argentina"
+    },
+    {
+      "code": "+374",
+      "name": "Armenia"
+    },
+    {
+      "code": "+297",
+      "name": "Aruba"
+    },
+    {
+      "code": "+247",
+      "name": "Ascension"
+    },
+    {
+      "code": "+61",
+      "name": "Australia"
+    },
+    {
+      "code": "+672",
+      "name": "Australian External Territories"
+    },
+    {
+      "code": "+43",
+      "name": "Austria"
+    },
+    {
+      "code": "+994",
+      "name": "Azerbaijan"
+    },
+    {
+      "code": "+1 242",
+      "name": "Bahamas"
+    },
+    {
+      "code": "+973",
+      "name": "Bahrain"
+    },
+    {
+      "code": "+880",
+      "name": "Bangladesh"
+    },
+    {
+      "code": "+1 246",
+      "name": "Barbados"
+    },
+    {
+      "code": "+1 268",
+      "name": "Barbuda"
+    },
+    {
+      "code": "+375",
+      "name": "Belarus"
+    },
+    {
+      "code": "+32",
+      "name": "Belgium"
+    },
+    {
+      "code": "+501",
+      "name": "Belize"
+    },
+    {
+      "code": "+229",
+      "name": "Benin"
+    },
+    {
+      "code": "+1 441",
+      "name": "Bermuda"
+    },
+    {
+      "code": "+975",
+      "name": "Bhutan"
+    },
+    {
+      "code": "+591",
+      "name": "Bolivia"
+    },
+    {
+      "code": "+387",
+      "name": "Bosnia and Herzegovina"
+    },
+    {
+      "code": "+267",
+      "name": "Botswana"
+    },
+    {
+      "code": "+55",
+      "name": "Brazil"
+    },
+    {
+      "code": "+246",
+      "name": "British Indian Ocean Territory"
+    },
+    {
+      "code": "+1 284",
+      "name": "British Virgin Islands"
+    },
+    {
+      "code": "+673",
+      "name": "Brunei"
+    },
+    {
+      "code": "+359",
+      "name": "Bulgaria"
+    },
+    {
+      "code": "+226",
+      "name": "Burkina Faso"
+    },
+    {
+      "code": "+257",
+      "name": "Burundi"
+    },
+    {
+      "code": "+855",
+      "name": "Cambodia"
+    },
+    {
+      "code": "+237",
+      "name": "Cameroon"
+    },
+    {
+      "code": "+1",
+      "name": "Canada"
+    },
+    {
+      "code": "+238",
+      "name": "Cape Verde"
+    },
+    {
+      "code": "+ 345",
+      "name": "Cayman Islands"
+    },
+    {
+      "code": "+236",
+      "name": "Central African Republic"
+    },
+    {
+      "code": "+235",
+      "name": "Chad"
+    },
+    {
+      "code": "+56",
+      "name": "Chile"
+    },
+    {
+      "code": "+86",
+      "name": "China"
+    },
+    {
+      "code": "+61",
+      "name": "Christmas Island"
+    },
+    {
+      "code": "+61",
+      "name": "Cocos-Keeling Islands"
+    },
+    {
+      "code": "+57",
+      "name": "Colombia"
+    },
+    {
+      "code": "+269",
+      "name": "Comoros"
+    },
+    {
+      "code": "+242",
+      "name": "Congo"
+    },
+    {
+      "code": "+243",
+      "name": "Congo, Dem. Rep. of (Zaire)"
+    },
+    {
+      "code": "+682",
+      "name": "Cook Islands"
+    },
+    {
+      "code": "+506",
+      "name": "Costa Rica"
+    },
+    {
+      "code": "+385",
+      "name": "Croatia"
+    },
+    {
+      "code": "+53",
+      "name": "Cuba"
+    },
+    {
+      "code": "+599",
+      "name": "Curacao"
+    },
+    {
+      "code": "+537",
+      "name": "Cyprus"
+    },
+    {
+      "code": "+420",
+      "name": "Czech Republic"
+    },
+    {
+      "code": "+45",
+      "name": "Denmark"
+    },
+    {
+      "code": "+246",
+      "name": "Diego Garcia"
+    },
+    {
+      "code": "+253",
+      "name": "Djibouti"
+    },
+    {
+      "code": "+1 767",
+      "name": "Dominica"
+    },
+    {
+      "code": "+1 809",
+      "name": "Dominican Republic"
+    },
+    {
+      "code": "+670",
+      "name": "East Timor"
+    },
+    {
+      "code": "+56",
+      "name": "Easter Island"
+    },
+    {
+      "code": "+593",
+      "name": "Ecuador"
+    },
+    {
+      "code": "+20",
+      "name": "Egypt"
+    },
+    {
+      "code": "+503",
+      "name": "El Salvador"
+    },
+    {
+      "code": "+240",
+      "name": "Equatorial Guinea"
+    },
+    {
+      "code": "+291",
+      "name": "Eritrea"
+    },
+    {
+      "code": "+372",
+      "name": "Estonia"
+    },
+    {
+      "code": "+251",
+      "name": "Ethiopia"
+    },
+    {
+      "code": "+500",
+      "name": "Falkland Islands"
+    },
+    {
+      "code": "+298",
+      "name": "Faroe Islands"
+    },
+    {
+      "code": "+679",
+      "name": "Fiji"
+    },
+    {
+      "code": "+358",
+      "name": "Finland"
+    },
+    {
+      "code": "+33",
+      "name": "France"
+    },
+    {
+      "code": "+596",
+      "name": "French Antilles"
+    },
+    {
+      "code": "+594",
+      "name": "French Guiana"
+    },
+    {
+      "code": "+689",
+      "name": "French Polynesia"
+    },
+    {
+      "code": "+241",
+      "name": "Gabon"
+    },
+    {
+      "code": "+220",
+      "name": "Gambia"
+    },
+    {
+      "code": "+995",
+      "name": "Georgia"
+    },
+    {
+      "code": "+49",
+      "name": "Germany"
+    },
+    {
+      "code": "+233",
+      "name": "Ghana"
+    },
+    {
+      "code": "+350",
+      "name": "Gibraltar"
+    },
+    {
+      "code": "+30",
+      "name": "Greece"
+    },
+    {
+      "code": "+299",
+      "name": "Greenland"
+    },
+    {
+      "code": "+1 473",
+      "name": "Grenada"
+    },
+    {
+      "code": "+590",
+      "name": "Guadeloupe"
+    },
+    {
+      "code": "+1 671",
+      "name": "Guam"
+    },
+    {
+      "code": "+502",
+      "name": "Guatemala"
+    },
+    {
+      "code": "+224",
+      "name": "Guinea"
+    },
+    {
+      "code": "+245",
+      "name": "Guinea-Bissau"
+    },
+    {
+      "code": "+595",
+      "name": "Guyana"
+    },
+    {
+      "code": "+509",
+      "name": "Haiti"
+    },
+    {
+      "code": "+504",
+      "name": "Honduras"
+    },
+    {
+      "code": "+852",
+      "name": "Hong Kong SAR China"
+    },
+    {
+      "code": "+36",
+      "name": "Hungary"
+    },
+    {
+      "code": "+354",
+      "name": "Iceland"
+    },
+    {
+      "code": "+91",
+      "name": "India"
+    },
+    {
+      "code": "+62",
+      "name": "Indonesia"
+    },
+    {
+      "code": "+98",
+      "name": "Iran"
+    },
+    {
+      "code": "+964",
+      "name": "Iraq"
+    },
+    {
+      "code": "+353",
+      "name": "Ireland"
+    },
+    {
+      "code": "+972",
+      "name": "Israel"
+    },
+    {
+      "code": "+39",
+      "name": "Italy"
+    },
+    {
+      "code": "+225",
+      "name": "Ivory Coast"
+    },
+    {
+      "code": "+1 876",
+      "name": "Jamaica"
+    },
+    {
+      "code": "+81",
+      "name": "Japan"
+    },
+    {
+      "code": "+962",
+      "name": "Jordan"
+    },
+    {
+      "code": "+7 7",
+      "name": "Kazakhstan"
+    },
+    {
+      "code": "+254",
+      "name": "Kenya"
+    },
+    {
+      "code": "+686",
+      "name": "Kiribati"
+    },
+    {
+      "code": "+965",
+      "name": "Kuwait"
+    },
+    {
+      "code": "+996",
+      "name": "Kyrgyzstan"
+    },
+    {
+      "code": "+856",
+      "name": "Laos"
+    },
+    {
+      "code": "+371",
+      "name": "Latvia"
+    },
+    {
+      "code": "+961",
+      "name": "Lebanon"
+    },
+    {
+      "code": "+266",
+      "name": "Lesotho"
+    },
+    {
+      "code": "+231",
+      "name": "Liberia"
+    },
+    {
+      "code": "+218",
+      "name": "Libya"
+    },
+    {
+      "code": "+423",
+      "name": "Liechtenstein"
+    },
+    {
+      "code": "+370",
+      "name": "Lithuania"
+    },
+    {
+      "code": "+352",
+      "name": "Luxembourg"
+    },
+    {
+      "code": "+853",
+      "name": "Macau SAR China"
+    },
+    {
+      "code": "+389",
+      "name": "Macedonia"
+    },
+    {
+      "code": "+261",
+      "name": "Madagascar"
+    },
+    {
+      "code": "+265",
+      "name": "Malawi"
+    },
+    {
+      "code": "+60",
+      "name": "Malaysia"
+    },
+    {
+      "code": "+960",
+      "name": "Maldives"
+    },
+    {
+      "code": "+223",
+      "name": "Mali"
+    },
+    {
+      "code": "+356",
+      "name": "Malta"
+    },
+    {
+      "code": "+692",
+      "name": "Marshall Islands"
+    },
+    {
+      "code": "+596",
+      "name": "Martinique"
+    },
+    {
+      "code": "+222",
+      "name": "Mauritania"
+    },
+    {
+      "code": "+230",
+      "name": "Mauritius"
+    },
+    {
+      "code": "+262",
+      "name": "Mayotte"
+    },
+    {
+      "code": "+52",
+      "name": "Mexico"
+    },
+    {
+      "code": "+691",
+      "name": "Micronesia"
+    },
+    {
+      "code": "+1 808",
+      "name": "Midway Island"
+    },
+    {
+      "code": "+373",
+      "name": "Moldova"
+    },
+    {
+      "code": "+377",
+      "name": "Monaco"
+    },
+    {
+      "code": "+976",
+      "name": "Mongolia"
+    },
+    {
+      "code": "+382",
+      "name": "Montenegro"
+    },
+    {
+      "code": "+1664",
+      "name": "Montserrat"
+    },
+    {
+      "code": "+212",
+      "name": "Morocco"
+    },
+    {
+      "code": "+95",
+      "name": "Myanmar"
+    },
+    {
+      "code": "+264",
+      "name": "Namibia"
+    },
+    {
+      "code": "+674",
+      "name": "Nauru"
+    },
+    {
+      "code": "+977",
+      "name": "Nepal"
+    },
+    {
+      "code": "+31",
+      "name": "Netherlands"
+    },
+    {
+      "code": "+599",
+      "name": "Netherlands Antilles"
+    },
+    {
+      "code": "+1 869",
+      "name": "Nevis"
+    },
+    {
+      "code": "+687",
+      "name": "New Caledonia"
+    },
+    {
+      "code": "+64",
+      "name": "New Zealand"
+    },
+    {
+      "code": "+505",
+      "name": "Nicaragua"
+    },
+    {
+      "code": "+227",
+      "name": "Niger"
+    },
+    {
+      "code": "+234",
+      "name": "Nigeria"
+    },
+    {
+      "code": "+683",
+      "name": "Niue"
+    },
+    {
+      "code": "+672",
+      "name": "Norfolk Island"
+    },
+    {
+      "code": "+850",
+      "name": "North Korea"
+    },
+    {
+      "code": "+1 670",
+      "name": "Northern Mariana Islands"
+    },
+    {
+      "code": "+47",
+      "name": "Norway"
+    },
+    {
+      "code": "+968",
+      "name": "Oman"
+    },
+    {
+      "code": "+92",
+      "name": "Pakistan"
+    },
+    {
+      "code": "+680",
+      "name": "Palau"
+    },
+    {
+      "code": "+970",
+      "name": "Palestinian Territory"
+    },
+    {
+      "code": "+507",
+      "name": "Panama"
+    },
+    {
+      "code": "+675",
+      "name": "Papua New Guinea"
+    },
+    {
+      "code": "+595",
+      "name": "Paraguay"
+    },
+    {
+      "code": "+51",
+      "name": "Peru"
+    },
+    {
+      "code": "+63",
+      "name": "Philippines"
+    },
+    {
+      "code": "+48",
+      "name": "Poland"
+    },
+    {
+      "code": "+351",
+      "name": "Portugal"
+    },
+    {
+      "code": "+1 787",
+      "name": "Puerto Rico"
+    },
+    {
+      "code": "+974",
+      "name": "Qatar"
+    },
+    {
+      "code": "+262",
+      "name": "Reunion"
+    },
+    {
+      "code": "+40",
+      "name": "Romania"
+    },
+    {
+      "code": "+7",
+      "name": "Russia"
+    },
+    {
+      "code": "+250",
+      "name": "Rwanda"
+    },
+    {
+      "code": "+685",
+      "name": "Samoa"
+    },
+    {
+      "code": "+378",
+      "name": "San Marino"
+    },
+    {
+      "code": "+966",
+      "name": "Saudi Arabia"
+    },
+    {
+      "code": "+221",
+      "name": "Senegal"
+    },
+    {
+      "code": "+381",
+      "name": "Serbia"
+    },
+    {
+      "code": "+248",
+      "name": "Seychelles"
+    },
+    {
+      "code": "+232",
+      "name": "Sierra Leone"
+    },
+    {
+      "code": "+65",
+      "name": "Singapore"
+    },
+    {
+      "code": "+421",
+      "name": "Slovakia"
+    },
+    {
+      "code": "+386",
+      "name": "Slovenia"
+    },
+    {
+      "code": "+677",
+      "name": "Solomon Islands"
+    },
+    {
+      "code": "+27",
+      "name": "South Africa"
+    },
+    {
+      "code": "+500",
+      "name": "South Georgia and the South Sandwich Islands"
+    },
+    {
+      "code": "+82",
+      "name": "South Korea"
+    },
+    {
+      "code": "+34",
+      "name": "Spain"
+    },
+    {
+      "code": "+94",
+      "name": "Sri Lanka"
+    },
+    {
+      "code": "+249",
+      "name": "Sudan"
+    },
+    {
+      "code": "+597",
+      "name": "Suriname"
+    },
+    {
+      "code": "+268",
+      "name": "Swaziland"
+    },
+    {
+      "code": "+46",
+      "name": "Sweden"
+    },
+    {
+      "code": "+41",
+      "name": "Switzerland"
+    },
+    {
+      "code": "+963",
+      "name": "Syria"
+    },
+    {
+      "code": "+886",
+      "name": "Taiwan"
+    },
+    {
+      "code": "+992",
+      "name": "Tajikistan"
+    },
+    {
+      "code": "+255",
+      "name": "Tanzania"
+    },
+    {
+      "code": "+66",
+      "name": "Thailand"
+    },
+    {
+      "code": "+670",
+      "name": "Timor Leste"
+    },
+    {
+      "code": "+228",
+      "name": "Togo"
+    },
+    {
+      "code": "+690",
+      "name": "Tokelau"
+    },
+    {
+      "code": "+676",
+      "name": "Tonga"
+    },
+    {
+      "code": "+1 868",
+      "name": "Trinidad and Tobago"
+    },
+    {
+      "code": "+216",
+      "name": "Tunisia"
+    },
+    {
+      "code": "+90",
+      "name": "Turkey"
+    },
+    {
+      "code": "+993",
+      "name": "Turkmenistan"
+    },
+    {
+      "code": "+1 649",
+      "name": "Turks and Caicos Islands"
+    },
+    {
+      "code": "+688",
+      "name": "Tuvalu"
+    },
+    {
+      "code": "+1 340",
+      "name": "U.S. Virgin Islands"
+    },
+    {
+      "code": "+256",
+      "name": "Uganda"
+    },
+    {
+      "code": "+380",
+      "name": "Ukraine"
+    },
+    {
+      "code": "+971",
+      "name": "United Arab Emirates"
+    },
+    {
+      "code": "+44",
+      "name": "United Kingdom"
+    },
+    {
+      "code": "+1",
+      "name": "United States"
+    },
+    {
+      "code": "+598",
+      "name": "Uruguay"
+    },
+    {
+      "code": "+998",
+      "name": "Uzbekistan"
+    },
+    {
+      "code": "+678",
+      "name": "Vanuatu"
+    },
+    {
+      "code": "+58",
+      "name": "Venezuela"
+    },
+    {
+      "code": "+84",
+      "name": "Vietnam"
+    },
+    {
+      "code": "+1 808",
+      "name": "Wake Island"
+    },
+    {
+      "code": "+681",
+      "name": "Wallis and Futuna"
+    },
+    {
+      "code": "+967",
+      "name": "Yemen"
+    },
+    {
+      "code": "+260",
+      "name": "Zambia"
+    },
+    {
+      "code": "+255",
+      "name": "Zanzibar"
+    },
+    {
+      "code": "+263",
+      "name": "Zimbabwe"
+    }
+]');
+                $code = $driver->code;
+                $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
+                $phone = preg_replace("/^1?(\d{3})(\d{3})(\d{4})$/", "($1) $2-$3", $driver->phone);
+                $address = driverBasicDetails::where('driverid',$driver->id)->first();
+                return view('drivers.FrontEnd.edit',compact('driver','driver_name','address','code','array','phone','countries'));
+            }
+        }
+        else
+        {
+            return redirect('home');
+        }
+    }
+    public function history()
+    {
+        if (Auth::user()->status == 1)
+        {
+            $driver = driver::where('userid',Auth::user()->id)->first();
+            if ($driver->activated != 1)
+            {
+                return redirect('driver/verify');
+            }
+            elseif($driver->basic_details != 1)
+            {
+                return redirect('driver/profile');
+            }
+            elseif($driver->address_details != 1)
+            {
+                return redirect('driver/address');
+            }
+            elseif ($driver->licence_details != 1)
+            {
+                return redirect('driver/verifyLicence');
+            }
+            elseif ($driver->documents != 1)
+            {
+                return redirect('driver/documents');
+            }
+            elseif (empty($driver->signature) || $driver->signature == '')
+            {
+                return redirect('driver/agree');
+            }
+            elseif ($driver->status != '1')
+            {
+                return redirect('driver/SubmitDocument');
+            }
+            else
+            {
+                $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
+                return view('drivers.FrontEnd.history',compact('driver','driver_name'));
+            }
+        }
+        else
+        {
+            return redirect('home');
+        }
+    }
+    public function SaveeditProfile(Request $request)
+    {
+        $input = $request->except('_token','image','type');
+        if ($request->type == 1)
+        {
+            $driver = driverBasicDetails::where('driverid',$request->driverid)->update($input);
+            return $driver;
+        }
+        elseif ($request->type == 2)
+        {
+            if ($request->hasFile('image'))
+            {
+                $photoName = rand(1,7257361) . time() . '.' . $request->image->getClientOriginalExtension();
+                $request->image->move(public_path('avatars'), $photoName);
+                $driver = driver::whereId($request->driverid)->update(['image'=>$photoName]);
+            }
+            return $driver;
+        }
+        elseif ($request->type == 3)
+        {
+            $driver = driver::whereId($request->driverid)->update(['email'=>$request->email]);
+            return $driver;
+        }
+        else
+        {
+            $driver = driver::whereId($request->driverid)->update(['code'=>$request->code,'phone'=>$request->phone]);
+            return $driver;
+        }
+    }
+
+    public function upcoming()
+    {
+        if (Auth::user()->status == 1)
+        {
+            $driver = driver::where('userid',Auth::user()->id)->first();
+            if ($driver->activated != 1)
+            {
+                return redirect('driver/verify');
+            }
+            elseif($driver->basic_details != 1)
+            {
+                return redirect('driver/profile');
+            }
+            elseif($driver->address_details != 1)
+            {
+                return redirect('driver/address');
+            }
+            elseif ($driver->licence_details != 1)
+            {
+                return redirect('driver/verifyLicence');
+            }
+            elseif ($driver->documents != 1)
+            {
+                return redirect('driver/documents');
+            }
+            elseif (empty($driver->signature) || $driver->signature == '')
+            {
+                return redirect('driver/agree');
+            }
+            elseif ($driver->status != '1')
+            {
+                return redirect('driver/SubmitDocument');
+            }
+            else
+            {
+                $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
+                $documents = driverVerification::where('driverid',$driver->id)->first();
+                return view('drivers.FrontEnd.upcoming',compact('driver','driver_name','documents'));
+            }
+        }
+        else
+        {
+            return redirect('home');
+        }
+    }
+
+    public function account()
+    {
+        if (Auth::user()->status == 1)
+        {
+            $driver = driver::where('userid',Auth::user()->id)->first();
+            if ($driver->activated != 1)
+            {
+                return redirect('driver/verify');
+            }
+            elseif($driver->basic_details != 1)
+            {
+                return redirect('driver/profile');
+            }
+            elseif($driver->address_details != 1)
+            {
+                return redirect('driver/address');
+            }
+            elseif ($driver->licence_details != 1)
+            {
+                return redirect('driver/verifyLicence');
+            }
+            elseif ($driver->documents != 1)
+            {
+                return redirect('driver/documents');
+            }
+            elseif (empty($driver->signature) || $driver->signature == '')
+            {
+                return redirect('driver/agree');
+            }
+            elseif ($driver->status != '1')
+            {
+                return redirect('driver/SubmitDocument');
+            }
+            else
+            {
+                $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
+                $cards = driverStripe::where('driverid',$driver->id)->get();
+                return view('drivers.FrontEnd.account',compact('driver','driver_name','cards'));
+            }
+        }
+        else
+        {
+            return redirect('home');
         }
     }
 }

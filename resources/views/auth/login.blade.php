@@ -32,9 +32,24 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     @include('drivers.FrontEnd.topbar')
+    <style>
+        .help-block1
+        {
+            color: red;
+        }
+        #email
+        {
+            display: none;
+        }
+        #psw
+        {
+            display: none;
+        }
+    </style>
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
+    @include('flash::message')
     <div class="login-logo">
         {{--<a href="{{ url('/home') }}"><b>InfyOm </b>Generator</a>--}}
     </div>
@@ -46,29 +61,41 @@
             {!! csrf_field() !!}
 
             <div class="form-group has-feedback {{ $errors->has('email') ? ' has-error' : '' }}">
-                <input type="email" class="form-control1" name="email" value="{{ old('email') }}" placeholder="Your Email">
+                <input type="email" class="form-control1" id="email1" name="email" value="{{ old('email') }}" placeholder="Your Email" onchange="">
+                <strong>
+                    <p id="email" class="help-block1">Email is Required</p>
+                </strong>
                 @if ($errors->has('email'))
                     <span class="help-block">
-                    <strong>{{ $errors->first('email') }}</strong>
-                </span>
+                        <strong>
+                            {{ $errors->first('email') }}
+                        </strong>
+                    </span>
                 @endif
             </div>
 
             <div class="form-group has-feedback{{ $errors->has('password') ? ' has-error' : '' }}">
-                <input type="password" class="form-control1" placeholder="Your Password" name="password">
-                @if ($errors->has('password'))
+                <input type="password" id="psw1" class="form-control1" placeholder="Your Password" name="password" onchange="">
+                <strong>
+                    <p id="psw" class="help-block1">Password is Required</p>
+                </strong>
+
+            @if ($errors->has('password'))
                     <span class="help-block">
-                    <strong>{{ $errors->first('password') }}</strong>
+                    <strong>
+                        {{ $errors->first('password') }}
+                    </strong>
                 </span>
                 @endif
 
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-primary btn-auth">Login</button>
+                <button type="submit" id="btnLogin" class="btn btn-primary btn-auth" onclick="validate()">Login</button>
             </div>
             <center>
                 <div class="col-md-12">
-                    <div class="g-recaptcha" data-sitekey="6Lc-gZYUAAAAAExms1i-_hJmtwQJ3CFMGLdrYunM"></div>
+                    <div class="g-recaptcha" data-sitekey="{{$siteKey}}"></div>
+                    {{--<input type="hidden" name="recaptcha_response" id="recaptchaResponse">--}}
                 </div>
             </center>
 
@@ -86,6 +113,7 @@
 <!-- /.login-box -->
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
@@ -101,6 +129,30 @@
             increaseArea: '20%' // optional
         });
     });
+    function validate() {
+        var email = $('#email1').val();
+        var psw = $('#psw1').val();
+        if (email == '')
+        {
+            $('#btnLogin').prop('type','button');
+            $('#email').show();
+        }
+        else
+        {
+            $('#btnLogin').prop('type','submit');
+            $('#email').hide();
+        }
+        if (psw == '')
+        {
+            $('#btnLogin').prop('type','button');
+            $('#psw').show();
+        }
+        else
+        {
+            $('#btnLogin').prop('type','submit');
+            $('#psw').hide();
+        }
+    }
 </script>
 </body>
 </html>

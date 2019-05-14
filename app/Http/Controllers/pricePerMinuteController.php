@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatepricePerMinuteRequest;
 use App\Http\Requests\UpdatepricePerMinuteRequest;
+use App\Models\availableCities;
+use App\Models\categories;
+use App\Models\pricePerMinute;
 use App\Repositories\pricePerMinuteRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
@@ -18,6 +21,7 @@ class pricePerMinuteController extends Controller
 
     public function __construct(pricePerMinuteRepository $pricePerMinuteRepo)
     {
+        $this->middleware('auth');
         $this->pricePerMinuteRepository = $pricePerMinuteRepo;
     }
 
@@ -43,7 +47,9 @@ class pricePerMinuteController extends Controller
      */
     public function create()
     {
-        return view('price_per_minutes.create');
+        $cities = availableCities::get();
+        $categories = categories::get();
+        return view('price_per_minutes.create',compact('cities','categories'));
     }
 
     /**
@@ -56,6 +62,12 @@ class pricePerMinuteController extends Controller
     public function store(CreatepricePerMinuteRequest $request)
     {
         $input = $request->all();
+
+        if (pricePerMinute::where('city',$request->city)->where('category',$request->category)->exists())
+        {
+            Flash::error("Entry Already exists! Please try Editing it");
+            return redirect(route('pricePerMinutes.index'));
+        }
 
         $pricePerMinute = $this->pricePerMinuteRepository->create($input);
 
@@ -94,14 +106,16 @@ class pricePerMinuteController extends Controller
     public function edit($id)
     {
         $pricePerMinute = $this->pricePerMinuteRepository->findWithoutFail($id);
-
+        $cities = availableCities::get();
+        $city = availableCities::whereId($pricePerMinute->city)->first();
+        $categories = categories::where('city','like',$city->city)->get();
         if (empty($pricePerMinute)) {
             Flash::error('Price Per Minute not found');
 
             return redirect(route('pricePerMinutes.index'));
         }
 
-        return view('price_per_minutes.edit')->with('pricePerMinute', $pricePerMinute);
+        return view('price_per_minutes.edit',compact('pricePerMinute','cities','categories'));
     }
 
     /**
@@ -119,6 +133,12 @@ class pricePerMinuteController extends Controller
         if (empty($pricePerMinute)) {
             Flash::error('Price Per Minute not found');
 
+            return redirect(route('pricePerMinutes.index'));
+        }
+
+        if (pricePerMinute::where('city',$request->city)->where('category',$request->category)->where('id','!=',$id)->exists())
+        {
+            Flash::error("Entry Already exists! Please try Editing it");
             return redirect(route('pricePerMinutes.index'));
         }
 

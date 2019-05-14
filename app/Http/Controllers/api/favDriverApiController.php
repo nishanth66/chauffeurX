@@ -79,24 +79,24 @@ class favDriverApiController extends Controller
                     }
                 }
                 $favourite = favDriver::where('userid',$user->id)->get();
-                $response['status'] = "Success";
+                $response['status'] = "success";
                 $response['code'] = 200;
-                $response['Message'] = "User Favourite Driver";
+                $response['message'] = "User's Favourite Driver fetched successfully";
                 $response['data'] = $drivers;
             }
             else
             {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "User Favourite Driver List is Empty!";
+                $response['status'] = "failed";
+                $response['code'] = 500;
+                $response['message'] = "User Favourite Driver List is Empty!";
                 $response['data'] = [];
             }
         }
         else
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "User Not Found";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
         }
         return $response;
@@ -114,24 +114,24 @@ class favDriverApiController extends Controller
                     'userid'=>$user->id,
                     'driverid'=>$request->driverid
                 ]);
-                $response['status'] = "Success";
+                $response['status'] = "success";
                 $response['code'] = 200;
-                $response['Message'] = "User Favourite Created Successfully!";
+                $response['message'] = "User Favourite Created Successfully!";
                 $response['data'] = $fav;
             }
             else
             {
-                $response['status'] = "Failed";
+                $response['status'] = "failed";
                 $response['code'] = 500;
-                $response['Message'] = "Driver Not Found";
+                $response['message'] = "Driver could not be Found";
                 $response['data'] = [];
             }
         }
         else
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "User Not Found";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
         }
         return $response;
@@ -142,16 +142,16 @@ class favDriverApiController extends Controller
         if (favDriver::whereId($request->favouriteId)->exists())
         {
             $fav = favDriver::whereId($request->favouriteId)->delete();
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['code'] = 200;
-            $response['Message'] = "User Favourite Deleted Successfully!";
+            $response['message'] = "User Favourite Deleted Successfully!";
             $response['data'] = $fav;
         }
         else
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Favourite Not Found";
+            $response['message'] = "Favourite driver Not Found";
             $response['data'] = [];
         }
         return $response;

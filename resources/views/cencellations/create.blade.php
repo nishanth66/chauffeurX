@@ -3,7 +3,7 @@
 @section('content')
     <section class="content-header">
         <h1>
-            Cencellation
+            Cancellations
         </h1>
     </section>
     <div class="content">
@@ -12,7 +12,7 @@
 
             <div class="box-body">
                 <div class="row">
-                    {!! Form::open(['route' => 'cencellations.store']) !!}
+                    {!! Form::open(['route' => 'cancellations.store']) !!}
 
                         @include('cencellations.fields')
 

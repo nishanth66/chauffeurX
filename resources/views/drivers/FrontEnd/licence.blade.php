@@ -1,18 +1,27 @@
 @include('drivers.FrontEnd.topbar')
+<link rel="stylesheet" href="{{asset('public/css/profile.css')}}">
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
 <style>
     .form-control{
         color: #4D68B0 !important;
     }
+    .col-md-8
+    {
+        max-width: none !important;
+    }
 </style>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
 <div class="container-fluid">
     <div class="col-md-12 align login-div">
         <div class="col-md-4">
-            <center><div class="col-md-8 textclr">{{$city}}? Nice.<br>ChauffeurX is available there. <br/> Let's get you ready to drive.</div></center>
+            <center>
+                <div class="col-md-8 textclr">
+                    {{$city}}? Nice.<br>ChauffeurX is available there. <br/> Let's get you ready to drive.
+                </div>
+            </center>
             <br>
             <center>
-                <div class="col-md-12">
+                <div class="col-md-12 login-div">
                     @include('flash::message')
                     <form method="post" action="{{url('driver/verifyLicence')}}">
                         {{csrf_field()}}
@@ -36,6 +45,8 @@
 </div>
 <script>
     $(document).ready(function(){
+        window.history.forward();
+
         var date_input=$('input[name="date"]'); //our date input has the name "date"
         var container=$('.bootstrap-iso form').length>0 ? $('.bootstrap-iso form').parent() : "body";
         var options={
@@ -46,6 +57,7 @@
             autoclose: true,
         };
         date_input.datepicker(options);
-    })
+    });
+
 </script>
 

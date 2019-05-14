@@ -2,16 +2,20 @@
     <thead>
         <tr>
             <th>City</th>
-        <th>Category</th>
-        <th>Amount</th>
-            <th colspan="3">Action</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
     @foreach($basicFares as $basicFare)
+        <?php
+           $city = \App\Models\availableCities::whereId($basicFare->city)->first();
+           $category = \App\Models\categories::whereId($basicFare->category)->first();
+        ?>
         <tr>
-            <td>{!! $basicFare->city !!}</td>
-            <td>{!! $basicFare->category !!}</td>
+            <td>{!! $city->city !!}</td>
+            <td>{!! $category->name !!}</td>
             <td>{!! $basicFare->amount !!}</td>
             <td>
                 {!! Form::open(['route' => ['basicFares.destroy', $basicFare->id], 'method' => 'delete']) !!}

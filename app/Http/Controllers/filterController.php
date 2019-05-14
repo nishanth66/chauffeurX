@@ -18,6 +18,7 @@ class filterController extends Controller
 
     public function __construct(filterRepository $filterRepo)
     {
+
         $this->filterRepository = $filterRepo;
     }
 

@@ -22,15 +22,15 @@ class emergencyContactsAPIController extends Controller
         if (passengers::whereId($request->userid)->exists() == 0)
         {
             $response['code'] = 500;
-            $response['status'] = "Failed";
-            $response['message'] = "User not Found";
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
             return $response;
         }
         $input = $request->all();
         $emergency = emergencyContacts::create($input);
         $response['code'] = 200;
-        $response['status'] = "Success";
+        $response['status'] = "success";
         $response['message'] = "Emergency contacts added Successfully";
         $response['data'] = $emergency;
         return $response;
@@ -40,22 +40,22 @@ class emergencyContactsAPIController extends Controller
         if (passengers::whereId($request->userid)->exists() == 0)
         {
             $response['code'] = 500;
-            $response['status'] = "Failed";
-            $response['message'] = "User not Found";
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
             return $response;
         }
         if (emergencyContacts::where('userid',$request->userid)->exists() == 0)
         {
-            $response['code'] =200;
-            $response['status'] = "Success";
+            $response['code'] =500;
+            $response['status'] = "failed";
             $response['message'] = "No emergency contacts Found";
             $response['data'] = [];
             return $response;
         }
         $emergency = emergencyContacts::where('userid',$request->userid)->get();
         $response['code'] =200;
-        $response['status'] = "Success";
+        $response['status'] = "success";
         $response['message'] = "Emergency contacts Fetched Successfully!";
         $response['data'] = $emergency;
         return $response;
@@ -65,15 +65,15 @@ class emergencyContactsAPIController extends Controller
         if (passengers::whereId($request->userid)->exists() == 0)
         {
             $response['code'] = 500;
-            $response['status'] = "Failed";
-            $response['message'] = "User not Found";
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
             return $response;
         }
         if (emergencyContacts::whereId($request->contact_id)->exists() == 0)
         {
             $response['code'] = 500;
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['message'] = "Emergency Contact Not Found";
             $response['data'] = [];
             return $response;
@@ -81,7 +81,7 @@ class emergencyContactsAPIController extends Controller
         $input = $request->except('contact_id');
         $emergency = emergencyContacts::whereId($request->contact_id)->update($input);
         $response['code'] = 200;
-        $response['status'] = "Success";
+        $response['status'] = "success";
         $response['message'] = "Emergency contacts updated Successfully";
         $response['data'] = $emergency;
         return $response;
@@ -91,14 +91,14 @@ class emergencyContactsAPIController extends Controller
         if (emergencyContacts::whereId($request->contact_id)->exists() == 0)
         {
             $response['code'] = 500;
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['message'] = "Emergency Contact Not Found";
             $response['data'] = [];
             return $response;
         }
         emergencyContacts::whereId($request->contact_id)->forcedelete();
         $response['code'] = 200;
-        $response['status'] = "Success";
+        $response['status'] = "success";
         $response['message'] = "Emergency Contact Deleted Successfully";
         $response['data'] = [];
         return $response;

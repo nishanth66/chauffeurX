@@ -17,6 +17,7 @@ use App\Models\notification;
 use App\Models\passengers;
 use App\Models\passengerStripe;
 use App\Models\price;
+use App\Models\rank;
 use App\Models\rating;
 use App\Models\template;
 use App\Models\userCoupons;
@@ -68,30 +69,10 @@ class bookingDriverApiController extends Controller
 
     public function getNearbyDrievrs(Request $request)
     {
-        if (isset($request->categoryid) && (!empty($request->categoryid) || $request->categoryid != ''))
-        {
-            if (categories::whereId($request->categoryid)->exists() == 0)
-            {
-                $response['status'] = "Failed";
-                $response['code'] = 500;
-                $response['message'] = "Category Not Found";
-                $response['data'] = [];
-                return $response;
-            }
-            if (driverCategory::where('categoryid',$request->categoryid)->exists() == 0)
-            {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['message'] = "No drivers are found on this category";
-                $response['data'] = [];
-                return $response;
-            }
-        }
-
         $userDetais = explode('-',$request->user_lat_lng);
-        if ((!isset($userDetais[0]) || $userDetais[0] == '' || empty($userDetais[0])) || (!isset($userDetais[1]) || $userDetais[1] == '' ||  empty($userDetais[1])) || (!isset($userDetais[2]) || $userDetais[2] == '' || empty($userDetais[2])))
+        if ((!isset($userDetais[0]) || (!isset($userDetais[1]) || (!isset($userDetais[2]) || $userDetais[0] == '' || empty($userDetais[0])) || $userDetais[1] == '' ||  empty($userDetais[1])) || $userDetais[2] == '' || empty($userDetais[2])))
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
             $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
             $response['data'] = [];
@@ -100,17 +81,10 @@ class bookingDriverApiController extends Controller
 
         $lat1 = $userDetais[1];
         $long1 = $userDetais[2];
-        if (isset($request->categoryid) && (!empty($request->categoryid) || $request->categoryid != ''))
-        {
-            $drivers = $this->driverByCategory($request->categoryid);
-        }
-        else
-        {
-            $drivers = driver::where('isAvailable',1)->get();
-        }
+        $drivers = driver::where('isAvailable',1)->where('status',1)->where('active_ride','!=',1)->get();
         if (count($drivers) == 0)
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
             $response['message'] = "No drivers are Active at the moment";
             $response['data'] = [];
@@ -119,64 +93,40 @@ class bookingDriverApiController extends Controller
         $response = $this->fetchNearbyDrivers($drivers,$lat1,$long1);
         return $response;
     }
+
     public function driverRating(Request $request)
     {
         if (driver::whereId($request->driverid)->exists())
         {
             if (rating::where('driverid',$request->driverid)->exists())
             {
-                $ratings = rating::where('driverid',$request->driverid)->get();
-                $response['status'] = "Success";
+                $ratings = rating::where('driverid',$request->driverid)->sum('rating');
+                $count = rating::where('driverid',$request->driverid)->count();
+                $totalRating = $ratings/$count;
+                $response['status'] = "success";
                 $response['code'] = 200;
-                $response['Message'] = "Driver data Fetched Successfully";
-                $response['data'] = $ratings;
+                $response['message'] = "Driver data Fetched Successfully";
+                $response['driverid'] = $request->driverid;
+                $response['rating'] = $totalRating;
             }
             else
             {
-                $response['status'] = "Success";
+                $response['status'] = "success";
                 $response['code'] = 200;
-                $response['Message'] = "No Driver Ratings are Found";
+                $response['message'] = "No Driver Ratings are Found";
                 $response['data'] = [];
             }
         }
         else
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Driver Not Found";
+            $response['message'] = "Driver Not Found";
             $response['data'] = [];
         }
         return $response;
     }
-    public function driverTips(Request $request)
-    {
-        if (driver::whereId($request->driverid)->exists())
-        {
-            if (booking::where('driverid',$request->driverid)->exists())
-            {
-                $drivertips = booking::where('driverid',$request->driverid)->get();
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "Tips fetched Succeessfully";
-                $response['data'] = $drivertips;
-            }
-            else
-            {
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "Driver Tips are Empty!";
-                $response['data'] = [];
-            }
-        }
-        else
-        {
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "Driver Not Found";
-            $response['data'] = [];
-        }
-        return $response;
-    }
+
     public function addDriverTips(Request $request)
     {
         if (booking::whereId($request->bookingId)->exists())
@@ -184,31 +134,53 @@ class bookingDriverApiController extends Controller
             $booking = booking::whereId($request->bookingId)->first();
             if (passengers::whereId($booking->userid)->exists())
             {
-                booking::whereId($request->bookingId)->update(['driver_tips	'=>$request->driverTips]);
-                $booking = booking::whereId($request->bookingId)->first();
-                if ($booking->image != '' || !empty($booking->image))
+                $bookingResult = booking::whereId($request->bookingId)->update(['driver_tips'=>$request->driverTips]);
+                if ($bookingResult == 1)
                 {
-                    $booking->image = asset('public/avatars').'/'.$booking->image;
+                    $response['status'] = "success";
+                    $response['code'] = 200;
+                    $response['message'] = "Tips added Succeessfully";
+                    if (DB::table('coins')->where('add_tip','!=',null)->orWhere('add_tip','!=','')->exists())
+                    {
+                        $coins = DB::table('coins')->first();
+                        $coins = (float)$coins->add_tip;
+                    }
+                    else
+                    {
+                        $coins = 0;
+                    }
+                    $user = passengers::whereId($booking->userid)->first();
+                    unset($user->password);
+                    $userCoins = (float)$user->coins;
+                    $userCoins +=$coins;
+                    passengers::whereId($booking->userid)->update(['coins'=>$userCoins]);
+                    $user = passengers::whereId($booking->userid)->first();
+                    $userCoins = (float)$user->coins;
+                    $ranks = rank::get();
+                    $user = app('App\Http\Controllers\api\passengerApiController')->calculateRank($ranks,$userCoins,$user);
+                    $response['points_earned'] = $coins;
+                    $response['user_total_points'] = $userCoins;
+                    $response['user_level'] = $user->rankid;
                 }
-                $response['status'] = "Success";
-                $response['code'] = 200;
-                $response['Message'] = "Tips added Succeessfully";
-                $response['data'] = $booking;
             }
-            $response['status'] = "Failed";
-            $response['code'] = 500;
-            $response['Message'] = "User Not Found";
-            $response['data'] = [];
+            else
+            {
+                $response['status'] = "failed";
+                $response['code'] = 500;
+                $response['message'] = "User Not Found";
+                $response['data'] = [];
+            }
         }
         else
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Booking Not Found";
+            $response['message'] = "Booking Not Found";
             $response['data'] = [];
         }
         return $response;
     }
+
     public function driverDetail(Request $request)
     {
         if (driver::whereId($request->driverid)->exists())
@@ -218,27 +190,27 @@ class bookingDriverApiController extends Controller
             {
                 $driver->image = asset('public/avatars').'/'.$driver->image;
             }
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['code'] = 200;
-            $response['Message'] = "Driver Detail Fetched Successfully!";
+            $response['message'] = "Driver Detail Fetched Successfully!";
             $response['data'] = $driver;
         }
         else
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Driver Not Found";
+            $response['message'] = "Driver Not Found";
             $response['data'] = [];
         }
         return $response;
     }
+
     function fetchNearbyDrivers($drivers,$lat1,$long1)
     {
         $driverLatLng = [];
         foreach ($drivers as $driver)
         {
-//            $coordinates=$this->database->getReference('users')->getChild($driver->device_token)->getValue();
-            $coordinates=$this->database->getReference('online_drivers')->getChild($driver->device_token)->getValue();
+            $coordinates=$this->database->getReference('online_drivers')->getChild($driver->id)->getValue();
             if (empty($coordinates['driverId']) || empty($coordinates['lat']) || empty($coordinates['lng']))
             {
                 continue;
@@ -254,7 +226,7 @@ class bookingDriverApiController extends Controller
             $long2 = $driver['lng'];
             if (driver::whereId($id)->exists() == 0)
             {
-                $response['status'] = "Failed";
+                $response['status'] = "failed";
                 $response['code'] = 500;
                 $response['message'] = "Driver with id = $id not Found";
                 $response['data'] = [];
@@ -263,15 +235,15 @@ class bookingDriverApiController extends Controller
             if (isset($lat1) && isset($long1) && isset($lat2) && isset($long2))
             {
                 $Totaldistance=app('App\Http\Controllers\api\bookingApiController')->calculateDistance($lat1,$long1,$lat2,$long2);
-//                $Totaldistance = $this->calculateDistance($lat1,$long1,$lat2,$long2);
-                if (DB::table('maximum_distance')->exists())
+                $city = $Totaldistance['city'];
+                if (DB::table('maximum_distance')->where('city','like',$city)->exists())
                 {
-                    $max_distance = DB::table('maximum_distance')->first();
-                    $max_distance = (float)$max_distance->distance;
+                    $max_distance = DB::table('maximum_distance')->where('city','like',$city)->first();
+                    $max_distance = (float)$max_distance->car;
                 }
                 else
                 {
-                    $max_distance = 10;
+                    $max_distance = 50;
                 }
                 if ((float)$Totaldistance['distance'] <= (float)$max_distance)
                 {
@@ -279,6 +251,7 @@ class bookingDriverApiController extends Controller
                     $array['lat'] = $lat2;
                     $array['long'] = $long2;
                     $array['driverid'] = $id;
+                    $array['driverId'] = $driver['driverId'];
                     $array['discount'] = $driver['discount'];
                     $latLng[$id] = $array;
                 }
@@ -300,7 +273,7 @@ class bookingDriverApiController extends Controller
                 array_push($nearbyDriver,$latLng[$key]);
             }
             $response['code'] = 200;
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['message'] = "Nearby drievrs are fetched successfully!";
             $response['data'] = $nearbyDriver;
             return $response;
@@ -308,22 +281,22 @@ class bookingDriverApiController extends Controller
         else
         {
             $response['code'] = 200;
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['message'] = "No nearby drivers are found!";
             $response['data'] = [];
             return $response;
         }
     }
 
-    function driverByCategory($categoryid,$fav,$discount,$userid,$payment=null)
+    function driverByCategory($categoryid,$fav,$discount,$userid=null,$payment=null)
     {
         if ($discount == 0)
         {
-            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1'");
+            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1' and d.active_ride=0");
         }
         else
         {
-            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1' and discount != 0");
+            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1' and discount != 0 and d.active_ride=0");
         }
         if($payment != null && $fav == 0)
         {
@@ -372,11 +345,11 @@ class bookingDriverApiController extends Controller
                     {
                         if ($discount == 0)
                         {
-                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->first();
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->first();
                         }
                         else
                         {
-                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('discount','!=',0)->first();
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('discount','!=',0)->where('active_ride',0)->first();
                         }
                         if (isset($driverDetail) && !empty($driverDetail))
                         {
@@ -389,64 +362,6 @@ class bookingDriverApiController extends Controller
             return $drivers;
         }
         return $drivers;
-    }
-
-    function assignDriver($driverid,$lat1,$long1)
-    {
-        $score[$driverid] = 1/$this->getDriverWaitTime($driverid,$lat1,$long1);
-//        return $score;
-        $score = (1/$this->getDriverWaitTime($driverid,$lat1,$long1))+($this->getDriverRating($driverid)/10)+($this->driverSevenBookings($driverid)/100)-($this->getPenalty($driverid));
-        return $score;
-    }
-
-    function getDriverWaitTime($driverid,$lat1,$long1)
-    {
-        $driver = driver::whereId($driverid)->first();
-        $coordinates=$this->database->getReference('online_drivers')->getChild($driver->device_token)->getValue();
-        $lat2 = $coordinates['lat'];
-        $long2 = $coordinates['lng'];
-        $distance=app('App\Http\Controllers\api\bookingApiController')->calculateDistance($lat1,$long1,$lat2,$long2);
-//        $distance = $this->calculateDistance($lat1,$long1,$lat2,$long2);
-        $minutes = $distance['min'];
-        return $minutes;
-    }
-
-    function driverSevenBookings($driverid)
-    {
-        $date = Carbon::today()->subDays(7);
-
-        $bookings = booking::where('driverid',$driverid)->where('trip_end_time','>=',$date)->count();
-        return $bookings;
-    }
-
-    function getPenalty($driverid)
-    {
-        $driver = driver::whereId($driverid)->first();
-        if ($driver->penalty != '' || !empty($driver->penalty) || $driver->penalty == null)
-        {
-            $penalty = (float)$driver->penalty;
-        }
-        else
-        {
-            $penalty = 0;
-        }
-        return $penalty;
-    }
-
-    function getDriverRating($driverid)
-    {
-        $count = rating::where('driverid',$driverid)->count();
-        if ($count > 0)
-        {
-            $totalRating = rating::where('driverid',$driverid)->sum('rating');
-            $rate = (($totalRating/$count)*100)/5;
-        }
-        else
-        {
-            $rate = 0;
-        }
-        return $rate;
-
     }
 
 }

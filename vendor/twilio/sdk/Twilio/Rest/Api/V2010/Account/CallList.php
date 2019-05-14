@@ -64,7 +64,6 @@ class CallList extends ListResource {
             'StatusCallbackEvent' => Serialize::map($options['statusCallbackEvent'], function($e) { return $e; }),
             'StatusCallbackMethod' => $options['statusCallbackMethod'],
             'SendDigits' => $options['sendDigits'],
-            'IfMachine' => $options['ifMachine'],
             'Timeout' => $options['timeout'],
             'Record' => Serialize::booleanToString($options['record']),
             'RecordingChannels' => $options['recordingChannels'],
@@ -77,6 +76,9 @@ class CallList extends ListResource {
             'RecordingStatusCallbackEvent' => Serialize::map($options['recordingStatusCallbackEvent'], function($e) { return $e; }),
             'Trim' => $options['trim'],
             'CallerId' => $options['callerId'],
+            'MachineDetectionSpeechThreshold' => $options['machineDetectionSpeechThreshold'],
+            'MachineDetectionSpeechEndThreshold' => $options['machineDetectionSpeechEndThreshold'],
+            'MachineDetectionSilenceTimeout' => $options['machineDetectionSilenceTimeout'],
         ));
 
         $payload = $this->version->create(

@@ -2,6 +2,7 @@
 <link href="{{asset('public/css/pin.css')}}" rel="stylesheet">
 
 <style>
+
     .qw{
         padding: 10px;
         border: 1px solid #4D68B0;
@@ -44,11 +45,11 @@
                     <input type="hidden" name="email_otp" id="email1">
                     <center>
                         <input class="qw" type="number" id="1" onkeyup="moveOnMax(this,'2')"  onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="2" onkeyup="moveOnMax(this,'3')"  onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="3" onkeyup="moveOnMax(this,'4')"  onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="4" onkeyup="moveOnMax(this,'5')" onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="5" onkeyup="moveOnMax(this,'6')" onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="6" onkeyup="getEmailValue()" onKeyPress="if(this.value.length == 1) return false;"/>
+                        <input class="qw" type="number" id="2" onkeyup="moveOnMax(this,'3')"  onKeyPress="checkKey(this,1);if(this.value.length == 1) return false;" onkeydown="checkKey(this,1)"/>
+                        <input class="qw" type="number" id="3" onkeyup="moveOnMax(this,'4')"  onKeyPress="checkKey(this,2);if(this.value.length == 1) return false;" onkeydown="checkKey(this,2)"/>
+                        <input class="qw" type="number" id="4" onkeyup="moveOnMax(this,'5')" onKeyPress="checkKey(this,3);if(this.value.length == 1) return false;" onkeydown="checkKey(this,3)"/>
+                        <input class="qw" type="number" id="5" onkeyup="moveOnMax(this,'6')" onKeyPress="checkKey(this,4);if(this.value.length == 1) return false;" onkeydown="checkKey(this,4)"/>
+                        <input class="qw" type="number" id="6" onkeyup="getEmailValue()" onKeyPress="checkKey(this,5);if(this.value.length == 1) return false;" onkeydown="checkKey(this,5)"/>
                     </center>
                     {{--<hr>--}}
                 </div>
@@ -76,5 +77,13 @@
         var code = $('#1').val()+$('#2').val()+$('#3').val()+$('#4').val()+$('#5').val()+$('#6').val();
 //        console.log(code);
         $('#email1').val(code);
+    }
+    function checkKey(field,nextFieldID)
+    {
+        if (event.keyCode == 8 || event.keyCode == 46)
+        {
+            $(field).val('');
+            document.getElementById(nextFieldID).focus();
+        }
     }
 </script>

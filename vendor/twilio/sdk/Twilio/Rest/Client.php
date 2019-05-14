@@ -32,6 +32,7 @@ use Twilio\VersionInfo;
  * @property \Twilio\Rest\Preview preview
  * @property \Twilio\Rest\Pricing pricing
  * @property \Twilio\Rest\Proxy proxy
+ * @property \Twilio\Rest\Serverless serverless
  * @property \Twilio\Rest\Taskrouter taskrouter
  * @property \Twilio\Rest\Trunking trunking
  * @property \Twilio\Rest\Video video
@@ -110,6 +111,7 @@ class Client {
     protected $_preview = null;
     protected $_pricing = null;
     protected $_proxy = null;
+    protected $_serverless = null;
     protected $_taskrouter = null;
     protected $_trunking = null;
     protected $_video = null;
@@ -443,7 +445,7 @@ class Client {
     }
 
     /**
-     * @param string $sid The sid
+     * @param string $sid The unique string that identifies the resource
      * @return \Twilio\Rest\Api\V2010\Account\KeyContext 
      */
     protected function contextKeys($sid) {
@@ -458,7 +460,7 @@ class Client {
     }
 
     /**
-     * @param string $sid Fetch by unique message Sid
+     * @param string $sid The unique string that identifies the resource
      * @return \Twilio\Rest\Api\V2010\Account\MessageContext 
      */
     protected function contextMessages($sid) {
@@ -532,7 +534,7 @@ class Client {
     }
 
     /**
-     * @param string $sid Fetch by unique recording SID
+     * @param string $sid The unique string that identifies the resource
      * @return \Twilio\Rest\Api\V2010\Account\RecordingContext 
      */
     protected function contextRecordings($sid) {
@@ -591,7 +593,7 @@ class Client {
     }
 
     /**
-     * @param string $sid Fetch by unique transcription SID
+     * @param string $sid The unique string that identifies the resource
      * @return \Twilio\Rest\Api\V2010\Account\TranscriptionContext 
      */
     protected function contextTranscriptions($sid) {
@@ -754,6 +756,18 @@ class Client {
             $this->_proxy = new Proxy($this);
         }
         return $this->_proxy;
+    }
+
+    /**
+     * Access the Serverless Twilio Domain
+     * 
+     * @return \Twilio\Rest\Serverless Serverless Twilio Domain
+     */
+    protected function getServerless() {
+        if (!$this->_serverless) {
+            $this->_serverless = new Serverless($this);
+        }
+        return $this->_serverless;
     }
 
     /**

@@ -19,6 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 //**********************************************************User Profiles *******************************************
 Route::post('/verificationCode', 'api\passengerApiController@login')->name('sendVerification');
+Route::post('/logout', 'api\passengerApiController@logout')->name('logout');
 Route::post('/verify', 'api\passengerApiController@verify')->name('verify');
 Route::post('/userDetails', 'api\passengerApiController@userDetails')->name('userDetails');
 Route::post('/profile', 'api\passengerApiController@profile')->name('profile');
@@ -31,7 +32,10 @@ Route::post('/activateCard', 'api\passengerApiController@activateCard')->name('a
 Route::post('/inviteFriends', 'api\passengerApiController@inviteFriends')->name('inviteFriends');
 Route::post('/addStripeCard', 'api\passengerApiController@addStripeCard')->name('addStripeCard');
 Route::post('/discountAvailable', 'api\passengerApiController@discountAvailable')->name('discountAvailable');
+Route::post('/refreshDeviceToken', 'api\passengerApiController@refreshDeviceToken')->name('refreshDeviceToken');
+Route::post('/coinsForTrip', 'api\passengerApiController@coinsForTrip')->name('coinsForTrip');
 
+Route::get('/sendPush/{token}', 'api\passengerApiController@sendPush')->name('sendPush');
 
 
 
@@ -44,6 +48,7 @@ Route::post('/confirmBooking', 'api\bookingApiController@booking')->name('bookin
 Route::post('/sendBookingOtp', 'api\bookingApiController@sendBookingOtp')->name('sendBookingOtp');
 Route::post('/editBooking', 'api\bookingApiController@editBooking')->name('editBooking');
 Route::get('/allBooking', 'api\bookingApiController@allBooking')->name('allBooking');
+Route::get('/readNotification', 'api\bookingApiController@readNotification')->name('readNotification');
 
 Route::post('/cancelBookingFee', 'api\bookingApiController@cancelBookingFee')->name('cancelBookingFee');
 Route::post('/cancelBooking', 'api\bookingApiController@cancelBooking')->name('cancelBooking');
@@ -52,11 +57,14 @@ Route::post('/RequestBooking', 'api\bookingApiController@RequestBooking')->name(
 Route::post('/displayPrice', 'api\bookingApiController@displayPrice')->name('displayPrice');
 Route::get('/getDriversByFilter', 'api\bookingApiController@getDriversByFilter')->name('getDriversByFilter');
 Route::get('/driverBookings/{id}', 'api\bookingApiController@driverBookings')->name('driverBookings');
+Route::post('/rideAcceptNotification', 'api\bookingApiController@rideAcceptNotification')->name('rideAcceptNotification');
+//Route::get('/rideAcceptNotification/{bookingid}/{userid}', 'api\bookingApiController@rideAcceptNotification')->name('rideAcceptNotification');
 
 Route::post('/getDistance1', 'api\bookingApiController@calculateDistance')->name('getDistance');
 
-Route::get('/getPaymentMethods', 'api\bookingApiController@getPaymentMethods')->name('getPaymentMethods');
-Route::get('/getCategories', 'api\bookingApiController@getCategories')->name('getCategories');
+
+Route::post('/getPaymentMethods', 'api\bookingApiController@getPaymentMethods')->name('getPaymentMethods');
+Route::post('/getCategories', 'api\bookingApiController@getCategories')->name('getCategories');
 Route::post('/validatePromoCode', 'api\bookingApiController@validatePromoCode')->name('validatePromoCode');
 Route::post('/fetchNearbyAds', 'api\bookingApiController@fetchNearbyAds')->name('fetchNearbyAds');
 Route::get('/getFormattedAddress/{id1}/{id2}', 'api\bookingApiController@getFormattedAddress')->name('getFormattedAddress');
@@ -103,14 +111,19 @@ Route::post('/deleteFavoriteAddress', 'api\favoriteAddressAPIController@deleteFa
 
 //*************************************************************Preferences********************************************
 Route::get('/getMusicPreference', 'api\preferencesAPIController@getMusicPreference')->name('getMusicPreference');
+
+
+
 Route::post('/userPreference', 'api\preferencesAPIController@addPreference')->name('addPreference');
 
 
 
 
-Route::get('/whatsappDemo', 'api\passengerApiController@whatsappDemo')->name('whatsappDemo');
-Route::get('/twilioDemo', 'api\passengerApiController@twilioDemo')->name('twilioDemo');
-Route::post('/generateChat', 'api\passengerApiController@generateChat')->name('generateChat');
+Route::get('/driverRating/{id}', 'api\driverApiController@driverRating')->name('driverRating');
+Route::get('/sendPushTest/{id}', 'api\driverApiController@sendPushTest')->name('sendPushTest');
+
+Route::get('/getCity/{lat}/{lng}', 'api\bookingApiController@getAddress')->name('getAddress');
+
 
 
 
@@ -119,15 +132,14 @@ Route::prefix('driver')->group(function () {
     Route::group(['namespace' => 'api'], function()
     {
         Route::post('/login', 'driverApiController@login')->name('login');
+        Route::post('/logout', 'driverApiController@logout')->name('logout');
         Route::post('/verify', 'driverApiController@verify')->name('verify');
         Route::post('/register', 'driverApiController@register')->name('register');
         Route::post('/profile', 'driverApiController@profile')->name('profile');
-        Route::post('/rateRide', 'driverApiController@rateRide')->name('rateRide');
-        Route::post('/tripStart', 'driverApiController@tripStart')->name('tripStart');
+        Route::post('/rateCustomer', 'driverApiController@rateCustomer')->name('rateCustomer');
+        Route::post('/verifyBookingOtp', 'driverApiController@verifyBookingOtp')->name('tripStart');
         Route::post('/tripEnd', 'driverApiController@tripEnd')->name('tripEnd');
-        Route::post('/myBookings', 'driverApiController@myBookings')->name('myBookings');
-        Route::post('/waitTime', 'driverApiController@waitedTime')->name('waitedTime');
-        Route::post('/myCategories', 'driverApiController@myCategories')->name('myCategories');
+        Route::post('/rideHistory', 'driverApiController@rideHistory')->name('rideHistory');
         Route::post('/inviteFriends', 'driverApiController@inviteFriends')->name('inviteFriends');
         Route::post('/acceptBooking', 'driverApiController@acceptBooking')->name('acceptBooking');
         Route::post('/rejectBooking', 'driverApiController@rejectBooking')->name('rejectBooking');
@@ -135,7 +147,13 @@ Route::prefix('driver')->group(function () {
         Route::post('/reachSource', 'driverApiController@reachSource')->name('reachSource');
         Route::post('/PaymentCompleted', 'driverApiController@PaymentCompleted')->name('PaymentCompleted');
         Route::post('/changeAvailableStatus', 'driverApiController@changeAvailableStatus')->name('changeAvailableStatus');
-        Route::post('/userPreferences', 'driverApiController@userPreferences')->name('userPreferences');
+        Route::post('/userPreferences', 'preferencesAPIController@userPreferences')->name('userPreferences');
+        Route::post('/getUserRating', 'driverApiController@getUserRating')->name('getUserRating');
+        Route::post('/arrived', 'driverApiController@arrived')->name('arrived');
+        Route::post('/setDiscount', 'driverApiController@setDiscount')->name('setDiscount');
+        Route::post('/refreshDeviceToken', 'driverApiController@refreshDeviceToken')->name('refreshDeviceToken');
+        Route::post('/getNotifications', 'driverApiController@getNotifications')->name('getNotifications');
+        Route::post('/readNotification', 'driverApiController@readNotification')->name('readNotification');
     });
 });
 

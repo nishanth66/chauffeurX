@@ -45,6 +45,7 @@ class booking extends Model
         'source',
         'destination',
         'price',
+        'original_price',
         'distance',
         'trip_date_time',
         'source_description',
@@ -58,12 +59,12 @@ class booking extends Model
         'driverid',
         'estimated_time',
         'categoryId',
-        'wait_time',
+        'driver_arrived_at',
         'cancelled_at',
-        'original_price',
         'trip_end_time',
         'trip_start_time',
         'cancelled_by',
+        'discount',
     ];
 
     /**
@@ -79,6 +80,7 @@ class booking extends Model
         'source' => 'string',
         'destination' => 'string',
         'price' => 'string',
+        'original_price' => 'string',
         'distance' => 'string',
         'trip_date_time' => 'string',
         'source_description' => 'string',
@@ -91,12 +93,12 @@ class booking extends Model
         'paid' => 'string',
         'estimated_time' => 'string',
         'categoryId' => 'string',
-        'wait_time' => 'string',
+        'driver_arrived_at' => 'string',
         'cancelled_at' => 'string',
-        'original_price' => 'string',
         'trip_start_time' => 'string',
         'trip_end_time'=> 'string',
         'cancelled_by'=> 'string',
+        'discount'=> 'string',
     ];
 
     /**

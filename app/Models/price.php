@@ -25,6 +25,7 @@ class price extends Model
 
     public $fillable = [
         'category',
+        'city',
         'amount'
     ];
 
@@ -35,6 +36,7 @@ class price extends Model
      */
     protected $casts = [
         'category' => 'string',
+        'city' => 'string',
         'amount' => 'string'
     ];
 

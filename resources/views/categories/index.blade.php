@@ -5,7 +5,24 @@
         <h1 class="pull-left">Categories</h1>
         <h1 class="pull-right">
            <a class="btn btn-primary pull-right" style="margin-top: -10px;margin-bottom: 5px" href="{!! route('categories.create') !!}">Add New</a>
-        </h1>
+        </h1> <br/> <br/>
+        @if ($message = Session::get('categoryCity'))
+            <?php
+                $sessionCity = $message;
+
+            ?>
+
+        @endif
+
+        <div class="form-group col-sm-4 pull-right">
+            <select class="form-control" id="city" onchange="changeCity(this.value)">
+                <option value="" selected disabled>Select a City</option>
+                <option value="all" @if(isset($sessionCity) && $sessionCity == 'all') selected @endif>All Cities</option>
+                @foreach($cities as $city)
+                    <option value="{{$city->city}}" @if(isset($sessionCity) && $sessionCity == $city->city) selected @endif>{{$city->city}}</option>
+                @endforeach
+            </select>
+        </div>
     </section>
     <div class="content">
         <div class="clearfix"></div>
@@ -57,6 +74,18 @@
                 ]
             } );
         } );
+    </script>
+    <script>
+        function changeCity(city)
+        {
+            $.ajax({
+                url: "{{url('changeCategoryCity')}}"+"/"+city,
+                success: function(result)
+                {
+                    $('#categories-table').html(result);
+                }
+            });
+        }
     </script>
 @endsection
 

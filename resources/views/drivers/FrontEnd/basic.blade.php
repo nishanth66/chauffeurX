@@ -4,6 +4,7 @@
         color: #4D68B0 !important;
     }
 </style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="{{asset('public/css/profile.css')}}">
 <div class="container-fluid">
     <div class="col-md-12 align">
@@ -24,7 +25,7 @@
                         <div class="form-group">
                             <input class="form-control1" type="text" name="last_name" value="{{$driver->last_name}}" placeholder="your last name">
                         </div>
-                        <div class="input-group mb-2 form-group">
+                        <div class="input-group mb-4 form-group">
                             <div class="input-group-append">
                         <span class="input-group-text" id="basic-addon2">
                             <select class="form-control1 Code" id="country" onchange="myFunc()" required>
@@ -50,6 +51,7 @@
         </div>
     </div>
 </div>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
     $(document).ready(function() {
         $('select option')[0].value=$('select option:selected').val();

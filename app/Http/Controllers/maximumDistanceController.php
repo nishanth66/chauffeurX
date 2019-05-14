@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\availableCities;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Laracasts\Flash\Flash;
@@ -10,81 +11,48 @@ class maximumDistanceController extends Controller
 {
     public function __construct()
     {
-
+        $this->middleware('auth');
     }
+
     public function index()
     {
-        if (DB::table('maximum_distance')->where('distance','!=',null)->orWhere('distance','!=','')->exists())
-        {
-            $distance = DB::table('maximum_distance')->first();
-            return view('distance.edit',compact('distance'));
-        }
-        else
-        {
-            $distance = DB::table('maximum_distance')->first();
-            $distance->distance = 0;
-            return view('distance.edit',compact('distance'));
-        }
+        $distances = DB::table('maximum_distance')->get();
+        return view('distance.maxIndex',compact('distances'));
     }
-    public function adIndex()
+
+    public function edit($id)
     {
-        if (DB::table('maximum_distance')->where('ads','!=',null)->orWhere('ads','!=','')->exists())
+        $cities = availableCities::get();
+        if (DB::table('maximum_distance')->whereId($id)->exists() == 0)
         {
-            $distance = DB::table('maximum_distance')->first();
-            $distance = $distance->ads;
-            return view('distance.edit2',compact('distance'));
+            Flash::error("The Distance Record for this City is not Found!");
+            return redirect(route('maximumDistance.index'));
         }
-        else
-        {
-            $distance = 0;
-            return view('distance.edit2',compact('distance'));
-        }
+        $distance = DB::table('maximum_distance')->whereId($id)->first();
+        return view('distance.maxEdit',compact('cities','distance'));
     }
-    public function adSave(Request $request)
-    {
-        if (DB::table('maximum_distance')->exists())
-        {
-            DB::table('maximum_distance')->whereId(1)->update(['ads'=>$request->ads]);
-            Flash::success("Maximun Distance Updated Successfully");
-            return redirect()->back();
-        }
-        else
-        {
-            DB::table('maximum_distance')->whereId(1)->create(['ads'=>$request->ads]);
-            Flash::success("Maximun Distance Updated Successfully");
-            return redirect()->back();
-        }
-    }
+
     public function create()
     {
-        return view('distance.create');
+        $cities = availableCities::get();
+        return view('distance.maxCreate',compact('cities'));
     }
+
     public function store(Request $request)
     {
-        $input['distance'] = $request->distance;
+        $input = $request->except('_token');
         DB::table('maximum_distance')->insert($input);
-        Flash::success('Maximum Distance Saved Successfully!');
-        return redirect(route('driverDistance.index'));
+        Flash::success("Distance Saved Successfully");
+        return redirect(route('maximumDistance.index'));
     }
-    public function edit()
-    {
-        $distance = DB::table('maximum_distance')->first();
-        return view('distance.edit',compact('distance'));
-    }
+
     public function update($id,Request $request)
     {
-        $input['distance'] = $request->distance;
-        if (DB::table('maximum_distance')->exists())
-        {
-            DB::table('maximum_distance')->whereId($id)->update($input);
-        }
-        else
-        {
-            DB::table('maximum_distance')->create($input);
-        }
-
-        Flash::success('Maximum Distance Updated Successfully!');
-        return redirect(route('driverDistance.index'));
+        $input = $request->except('_token','_method');
+        DB::table('maximum_distance')->whereId($id)->update($input);
+        Flash::success("Distance Saved Successfully");
+        return redirect(route('maximumDistance.index'));
     }
+
 
 }

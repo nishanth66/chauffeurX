@@ -25,8 +25,8 @@ class cencellation extends Model
 
     public $fillable = [
         'amount',
-        'terms',
         'max_time',
+        'city',
     ];
 
     /**
@@ -38,6 +38,7 @@ class cencellation extends Model
         'amount' => 'string',
         'terms' => 'string',
         'max_time' => 'string',
+        'city' => 'string',
     ];
 
     /**
@@ -46,7 +47,9 @@ class cencellation extends Model
      * @var array
      */
     public static $rules = [
-        
+        'city' => 'required',
+        'amount' => 'required',
+        'max_time' => 'required',
     ];
 
     

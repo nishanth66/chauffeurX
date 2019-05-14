@@ -75,7 +75,7 @@ class passengerApiController extends Controller
     public function login(Request $request)
     {
         $mNumber = $request->phone;
-        if (passengers::where('phone',$mNumber)->exists())
+        if (passengers::where('phone',$mNumber)->where('activated',1)->exists())
         {
             $otp = substr(str_shuffle("0123456789"), 0, 4);
             $response = parent::sendOtp($this->sid,$this->token,$mNumber,$otp);
@@ -86,8 +86,9 @@ class passengerApiController extends Controller
         }
         else
         {
-            $response['status'] = 500;
-            $response['message'] = "User Not Found";
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
             $response['number'] = $mNumber;
             $response['data'] = [];
         }
@@ -96,33 +97,34 @@ class passengerApiController extends Controller
 
     public function verify(Request $request)
     {
+        if (!isset($request->device_token) || !isset($request->device_type) || $request->device_token == '' || $request->device_type == '' || empty($request->device_type) || empty($request->device_token))
+        {
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['message'] = "Device token and Device type can not be empty!";
+            $response['data'] = [];
+            return $response;
+        }
         if (passengers::where('phone',$request->phone)->where('otp',$request->otp)->exists())
         {
             $user = passengers::where('phone',$request->phone)->where('otp',$request->otp)->first();
+            unset($user->password);
+            passengers::whereId($user->id)->update(['device_token'=>$request->device_token,'device_type'=>$request->device_type,'activated'=>1]);
             if ($user->image != '' || !empty($user->image))
             {
                 $user->image = asset('public/avatars').'/'.$user->image;
             }
-            if ($user->exists_user == 1)
-            {
                 $response['status'] = "success";
                 $response['code'] = 200;
-                $response['message'] = "OTP Verified Successfully";
+                $response['message'] = "Great. Your phone number is verified!";
                 $response['data'] = $user;
-            }
-            else
-            {
-                $response['status'] = "success";
-                $response['code'] = 250;
-                $response['message'] = "OTP Verified Successfully";
-                $response['data'] = $user;
-            }
+
         }
         else
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Invalid OTP";
+            $response['message'] = "Verification code invalid";
             $response['data'] = [];
         }
         return $response;
@@ -133,8 +135,16 @@ class passengerApiController extends Controller
         if (passengers::whereId($request->userid)->exists() == 0)
         {
             $response['code'] = 500;
-            $response['status'] = "Failed";
-            $response['message'] = "user not found";
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
+            $response['data'] = [];
+            return $response;
+        }
+        if (passengers::where('id','!=',$request->userid)->where('phone',$request->phone)->exists())
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "This number is already attached to a customer";
             $response['data'] = [];
             return $response;
         }
@@ -157,8 +167,8 @@ class passengerApiController extends Controller
         if (passengers::whereId($userid)->exists() == 0)
         {
             $response['code'] = 500;
-            $response['status'] = "Failed";
-            $response['message'] = "user not found";
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
             return $response;
         }
@@ -166,14 +176,16 @@ class passengerApiController extends Controller
         {
             passengers::whereId($userid)->update(['phone'=>$mNumber]);
             $user = passengers::whereId($userid)->first();
+            unset($user->password);
             if ($user->image != '' || !empty($user->image))
             {
                 $user->image = asset('public/avatars').'/'.$user->image;
             }
             $response['status'] = "success";
-            $response['code'] = 250;
-            $response['message'] = "Phone number changed Successfully";
+            $response['code'] = 200;
+            $response['message'] = "New phone number saved";
             $response['data'] = $user;
+
             return $response;
 
         }
@@ -181,7 +193,7 @@ class passengerApiController extends Controller
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Invalid OTP";
+            $response['message'] = "Verification code invalid";
             $response['data'] = [];
             return $response;
         }
@@ -189,26 +201,49 @@ class passengerApiController extends Controller
 
     public function profile(Request $request)
     {
+        if (!isset($request->phone) || empty($request->phone))
+        {
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['message'] = "Please enter the Phone number";
+            $response['data'] = [];
+            return $response;
+        }
         $mNumber = $request->phone;
-        if (passengers::whereId($request->userid)->where('phone',$mNumber)->exists() == 0)
+        if (passengers::where('id','!=',$request->userid)->where('phone',$mNumber)->exists()){
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['message'] = "This mobile number already used by other user.";
+            $response['data'] = [];
+            return $response;
+        }
+        if (passengers::where('id','!=',$request->userid)->where('email',$request->email)->exists())
+        {
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['message'] = "This email already used by other user.";
+            $response['data'] = [];
+            return $response;
+        }
+//        if (passengers::whereId($request->userid)->where('phone',$mNumber)->exists() == 0)
+        if (passengers::whereId($request->userid)->exists() == 0)
         {
                 $response['status'] = "failed";
                 $response['code'] = 500;
-                $response['Message'] = "User Not Found";
+                $response['message'] = "This user doesn’t exist";
                 $response['data'] = [];
+                return $response;
         }
-        $user = passengers::whereId($request->userid)->where('phone',$mNumber)->first();
 
         if (isset($request->password) && $request->password != $request->confirm_password)
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Two Passwords Do not Match";
+            $response['message'] = "Passwords don’t match";
             $response['data'] = [];
             return $response;
         }
 
-            $user = passengers::whereId($request->userid)->where('phone',$mNumber)->first();
             $update = $request->except('except','password','confirm_password','userid');
             if (isset($request->password) && $request->password != '')
             {
@@ -223,18 +258,39 @@ class passengerApiController extends Controller
                 $update['image'] = $photoName;
 
             }
-            $update['exists_user'] = 1;
-            $user = passengers::whereId($user->id)->update($update);
+//            passengers::whereId($request->userid)->where('phone',$mNumber)->update($update);
+            passengers::whereId($request->userid)->update($update);
             $user = passengers::whereId($request->userid)->where('phone',$mNumber)->first();
+            unset($user->password);
             if ($user->image != '' || !empty($user->image))
             {
                 $user->image = asset('public/avatars').'/'.$user->image;
             }
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['code'] = 200;
-            $response['Message'] = "User Updated Successfully";
+            $response['message'] = "Saved";
             $response['data'] = $user;
 
+            $reference = $this->database->getReference('user');
+
+            $postData[$user->firebase_key] = [
+                'userid' => 'user_'.$user->id,
+                'username'=> $user->fname,
+                'usertype'=> 'user',
+                'email' => $user->email,
+                'message' => [
+                    'idSender' => '',
+                    'idReceiver' => '',
+                    'text' => '',
+                    'timestamp' => '',
+                ],
+                'status' => [
+                    'isOnline' => true,
+                    'timestamp' => ''
+                ],
+            ];
+            $reference->update($postData);
+//
 
         return $response;
     }
@@ -244,21 +300,22 @@ class passengerApiController extends Controller
         if (passengers::whereId($request->userid)->exists())
         {
             $user = passengers::whereId($request->userid)->first();
+//            unset($user->password);
             if ($user->image != '' || !empty($user->image))
             {
                 $user->image = asset('public/avatars').'/'.$user->image;
             }
             $user = $user->makeHidden(['remember_token','email_verified_at','otp']);
             $response['code'] = 200;
-            $response['status'] = "Success";
-            $response['message'] = "User details fetched successfully";
+            $response['status'] = "success";
+            $response['message'] = "";
             $response['data'] = $user;
         }
         else
         {
             $response['code'] = 500;
-            $response['status'] = "Failed";
-            $response['message'] = "User not Found";
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
         }
         return $response;
@@ -267,19 +324,19 @@ class passengerApiController extends Controller
     public function register(Request $request)
     {
         $mNumber = $request->phone;
-        if (passengers::where('phone',$mNumber)->exists())
+        if (passengers::where('phone',$mNumber)->where('activated',1)->exists())
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "User with This Phone number is already exists";
+            $response['message'] = "This number is already attached to a customer";
             $response['data'] = [];
             return $response;
         }
-        elseif (passengers::where('email',$request->email)->exists())
+        elseif (passengers::where('email',$request->email)->where('activated',1)->exists())
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "User with same Email is aready exists";
+            $response['message'] = "This email is already attached to a customer";
             $response['data'] = [];
             return $response;
         }
@@ -300,19 +357,46 @@ class passengerApiController extends Controller
         catch (RestException $ex)
         {
             $response['status'] = 500;
-            $response['message'] = "Otp Send Failed";
+            $response['message'] = "Failed to send the Verification Code";
             $response['data'] = $ex->getMessage();
             return $response;
         }
-
-        $user = passengers::create(['phone'=>$mNumber,'otp'=>$otp,'email'=>$request->email]);
+        if (passengers::where('phone',$mNumber)->where('email',$request->email)->where('activated',0)->exists())
+        {
+            $user = passengers::where('phone',$mNumber)->where('email',$request->email)->where('activated',0)->first();
+            passengers::whereId($user->id)->update(['otp'=>$otp]);
+            $user = passengers::whereId($user->id)->first();
+        }
+        else
+        {
+            $user = passengers::create(['phone'=>$mNumber,'otp'=>$otp,'email'=>$request->email]);
+            $reference = $this->database->getReference('user');
+            $postRef = $reference->push([
+                'userid ' => 'user_'.$user->id,
+                'usertype'=> 'user',
+                'message' => [
+                    'idSender' => '',
+                    'idReceiver' => '',
+                    'text' => '',
+                    'timestamp' => '',
+                ],
+                'status' => [
+                    'isOnline' => true,
+                    'timestamp' => ''
+                ]
+            ]);
+            $postKey = $postRef->getKey();
+            $updateKey['firebase_key'] = $postKey;
+            passengers::whereId($user->id)->update($updateKey);
+        }
         if ($user->image != '' || !empty($user->image))
         {
             $user->image = asset('public/avatars').'/'.$user->image;
         }
-        $response['status'] = "Success";
+        unset($user->password);
+        $response['status'] = "success";
         $response['code'] = 200;
-        $response['Message'] = "User Registered Successfully";
+        $response['message'] = "Registered Successfully";
         $response['data'] = $user;
 
         return $response;
@@ -335,16 +419,16 @@ class passengerApiController extends Controller
             }
             $update = $request->all('except','password','confirm_password');
             passengers::where('phone',$request->phone)->update($update);
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['code'] = 200;
-            $response['Message'] = "Profile Updated Successfully!";
+            $response['message'] = "Profile Updated Successfully!";
             $response['data'] = [];
         }
         else
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "User Not Found";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
         }
         return $response;
@@ -354,9 +438,9 @@ class passengerApiController extends Controller
     {
         if (passengers::whereId($request->userid)->exists() == 0)
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "User not found";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
             return $response;
         }
@@ -369,9 +453,9 @@ class passengerApiController extends Controller
         ]);
         if ($validator->fails())
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Card Details are Missing";
+            $response['message'] = "Card Details are Missing";
             $response['data'] = [];
             return $response;
         }
@@ -413,17 +497,17 @@ class passengerApiController extends Controller
             $stripe_input['digits'] = 'XXXXXXXXXXXX'.$token['card']['last4'];
             $stripeCards = passengerStripe::create($stripe_input);
 
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['code'] = 200;
-            $response['Message'] = "Stripe Cards Saved Successfully";
+            $response['message'] = "Stripe Cards Saved Successfully";
             $response['data'] = $stripeCards;
             return $response;
         }
         else
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "This card is already Exists";
+            $response['message'] = "This card is already Exists";
             $response['data'] = [];
             return $response;
         }
@@ -434,9 +518,9 @@ class passengerApiController extends Controller
     {
         if (passengers::whereId($request->userid)->exists()==0)
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "User not Found";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
             return $response;
         }
@@ -449,16 +533,16 @@ class passengerApiController extends Controller
             $customer = $stripe->customers()->update( $card->customerId, [
                 'default_source' => $card->cardNo
             ]);
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['code'] = 200;
-            $response['Message'] = "Card Activated Successfully";
+            $response['message'] = "Card Activated Successfully";
             $response['data'] = $stripeCard;
         }
         else
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Card Not Found";
+            $response['message'] = "Card could not be Found";
             $response['data'] = [];
         }
         return $response;
@@ -471,24 +555,24 @@ class passengerApiController extends Controller
             if (passengerStripe::where('userid',$request->userid)->exists())
             {
                 $cards = passengerStripe::where('userid',$request->userid)->get();
-                $response['status'] = "Success";
+                $response['status'] = "success";
                 $response['code'] = 200;
-                $response['Message'] = "User Stripe cards have been Fetched successfully";
+                $response['message'] = "User Stripe cards have been Fetched successfully";
                 $response['data'] = $cards;
             }
             else
             {
-                $response['status'] = "Success";
+                $response['status'] = "success";
                 $response['code'] = 200;
-                $response['Message'] = "User has no Srtipe Cards";
+                $response['message'] = "User has no Srtipe Cards";
                 $response['data'] = [];
             }
         }
         else
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "User not Found";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
         }
         return $response;
@@ -499,16 +583,16 @@ class passengerApiController extends Controller
         if (passengers::whereId($request->userid)->exists() == 0)
         {
             $response['code'] = 500;
-            $response['status'] = "Failed";
-            $response['message'] = "User not Found";
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
             $response['data'] = [];
             return $response;
         }
         if (notification::where('userid',$request->userid)->exists() == 0)
         {
             $response['code'] = 200;
-            $response['status'] = "Success";
-            $response['message'] = "No notifications Found";
+            $response['status'] = "success";
+            $response['message'] = "No notifications are Found";
             $response['data'] = [];
             return $response;
         }
@@ -522,9 +606,35 @@ class passengerApiController extends Controller
         }
         $user = $notifications->makeHidden(['updated_at','deleted_at','title']);
         $response['code'] = 200;
-        $response['status'] = "Success";
+        $response['status'] = "success";
         $response['message'] = "Notifications fetched Successfully";
         $response['data'] = $notifications;
+        return $response;
+    }
+
+    public function readNotification(Request $request)
+    {
+        if (passengers::whereId($request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Driver could not be Found";
+            $response['data'] = [];
+            return $response;
+        }
+        if (notification::whereId($request->notification_id)->where('userid',$request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Notification could not be Found";
+            $response['data'] = [];
+            return $response;
+        }
+        notification::whereId($request->notification_id)->update(['read',1]);
+        $response['code'] = 200;
+        $response['status'] = "success";
+        $response['message'] = "Notification updated successfully";
+        $response['data'] = [];
         return $response;
     }
 
@@ -556,9 +666,9 @@ class passengerApiController extends Controller
             }
             catch (RestException $ex)
             {
-                $response['status'] = "Failed";
+                $response['status'] = "failed";
                 $response['code'] = 500;
-                $response['message'] = "Invitation send Failed";
+                $response['message'] = "Failed to send the Invitation";
                 $response['data'] = $ex->getMessage();
                 $response['mobile_number'] = $number;
                 array_push($error,$response);
@@ -570,7 +680,7 @@ class passengerApiController extends Controller
         if ($error == '' || empty($error))
         {
             $invited_users = invitedFriends::where('invite_id',$invitationid)->get();
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['code'] = 200;
             $response['message'] = "Invitation sent Succesfully";
             $response['data'] = $invited_users;
@@ -578,7 +688,7 @@ class passengerApiController extends Controller
         }
         else
         {
-            $error['status'] = "Failed";
+            $error['status'] = "failed";
             $error['code'] = 500;
             $error['message'] = "Invitation send Failed";
             return $error;
@@ -617,7 +727,7 @@ class passengerApiController extends Controller
             }
             catch (RestException $ex)
             {
-                $response['status'] = "Failed";
+                $response['status'] = "failed";
                 $response['code'] = 500;
                 $response['message'] = "Invitation send Failed";
                 $response['data'] = $ex->getMessage();
@@ -631,7 +741,7 @@ class passengerApiController extends Controller
         if ($error == '' || empty($error))
         {
             $invited_users = invitedFriends::where('invite_id',$invitationid)->get();
-            $response['status'] = "Success";
+            $response['status'] = "success";
             $response['code'] = 200;
             $response['message'] = "Invitation sent Succesfully";
             $response['data'] = $invited_users;
@@ -639,7 +749,7 @@ class passengerApiController extends Controller
         }
         else
         {
-            $error['status'] = "Failed";
+            $error['status'] = "failed";
             $error['code'] = 500;
             $error['message'] = "Invitation send Failed";
             return $error;
@@ -652,32 +762,14 @@ class passengerApiController extends Controller
         {
             $response['code'] = 500;
             $response['status'] = "failed";
-            $response['messgae'] = "User not Found";
+            $response['messgae'] = "This user doesn’t exist";
             $response['data'] = [];
             return $response;
         }
         $user = passengers::whereId($request->userid)->first();
         $ranks = rank::get();
         $coins = (float)$user->coins;
-        foreach ($ranks as $rank)
-        {
-            $requiredCoin = (float)$rank->points;
-            if (rank::whereId($rank->id +1)->exists())
-            {
-                $nextRank = rank::whereId($rank->id +1)->first();
-                $nextCoin = (float)$nextRank->points;
-                if ($coins >= $requiredCoin && $coins < $nextCoin)
-                {
-                    $update['rankid'] = $rank->id;
-                    passengers::whereId($user->id)->update($update);
-                }
-            }
-            elseif($coins >= $requiredCoin)
-            {
-                $update['rankid'] = $rank->id;
-                passengers::whereId($user->id)->update($update);
-            }
-        }
+        $user = $this->calculateRank($ranks,$coins,$user);
         $user = passengers::whereId($user->id)->first();
         if ($user->rankid != 0)
         {
@@ -700,33 +792,74 @@ class passengerApiController extends Controller
         }
     }
 
-
-
-
-
-
-
-
-
-
-    public function pushNotification($title,$body, $token,$driver)
+    public function sendPush($token)
     {
-        $push = new PushNotification('fcm');
-        $push->setMessage( [
-            'aps' => [
-                'alert' => [
-                    'title' => $title,
-                    'body'  => $driver->name . $body,
-                    'pushFor' => 'accept'
-                ],
-                'sound' => 'default',
-                'badge' => 1
-
+        $push = new PushNotification( 'fcm' );
+       $a= $push->setMessage([
+            'notification' => [
+                'title'=>'Ride Request',
+                'body'=>'user_details,user_rating,message',
+                'pushFor' => "aaa",
+                'sound' => 'default'
             ]
-        ] )
-            ->setDevicesToken( $token )
-            ->send();
+        ])
+            ->setApiKey('AIzaSyB9ImUqic1fX-09kGXljfgOUu0WaOwwEnk')
+            ->setDevicesToken($token)
+            ->send()
+            ->getFeedback();
+       echo '<pre>';
+       print_r($push);
     }
+
+
+    public function sendPushTest()
+    {
+        $push = new PushNotification( 'fcm' );
+        $a= $push->setMessage([
+            'notification' => [
+                'title'=>'Ride Request',
+                'body'=>'user_details,user_rating,message',
+                'pushFor' => "aaa",
+                'sound' => 'default'
+            ]
+        ])
+//            ->setApiKey('AIzaSyB9ImUqic1fX-09kGXljfgOUu0WaOwwEnk')
+            ->setApiKey('AIzaSyD1a4xgqMOan0hCbb5itVOkjBKyCD7A8Gc')
+            ->setDevicesToken("ddumHlq2Ffw:APA91bHm95GJI-7VKs2P54kzfZQyfh2O-Lv4zlcbg3b0m4jD8sT2yvl33IEUe56MSahNuT_4rgHTttbPSXCf60L6hy8DFMpJqI2ditkpwIoViiMJbnzu-0gLRO2maIZhTFDGcKGZb8ZY")
+            ->send()
+            ->getFeedback();
+        echo '<pre>';
+        print_r($push);
+    }
+
+
+    function calculateRank($ranks,$coins,$user)
+    {
+        foreach ($ranks as $rank)
+        {
+            $requiredCoin = (float)$rank->points;
+            if (rank::whereId($rank->id +1)->exists())
+            {
+                $nextRank = rank::whereId($rank->id +1)->first();
+                $nextCoin = (float)$nextRank->points;
+                if ($coins >= $requiredCoin && $coins < $nextCoin)
+                {
+                    $update['rankid'] = $rank->id;
+                    passengers::whereId($user->id)->update($update);
+                }
+            }
+            elseif($coins >= $requiredCoin)
+            {
+                $update['rankid'] = $rank->id;
+                passengers::whereId($user->id)->update($update);
+            }
+        }
+        $user = passengers::whereId($user->id)->first();
+        return $user;
+    }
+
+
+
 
 //**********************************************************************************************************************
 
@@ -750,7 +883,7 @@ class passengerApiController extends Controller
         }
         catch (RestException $ex)
         {
-            $response['status'] = "Failed";
+            $response['status'] = "failed";
             $response['code'] = 500;
             $response['message'] = "Invitation send Failed";
             $response['data'] = $ex->getMessage();
@@ -759,45 +892,44 @@ class passengerApiController extends Controller
         }
         return $message;
     }
-    public function twilioDemo()
+    public function logout(Request $request)
     {
-        $message = "Im just trying for the Whatsapp Demo using Twilio. Thank u have a nice day!!";
-        $sid    = "AC465cbf46932d06fcc92a3b6b018dc484";
-        $TWILIO_ACCOUNT_SID = "AC465cbf46932d06fcc92a3b6b018dc484";
-        $TWILIO_API_KEY = "SK3061ffe8d3f496d8bc4322584b8431bd";
-        $TWILIO_API_SECRET = "Qkbjj9yPq5KkvKcOIRp6OvOeA9x6saPv";
-
-        $token = new AccessToken(
-            $TWILIO_ACCOUNT_SID,
-            $TWILIO_API_KEY,
-            $TWILIO_API_SECRET,
-            3600
-        );
-        return $token;
+        if (passengers::whereId($request->userid)->exists())
+        {
+            passengers::whereId($request->userid)->update(['device_token'=>null]);
+            $user = passengers::whereId($request->userid)->first();
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "User logged out successfully";
+            $response['data'] = $user;
+        }
+        else
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
+            $response['data'] = [];
+        }
+        return $response;
     }
-    public function generateChat(Request $request, AccessToken $accessToken, ChatGrant $chatGrant)
+
+    public function refreshDeviceToken(Request $request)
     {
-        return $accessToken;
-        $appName = "TwilioChat";
-        $deviceId = $request->input("device");
-        $identity = $request->input("identity");
-
-        $TWILIO_CHAT_SERVICE_SID = "IS8b0fb27a38494898ae4137077d936dbd";
-
-        $endpointId = $appName . ":" . $identity . ":" . $deviceId;
-
-        $accessToken->setIdentity($identity);
-
-        $chatGrant->setServiceSid($TWILIO_CHAT_SERVICE_SID);
-        $chatGrant->setEndpointId($endpointId);
-
-        $accessToken->addGrant($chatGrant);
-
-        $response = array(
-            'identity' => $identity,
-            'token' => $accessToken->toJWT()
-        );
-
-        return response()->json($response);
+        if (passengers::whereId($request->userid)->exists())
+        {
+            passengers::whereId($request->userid)->update(['device_token'=>$request->device_token,'device_type'=>$request->device_type]);
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "Token Updated Successfully";
+            $response['data'] = [];
+        }
+        else
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "This user doesn’t exist";
+            $response['data'] = [];
+        }
+        return $response;
     }
 }

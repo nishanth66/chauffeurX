@@ -67,6 +67,10 @@ class driver extends Model
         'phone_otp',
         'email_otp',
         'signature',
+        'signature',
+        'firebase_key',
+        'active_ride',
+        'stripeid',
     ];
 
     /**
@@ -112,6 +116,9 @@ class driver extends Model
         'phone_otp' => 'string',
         'email_otp' => 'string',
         'signature' => 'string',
+        'firebase_key' => 'string',
+        'active_rides' => 'string',
+        'stripeid' => 'string',
     ];
 
     /**

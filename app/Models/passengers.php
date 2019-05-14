@@ -44,6 +44,10 @@ class passengers extends Model
         'referral_code',
         'gender',
         'passengers',
+        'firebase_key',
+        'device_token',
+        'device_type',
+        'activated',
     ];
 
     /**
@@ -65,6 +69,10 @@ class passengers extends Model
         'referral_code' => 'string',
         'gender' => 'string',
         'passengers' => 'string',
+        'firebase_key' => 'string',
+        'device_token' => 'string',
+        'device_type' => 'string',
+        'activated' => 'string',
     ];
 
     /**

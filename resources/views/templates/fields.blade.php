@@ -13,8 +13,9 @@
     {!! Form::label('title', 'Title:') !!}
     <select name="title" class="form-control">
         <option value="" selected disabled>Select a Title</option>
-        <option value="Booking Confirm" <?php if (isset($template) && $template->title == 'Booking Confirm') { echo "selected";}?>>Booking Confirm</option>
-        <option value="Booking Cancel" <?php if (isset($template) && $template->title == 'Booking Cancel') { echo "selected";}?>>Select a Title</option>
+        <option value="Ride Confirm" <?php if (isset($template) && $template->title == 'Booking Confirm') { echo "selected";}?>>Booking Confirm</option>
+        <option value="Ride Cancel" <?php if (isset($template) && $template->title == 'Booking Cancel') { echo "selected";}?>>Ride Cancel</option>
+        <option value="Reject Ride" <?php if (isset($template) && $template->title == 'Booking Cancel') { echo "selected";}?>>Reject Ride</option>
     </select>
 {{--    {!! Form::text('title', null, ['class' => 'form-control']) !!}--}}
 </div>
@@ -32,8 +33,8 @@
 
 <!-- Message Field -->
 <div class="form-group col-sm-12">
-    {!! Form::label('message', 'Message:') !!}
-    {!! Form::textarea('message', null, ['class' => 'form-control','rows'=>4,'cols'=>50]) !!}
+    <label>Mesage:  </label><br/><p id="bookingEx">For Ex:- Your Booking #xxx (xxx will be replaced by booking id) Is successfully Placed! </p>
+    {!! Form::textarea('message', null, ['class' => 'form-control','rows'=>4,'cols'=>50,'onfocus'=>'return $("#bookingEx").show()','onchange'=>'return $("#bookingEx").hide()']) !!}
 </div>
 
 <!-- Submit Field -->

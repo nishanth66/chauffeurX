@@ -12,7 +12,23 @@
 */
 
 Route::get('/', function () {
-    return view('auth.login');
+    if (Auth::check())
+    {
+        return redirect('home');
+    }
+    else
+    {
+        $domain = request()->getHost();
+        if ($domain == env('driver_domain'))
+        {
+            $siteKey = env('driver_siteKey');
+        }
+        else
+        {
+            $siteKey = env('app_siteKey');
+        }
+        return view('auth.login',compact('siteKey'));
+    }
 });
 
 Auth::routes();
@@ -31,7 +47,7 @@ Route::resource('drivers', 'driverController');
 
 Route::resource('ratings', 'ratingController');
 
-Route::resource('cencellations', 'cencellationController');
+Route::resource('cancellations', 'cencellationController');
 
 Route::resource('passengerStripes', 'passengerStripeController');
 
@@ -59,15 +75,11 @@ Route::resource('passengerRatings', 'passenger_ratingController');
 
 Route::resource('paymentMethod', 'driverTipsController');
 
-Route::resource('driverDistance', 'maximumDistanceController');
+Route::resource('maximumDistance', 'maximumDistanceController');
 
 Route::get('ad-distance', 'maximumDistanceController@adIndex');
 
 Route::post('ad-distance/save', 'maximumDistanceController@adSave');
-
-Route::resource('filters', 'filterController');
-
-Route::get('fireBaseDemo', 'fireBaseController@fireBaseDemo');
 
 Route::resource('notifications', 'notificationController');
 
@@ -77,6 +89,9 @@ Route::resource('templates', 'templateController');
 //**********************************************************************Coins Controller**************************************
 Route::get('createAccountCoins', 'coins@createAccountCoins');
 Route::post('createSaveCoins', 'coins@createAccountCoinsSave');
+
+Route::get('/coins/setting', 'coins@coinSetting');
+Route::post('/coins/setting', 'coins@savecoinSetting');
 
 Route::get('invitingCoins', 'coins@invitingCoins');
 Route::post('inviteSaveCoins', 'coins@invitingCoinsSave');
@@ -106,14 +121,24 @@ Route::get('newCategoryCoins', 'coins@newCategoryCoins');
 Route::post('categorySaveCoins', 'coins@newCategoryCoinsSave');
 
 Route::resource('ranks', 'rankController');
+Route::post('abc','driverController@abc');
+
+Route::get('changeCity/{city}/{code}','driverController@changeCity');
+Route::get('changeCategoryCity/{city}','categoriesController@changeCity');
+Route::get('changePaymentCity/{city}','driverTipsController@changeCity');
+Route::get('changeData/{val}','driverController@changeData');
+Route::get('category/delete/{id}','categoriesController@delete');
+Route::get('fetchCityCategory/{city}','priceController@fetchCityCategory');
 
 
 Route::prefix('driver/')->group(function () {
 //    login/register
     Route::get('home','driverController@home');
+    Route::get('delete','driverController@delete');
     Route::get('approved','driverController@index');
     Route::get('pending','driverController@pending');
-    Route::get('register','frontEnd@register');
+    Route::get('rejected','driverController@rejected');
+    Route::get('register','frontEnd@driverRegister');
     Route::get('login','frontEnd@login');
 
 //    verify
@@ -145,8 +170,41 @@ Route::prefix('driver/')->group(function () {
     Route::get('accept/{id}','driverController@accept');
 
     Route::get('reject/{id}','driverController@reject');
+
+
+//    home pages
+    Route::get('editProfile','driverController@editProfile');
+    Route::get('history','driverController@history');
+    Route::get('upcoming','driverController@upcoming');
+    Route::get('account','driverController@account');
+    Route::post('editProfile','driverController@SaveeditProfile');
+});
+Route::prefix('advertisement/')->group(function () {
+
+    Route::get('register', 'frontEnd@adRegister');
+    Route::post('register', 'frontEnd@SaveadRegister');
+    Route::get('login','frontEnd@login');
+
+    Route::get('verify','advertisementController@verify');
+    Route::get('resendOtp','advertisementController@resendOtp');
+    Route::post('verify','advertisementController@verifyOtp');
+
+    Route::get('profile','advertisementController@profile');
+    Route::post('profile','advertisementController@saveProfile');
+
+    Route::get('address','advertisementController@address');
+    Route::post('address','advertisementController@saveAddress');
+
+    Route::get('gettingStarted','advertisementController@gettingStarted');
+
+
+    Route::get('home','advertisementController@home');
+
 });
 
+
+
+Route::resource('penalty','penaltyController');
 Route::resource('musicPreferences', 'musicPreferenceController');
 Route::resource('availableCities', 'availableCitiesController');
 
@@ -159,3 +217,14 @@ Route::resource('basicFares', 'basicFareController');
 Route::resource('minimumFares', 'minimumFareController');
 
 Route::resource('serviceFees', 'serviceFeeController');
+
+
+Route::get('fireBase', 'affiliateStripeController@fireBase');
+Route::get('calculateDistance/{lat1}/{lon1}/{lat2}/{lon2}', 'api\bookingApiController@calculateDistance');
+
+
+Route::resource('driverStripes', 'driverStripeController');
+
+Route::resource('passengerPayments', 'passengerPaymentController');
+
+Route::resource('driverPayments', 'driverPaymentController');

@@ -43,7 +43,7 @@
                         <label>Car Inspection: </label> <br/>
                         <a href="{{url('public/avatars').'/'.$licence->car_inspection}}" target="_blank"><img src="{{asset('public/avatars').'/'.$licence->car_inspection}}" class="show-doc"></a>
                     </div>
-                    <a href="javascript:history.back()" class="btn btn-default">Back</a>
+                    <a href="javascript:window.location=document.referrer;" class="btn btn-default">Back</a>
                 </div>
             </div>
         </div>

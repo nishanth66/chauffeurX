@@ -27,7 +27,8 @@ class categories extends Model
     public $fillable = [
         'name',
         'description',
-        'image'
+        'image',
+        'city',
     ];
 
     /**
@@ -38,7 +39,7 @@ class categories extends Model
     protected $casts = [
         'name' => 'string',
         'description' => 'string',
-        'image' => 'string'
+        'city' => 'string'
     ];
 
     /**

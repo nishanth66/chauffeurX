@@ -18,6 +18,7 @@ class templateController extends Controller
 
     public function __construct(templateRepository $templateRepo)
     {
+        $this->middleware('auth');
         $this->templateRepository = $templateRepo;
     }
 

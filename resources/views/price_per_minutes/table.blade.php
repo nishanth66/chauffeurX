@@ -1,18 +1,22 @@
 <table class="table table-responsive" id="pricePerMinutes-table">
     <thead>
         <tr>
+            <th>City</th>
             <th>Category</th>
             <th>Amount</th>
-            <th>City</th>
             <th>Action</th>
         </tr>
     </thead>
     <tbody>
     @foreach($pricePerMinutes as $pricePerMinute)
-        <tr>
-            <td>{!! $pricePerMinute->category !!}</td>
+    <?php
+    $city = \App\Models\availableCities::whereId($pricePerMinute->city)->first();
+    $category = \App\Models\categories::whereId($pricePerMinute->category)->first();
+    ?>
+    <tr>
+        <td>{!! $city->city !!}</td>
+        <td>{!! $category->name !!}</td>
             <td>{!! $pricePerMinute->amount !!}</td>
-            <td>{!! $pricePerMinute->city !!}</td>
             <td>
                 {!! Form::open(['route' => ['pricePerMinutes.destroy', $pricePerMinute->id], 'method' => 'delete']) !!}
                 <div class='btn-group'>

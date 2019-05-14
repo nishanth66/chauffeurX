@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatepriceRequest;
 use App\Http\Requests\UpdatepriceRequest;
+use App\Models\availableCities;
 use App\Models\categories;
+use App\Models\price;
 use App\Repositories\priceRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
@@ -19,6 +21,7 @@ class priceController extends Controller
 
     public function __construct(priceRepository $priceRepo)
     {
+        $this->middleware('auth');
         $this->priceRepository = $priceRepo;
     }
 
@@ -46,7 +49,8 @@ class priceController extends Controller
     public function create()
     {
         $categories = categories::get();
-        return view('prices.create',compact('categories'));
+        $cities = availableCities::get();
+        return view('prices.create',compact('categories','cities'));
     }
 
     /**
@@ -59,6 +63,12 @@ class priceController extends Controller
     public function store(CreatepriceRequest $request)
     {
         $input = $request->all();
+
+        if (price::where('city',$request->city)->where('category',$request->category)->exists())
+        {
+            Flash::error("Entry already exists! Please try editing it");
+            return redirect(route('prices.index'));
+        }
 
         $price = $this->priceRepository->create($input);
 
@@ -96,8 +106,10 @@ class priceController extends Controller
      */
     public function edit($id)
     {
-        $categories = categories::get();
         $price = $this->priceRepository->findWithoutFail($id);
+        $city = availableCities::whereId($price->city)->first();
+        $categories = categories::where('city','like',$city->city)->get();
+        $cities = availableCities::get();
 
         if (empty($price)) {
             Flash::error('Price not found');
@@ -105,7 +117,7 @@ class priceController extends Controller
             return redirect(route('prices.index'));
         }
 
-        return view('prices.edit',compact('categories','price'));
+        return view('prices.edit',compact('categories','price','cities'));
     }
 
     /**
@@ -125,7 +137,11 @@ class priceController extends Controller
 
             return redirect(route('prices.index'));
         }
-
+        if (price::where('city',$request->city)->where('category',$request->category)->where('id','!=',$id)->exists())
+        {
+            Flash::error("Entry already exists! Please try editing it");
+            return redirect(route('prices.index'));
+        }
         $price = $this->priceRepository->update($request->all(), $id);
 
         Flash::success('Price updated successfully.');
@@ -155,5 +171,25 @@ class priceController extends Controller
         Flash::success('Price deleted successfully.');
 
         return redirect(route('prices.index'));
+    }
+
+
+    public function fetchCityCategory($city)
+    {
+        $city = availableCities::whereId($city)->first();
+        $categories = categories::where('city','like',$city->city)->get();
+        $html = <<<EOD
+            <label>Category:</label>
+            <select  name="category" class="form-control">
+                <option value="" selected disabled>Select a Category</option>
+EOD;
+            foreach ($categories as $category)
+            {
+        $html .=<<<EOD
+                <option value="$category->id">$category->name</option>
+EOD;
+            }
+            return $html;
+
     }
 }

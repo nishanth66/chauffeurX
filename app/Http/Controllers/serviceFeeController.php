@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateserviceFeeRequest;
 use App\Http\Requests\UpdateserviceFeeRequest;
+use App\Models\availableCities;
+use App\Models\categories;
+use App\Models\serviceFee;
 use App\Repositories\serviceFeeRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
@@ -18,6 +21,7 @@ class serviceFeeController extends Controller
 
     public function __construct(serviceFeeRepository $serviceFeeRepo)
     {
+        $this->middleware('auth');
         $this->serviceFeeRepository = $serviceFeeRepo;
     }
 
@@ -43,7 +47,9 @@ class serviceFeeController extends Controller
      */
     public function create()
     {
-        return view('service_fees.create');
+        $cities = availableCities::get();
+        $categories = categories::get();
+        return view('service_fees.create',compact('cities','categories'));
     }
 
     /**
@@ -56,7 +62,11 @@ class serviceFeeController extends Controller
     public function store(CreateserviceFeeRequest $request)
     {
         $input = $request->all();
-
+        if (serviceFee::where('city',$request->city)->where('category',$request->category)->exists())
+        {
+            Flash::error("Entry is already Exists! Try editing it");
+            return redirect(route('serviceFees.index'));
+        }
         $serviceFee = $this->serviceFeeRepository->create($input);
 
         Flash::success('Service Fee saved successfully.');
@@ -94,14 +104,16 @@ class serviceFeeController extends Controller
     public function edit($id)
     {
         $serviceFee = $this->serviceFeeRepository->findWithoutFail($id);
-
+        $city = availableCities::whereId($serviceFee->city)->first();
+        $cities = availableCities::get();
+        $categories = categories::where('city','like',$city->city)->get();
         if (empty($serviceFee)) {
             Flash::error('Service Fee not found');
 
             return redirect(route('serviceFees.index'));
         }
 
-        return view('service_fees.edit')->with('serviceFee', $serviceFee);
+        return view('service_fees.edit',compact('serviceFee','cities','categories'));
     }
 
     /**
@@ -121,7 +133,11 @@ class serviceFeeController extends Controller
 
             return redirect(route('serviceFees.index'));
         }
-
+        if (serviceFee::where('city',$request->city)->where('category',$request->category)->where('id','!=',$id)->exists())
+        {
+            Flash::error("Entry is already Exists! Try editing it");
+            return redirect(route('serviceFees.index'));
+        }
         $serviceFee = $this->serviceFeeRepository->update($request->all(), $id);
 
         Flash::success('Service Fee updated successfully.');

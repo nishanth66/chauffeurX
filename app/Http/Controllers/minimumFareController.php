@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateminimumFareRequest;
 use App\Http\Requests\UpdateminimumFareRequest;
+use App\Models\availableCities;
+use App\Models\categories;
+use App\Models\minimumFare;
 use App\Repositories\minimumFareRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
@@ -18,6 +21,7 @@ class minimumFareController extends Controller
 
     public function __construct(minimumFareRepository $minimumFareRepo)
     {
+        $this->middleware('auth');
         $this->minimumFareRepository = $minimumFareRepo;
     }
 
@@ -43,7 +47,9 @@ class minimumFareController extends Controller
      */
     public function create()
     {
-        return view('minimum_fares.create');
+        $cities = availableCities::get();
+        $categories = categories::get();
+        return view('minimum_fares.create',compact('cities','categories'));
     }
 
     /**
@@ -56,7 +62,11 @@ class minimumFareController extends Controller
     public function store(CreateminimumFareRequest $request)
     {
         $input = $request->all();
-
+        if (minimumFare::where('city',$request->city)->where('category',$request->category)->exists())
+        {
+            Flash::error("Entry already exists! Please try editing it");
+            return redirect(route('minimumFares.index'));
+        }
         $minimumFare = $this->minimumFareRepository->create($input);
 
         Flash::success('Minimum Fare saved successfully.');
@@ -94,14 +104,16 @@ class minimumFareController extends Controller
     public function edit($id)
     {
         $minimumFare = $this->minimumFareRepository->findWithoutFail($id);
-
+        $cities = availableCities::get();
+        $city = availableCities::whereId($minimumFare->city)->first();
+        $categories = categories::where('city','like',$city->city)->get();
         if (empty($minimumFare)) {
             Flash::error('Minimum Fare not found');
 
             return redirect(route('minimumFares.index'));
         }
 
-        return view('minimum_fares.edit')->with('minimumFare', $minimumFare);
+        return view('minimum_fares.edit',compact('minimumFare','cities','categories'));
     }
 
     /**
@@ -121,7 +133,11 @@ class minimumFareController extends Controller
 
             return redirect(route('minimumFares.index'));
         }
-
+        if (minimumFare::where('city',$request->city)->where('category',$request->category)->where('id','!=',$id)->exists())
+        {
+            Flash::error("Entry already exists! Please try editing it");
+            return redirect(route('minimumFares.index'));
+        }
         $minimumFare = $this->minimumFareRepository->update($request->all(), $id);
 
         Flash::success('Minimum Fare updated successfully.');

@@ -18,6 +18,7 @@ class musicPreferenceController extends Controller
 
     public function __construct(musicPreferenceRepository $musicPreferenceRepo)
     {
+        $this->middleware('auth');
         $this->musicPreferenceRepository = $musicPreferenceRepo;
     }
 

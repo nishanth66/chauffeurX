@@ -4,14 +4,18 @@
             <th>City</th>
         <th>Category</th>
         <th>Amount</th>
-            <th colspan="3">Action</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
     @foreach($minimumFares as $minimumFare)
+    <?php
+        $city = \App\Models\availableCities::whereId($minimumFare->city)->first();
+        $category = \App\Models\categories::whereId($minimumFare->category)->first();
+    ?>
         <tr>
-            <td>{!! $minimumFare->city !!}</td>
-            <td>{!! $minimumFare->category !!}</td>
+            <td>{!! $city->city !!}</td>
+            <td>{!! $category->name !!}</td>
             <td>{!! $minimumFare->amount !!}</td>
             <td>
                 {!! Form::open(['route' => ['minimumFares.destroy', $minimumFare->id], 'method' => 'delete']) !!}

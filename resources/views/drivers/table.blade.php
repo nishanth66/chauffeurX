@@ -7,9 +7,7 @@
             <th>Email</th>
             <th>Phone</th>
             <th>Licence</th>
-            @if(isset($code) && $code == 0)
-                <th>Status</th>
-            @endif
+            <th>Status</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -24,16 +22,16 @@
             <td>
                 <a href="{{url('driver/licence').'/'.$driver->id}}" class="btn btn-info">Details</a>
             </td>
-            @if(isset($code) && $code == 0)
-                <td>
-                    @if($driver->status == 0)
+            <td>
+                @if($driver->status == 0)
                     <a href="{{url('driver/accept').'/'.$driver->id}}" class="btn btn-success btn-flat btn-xs" title="Accept the Driver" onclick='return confirm("Are you sure?")'><i class="fa fa-check" aria-hidden="true"></i></a>
                     <a href="{{url('driver/reject').'/'.$driver->id}}" class="btn btn-danger btn-flat btn-xs" title="Reject the Driver" onclick='return confirm("Are you sure?")'><i class="fa fa-times" aria-hidden="true"></i></a>
-                    @elseif($driver->status == 2)
-                        <button class="btn btn-danger btn-flat">Rejected</button>
-                    @endif
-                </td>
-            @endif
+                @elseif($driver->status == 2)
+                    <a href="{{url('driver/accept').'/'.$driver->id}}" class="btn btn-success btn-flat btn-xs" title="Accept the Driver" onclick='return confirm("Are you sure?")'><i class="fa fa-check" aria-hidden="true"></i></a>
+                @else
+                    <a href="{{url('driver/reject').'/'.$driver->id}}" class="btn btn-danger btn-flat btn-xs" title="Reject the Driver" onclick='return confirm("Are you sure?")'><i class="fa fa-times" aria-hidden="true"></i></a>
+                @endif
+            </td>
             <td>
                 {!! Form::open(['route' => ['drivers.destroy', $driver->id], 'method' => 'delete']) !!}
                 <div class='btn-group'>

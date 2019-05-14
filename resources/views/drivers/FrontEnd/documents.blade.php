@@ -4,15 +4,6 @@
         width: 100%;height: 200px;
         /*object-fit: contain;*/
     }
-    .btn-edit{
-        position: absolute;
-        top: 0;
-        right: -25px;
-        background: transparent;
-        border: none;
-        padding: 2px;
-        font-size: larger;
-    }
 </style>
 <div class="container-fluid">
     <div class="col-md-12 align login-div">
@@ -67,7 +58,6 @@
                         <p class="textclr">Perfect!.<br> Let's Validate You Car. Please Upload Your Registration <br> <br> If you don't have it with you, you can come back later, login and you will get to this very page</p>
                         <br>
                         <center>
-
                             <div class="col-md-12">
                                 <div class="form-group" style="position: relative;">
                                     @if(isset($driver) && $driver->car_reg != '' || !empty($driver->car_reg))

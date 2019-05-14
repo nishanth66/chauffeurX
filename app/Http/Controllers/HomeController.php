@@ -32,39 +32,11 @@ class HomeController extends Controller
         }
         elseif (Auth::user()->status == 1)
         {
-            $driver = driver::where('userid',Auth::user()->id)->first();
-            if ($driver->activated != 1)
-            {
-                return redirect('driver/verify');
-            }
-            elseif($driver->basic_details != 1)
-            {
-                return redirect('driver/profile');
-            }
-            elseif($driver->address_details != 1)
-            {
-                return redirect('driver/address');
-            }
-            elseif ($driver->licence_details != 1)
-            {
-                return redirect('driver/verifyLicence');
-            }
-            elseif ($driver->documents != 1)
-            {
-                return redirect('driver/documents');
-            }
-            elseif (empty($driver->signature) || $driver->signature == '')
-            {
-                return redirect('driver/agree');
-            }
-            elseif ($driver->status != 'accepted')
-            {
-                return redirect('driver/SubmitDocument');
-            }
-            else
-            {
-                return redirect('driver/home');
-            }
+            return redirect('driver/home');
+        }
+        elseif (Auth::user()->status == 2)
+        {
+            return redirect('advertisement/home');
         }
     }
     public function method()

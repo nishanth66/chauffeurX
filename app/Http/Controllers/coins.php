@@ -8,6 +8,76 @@ use Laracasts\Flash\Flash;
 
 class coins extends Controller
 {
+
+    public function coinSetting ()
+    {
+        if (DB::table('coins')->exists())
+        {
+            $details = DB::table('coins')->first();
+            $create = $details->create_account;
+            $invite = $details->invite;
+            $share = $details->share;
+            $add_tip = $details->add_tip;
+            $add_fav = $details->add_fav;
+            $new_city = $details->new_city;
+            $delete_app = $details->delete_app;
+            $new_category = $details->new_category;
+        }
+        else
+        {
+            $create = 0;
+            $invite = 0;
+            $share = 0;
+            $add_tip = 0;
+            $add_fav = 0;
+            $new_city = 0;
+            $delete_app = 0;
+            $new_category = 0;
+        }
+        if (DB::table('coins_for_trip')->exists())
+        {
+            $trip = DB::table('coins_for_trip')->first();
+            $kilo_meters = $trip->kilo_meters;
+            $coins_km = $trip->coins_km;
+            $rides = $trip->rides;
+            $coins_ride = $trip->coins_ride;
+        }
+        else
+        {
+            $kilo_meters = 0;
+            $coins_km = 0;
+            $rides = 0;
+            $coins_ride = 0;
+        }
+        return view('coins.all',compact('create','invite','share','add_fav','add_tip','new_city','new_category','delete_app','kilo_meters','coins_km','rides','coins_ride'));
+    }
+
+    public function savecoinSetting(Request $request)
+    {
+        $input = $request->except('_token','kilo_meters','coins_km','rides','coins_ride');
+        if (DB::table('coins')->exists())
+        {
+            DB::table('coins')->first()->update($input);
+        }
+        else
+        {
+            DB::table('coins')->insert($input);
+        }
+        $update['kilo_meters'] = $request->kilo_meters;
+        $update['coins_km'] = $request->coins_km;
+        $update['rides'] = $request->rides;
+        $update['coins_ride'] = $request->coins_ride;
+        if (DB::table('coins_for_trip')->exists())
+        {
+            DB::table('coins_for_trip')->first()->update($update);
+        }
+        else
+        {
+            DB::table('coins_for_trip')->insert($update);
+        }
+        return redirect('coins/setting');
+    }
+
     public function createAccountCoins()
     {
         if (DB::table('coins')->exists())

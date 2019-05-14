@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateavailableCitiesRequest;
 use App\Http\Requests\UpdateavailableCitiesRequest;
+use App\Models\availableCities;
 use App\Repositories\availableCitiesRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class availableCitiesController extends Controller
 
     public function __construct(availableCitiesRepository $availableCitiesRepo)
     {
+        $this->middleware('auth');
         $this->availableCitiesRepository = $availableCitiesRepo;
     }
 
@@ -55,9 +57,16 @@ class availableCitiesController extends Controller
      */
     public function store(CreateavailableCitiesRequest $request)
     {
-        $input = $request->all();
-
-        $availableCities = $this->availableCitiesRepository->create($input);
+        $input = $request->except('_token');
+        if (availableCities::where('city',$request->city)->exists())
+        {
+            Flash::error("The Entry for ".$request->city." is already Exists! Please try Editing it");
+            return redirect(route('availableCities.index'));
+        }
+        else
+        {
+            $availableCities = availableCities::create($input);
+        }
 
         Flash::success('Available Cities saved successfully.');
 
@@ -121,8 +130,15 @@ class availableCitiesController extends Controller
 
             return redirect(route('availableCities.index'));
         }
-
-        $availableCities = $this->availableCitiesRepository->update($request->all(), $id);
+        if (availableCities::where('city',$request->city)->where('id','!=',$id)->exists())
+        {
+            Flash::error("The Entry for ".$request->city." is already Exists! Please try Editing it");
+            return redirect(route('availableCities.index'));
+        }
+        else
+        {
+            availableCities::where('city',$request->city)->update($request->except('_token','_method'));
+        }
 
         Flash::success('Available Cities updated successfully.');
 

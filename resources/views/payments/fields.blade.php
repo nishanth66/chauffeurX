@@ -1,5 +1,15 @@
 <!-- Booking Id Field -->
 <div class="form-group col-sm-12">
+    {!! Form::label('city', 'City:') !!}
+    <select name="city" class="form-control">
+        <option value="" selected disabled>Select a City</option>
+        @foreach($cities as $city)
+            <option value="{{$city->city}}" <?php if(isset($payments) && $payments->city == $city->city) { echo "selected"; } ?>>{{$city->city}}</option>
+        @endforeach
+    </select>
+</div>
+
+<div class="form-group col-sm-12">
     {!! Form::label('name', 'Name:') !!}
     {!! Form::text('name', null, ['class' => 'form-control']) !!}
 </div>

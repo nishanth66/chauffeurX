@@ -28,7 +28,7 @@ class preferencesAPIController extends Controller
         {
             $response['code'] = 500;
             $response['status'] = "failed";
-            $response['message'] = "User not Found";
+            $response['message'] = "User could not be Found";
             $response['data'] = [];
             return $response;
         }
@@ -54,17 +54,43 @@ class preferencesAPIController extends Controller
             $music = musicPreference::get();
             $response['code'] = 200;
             $response['status'] = "success";
-            $response['message'] = "Preferences fetched successfully";
+            $response['message'] = "Music Preferences fetched successfully";
             $response['data'] = $music;
             return $response;
         }
         else
         {
-            $response['code'] = 200;
-            $response['status'] = "success";
+            $response['code'] = 500;
+            $response['status'] = "failed";
             $response['message'] = "No Preference Found";
             $response['data'] = [];
             return $response;
         }
     }
+    public function userPreferences(Request $request)
+    {
+        if (passengers::whereId($request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "User could not be Found";
+            $response['data'] = [];
+            return $response;
+        }
+        if (preferences::where('userid',$request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "User has No Preferences";
+            $response['data'] = [];
+            return $response;
+        }
+        $preferences = preferences::where('userid',$request->userid)->first();
+        $response['code'] = 200;
+        $response['status'] = "success";
+        $response['message'] = "User Preferences Fetched Successfully";
+        $response['data'] = $preferences;
+        return $response;
+    }
+
 }

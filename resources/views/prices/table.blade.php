@@ -2,6 +2,7 @@
     <thead>
         <tr>
             <th>Category</th>
+            <th>City</th>
             <th>Amount</th>
             <th>Action</th>
         </tr>
@@ -19,6 +20,7 @@
         {
             $category = "";
         }
+        $city = \App\Models\availableCities::whereId($price->city)->first();
         ?>
         <tr>
             <td>
@@ -27,6 +29,7 @@
                 @else
                 @endif
             </td>
+            <td>{!! $city->city !!}</td>
             <td>{!! $price->amount !!}</td>
             <td>
                 {!! Form::open(['route' => ['prices.destroy', $price->id], 'method' => 'delete']) !!}

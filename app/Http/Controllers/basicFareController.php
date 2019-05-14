@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatebasicFareRequest;
 use App\Http\Requests\UpdatebasicFareRequest;
+use App\Models\availableCities;
+use App\Models\basicFare;
+use App\Models\categories;
 use App\Repositories\basicFareRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
@@ -18,6 +21,7 @@ class basicFareController extends Controller
 
     public function __construct(basicFareRepository $basicFareRepo)
     {
+        $this->middleware('auth');
         $this->basicFareRepository = $basicFareRepo;
     }
 
@@ -43,7 +47,9 @@ class basicFareController extends Controller
      */
     public function create()
     {
-        return view('basic_fares.create');
+        $cities = availableCities::get();
+        $categories = categories::get();
+        return view('basic_fares.create',compact('cities','categories'));
     }
 
     /**
@@ -56,6 +62,12 @@ class basicFareController extends Controller
     public function store(CreatebasicFareRequest $request)
     {
         $input = $request->all();
+
+        if (basicFare::where('city',$request->city)->where('category',$request->category)->exists())
+        {
+            Flash::error("This entry is already Exists! Please try editing it");
+            return redirect(route('basicFares.index'));
+        }
 
         $basicFare = $this->basicFareRepository->create($input);
 
@@ -94,14 +106,16 @@ class basicFareController extends Controller
     public function edit($id)
     {
         $basicFare = $this->basicFareRepository->findWithoutFail($id);
-
+        $city = availableCities::whereId($basicFare->city)->first();
+        $cities = availableCities::get();
+        $categories = categories::where('city','like',$city->city)->get();
         if (empty($basicFare)) {
             Flash::error('Basic Fare not found');
 
             return redirect(route('basicFares.index'));
         }
 
-        return view('basic_fares.edit')->with('basicFare', $basicFare);
+        return view('basic_fares.edit',compact('basicFare','cities','categories'));
     }
 
     /**
@@ -121,7 +135,11 @@ class basicFareController extends Controller
 
             return redirect(route('basicFares.index'));
         }
-
+        if (basicFare::where('city',$request->city)->where('category',$request->category)->where('id','!=',$id)->exists())
+        {
+            Flash::error("This entry is already Exists! Please try editing it");
+            return redirect(route('basicFares.index'));
+        }
         $basicFare = $this->basicFareRepository->update($request->all(), $id);
 
         Flash::success('Basic Fare updated successfully.');
