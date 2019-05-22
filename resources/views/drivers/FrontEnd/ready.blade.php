@@ -7,7 +7,7 @@
                     Our team will Review it within 2 bussiness days and get back to you</p>
                     <p class="loginAnchor">If you are approved, You will receive an email at<br/>
                     <b><i>{{$driver->email}}</i></b></p> <br/>
-                <button type="button" class="btn btn-primary ready-btn">Get ready</button>
+                <a href="{{url('home')}}" class="btn btn-primary ready-btn">Get ready</a>
             </center>
         </div>
 </div>

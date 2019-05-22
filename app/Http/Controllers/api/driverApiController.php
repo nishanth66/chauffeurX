@@ -24,12 +24,21 @@ class driverApiController extends Controller
     {
         $email = $request->email;
         $password = $request->password;
-        if (driver::where('email',$email)->exists()) {
+        if (driver::where('email',$email)->where('status',1)->exists()) {
+            $driverDetails = explode(',',$request->driver_lat_lng);
             $driver = driver::where('email', $email)->first();
+            if(isset($driverDetails[0]) && isset($driverDetails[1]) && !empty($driverDetails[0]) && !empty($driverDetails[1]))
+            {
+                $lat = $driverDetails[0];
+                $lng = $driverDetails[1];
+                $city = app('App\Http\Controllers\api\bookingApiController')->getAddress($lat,$lng);
+                driver::whereId($driver->id)->update(['city'=>$city]);
+                $driver = driver::whereId($driver->id)->first();
+            }
             if (Hash::check($password, $driver->password) && $email == $driver->email) {
                 $response['code'] = 200;
                 $response['status'] = "success";
-                $response['message'] = "User Details Fetched successfully";
+                $response['message'] = "Logged in Successfully";
                 $response['data'] = $driver;
                 driver::whereId($driver->id)->update(['device_token' => $request->device_token,'device_type' => $request->device_type]);
             }
@@ -183,6 +192,23 @@ class driverApiController extends Controller
             $tripDate = strtotime(date('Y-m-d',$tripDate));
             if ($toDate == $tripDate)
             {
+                $booking = $booking->toArray();
+                foreach ($booking as $key => $value)
+                {
+                    if (is_null($value))
+                    {
+                        $booking[$key] = "";
+                    }
+                    $booking['driverid'] = (string)$booking['driverid'];
+                    if ($booking['status'] == 'Booking Accepted')
+                    {
+                        $booking['status'] = 'accepted';
+                    }
+                }
+                $source = explode(',',$booking['source']);
+                $destination = explode(',',$booking['destination']);
+                $booking['source_address'] = app('App\Http\Controllers\api\bookingApiController')->getFormattedAddress($source[0],$source[1]);
+                $booking['destination_address'] = app('App\Http\Controllers\api\bookingApiController')->getFormattedAddress($destination[0],$destination[1]);
                 array_push($myBookings,$booking);
             }
         }
@@ -479,16 +505,16 @@ class driverApiController extends Controller
         {
             $response['code'] = 500;
             $response['status'] = "failed";
-            $response['message'] = "No others Drivers are Found";
+            $response['message'] = "Sorry! Our all drivers are busy at the moment. Try again later";
             $response['data'] = [];
 
 //            ***************************************Code for Push Notification ***************************************
 
-            $title = "No More Drivers Found";
-            $pushFor = "No More Drivers";
+            $title = "Drivers are Busy";
+            $pushFor = "Drivers are Busy";
             $token = (string)$user->device_token;
             $body['username'] = $user->fname.' '.$user->lname;
-            $body['message'] = "No More Drivers Found";
+            $body['message'] = "Sorry! Our all drivers are busy at the moment. Try again later";
             $body['booking_details'] = $booking;
             $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor);
 
@@ -618,12 +644,12 @@ class driverApiController extends Controller
             return $response;
         }
         $booking = booking::whereId($request->bookingid)->where('driverid',$request->driverid)->first();
-        $driverLatLng = explode('-',$request->driver_lat_lng);
+        $driverLatLng = explode(',',$request->driver_lat_lng);
         if ((!isset($driverLatLng[0]) || $driverLatLng[0] == '' || empty($driverLatLng[0])) || (!isset($driverLatLng[1]) || $driverLatLng[1] == '' ||  empty($driverLatLng[1])))
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['message'] = "Invalid Driver data Received! Format- driver_lat_lng = 'lat-lng'";
+            $response['message'] = "Invalid Driver data Received! Format- driver_lat_lng = 'lat,lng'";
             $response['data'] = [];
             return $response;
         }
@@ -854,7 +880,7 @@ class driverApiController extends Controller
     {
         if (driver::whereId($request->driverid)->exists())
         {
-            driver::whereId($request->driverid)->update(['device_token'=>null]);
+            driver::whereId($request->driverid)->update(['device_token'=>null,'isAvailable'=>0]);
             $user = driver::whereId($request->driverid)->first();
             $response['code'] = 200;
             $response['status'] = "success";
@@ -888,5 +914,23 @@ class driverApiController extends Controller
             $response['data'] = [];
         }
         return $response;
+    }
+
+    public function abc()
+    {
+        $j = 6;
+            $string = "";
+            for($i=0;$i < $j;$i++){
+                srand((double)microtime()*1234567);
+                $x = mt_rand(0,2);
+                switch($x){
+                    case 0:$string.= chr(mt_rand(97,122));break;
+                    case 1:$string.= chr(mt_rand(65,90));break;
+                    case 2:$string.= chr(mt_rand(48,57));break;
+                }
+            }
+            return strtoupper($string); //to uppercase
+
+        return strtoupper(substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 6));
     }
 }

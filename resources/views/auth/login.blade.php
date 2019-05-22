@@ -5,7 +5,14 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>ChauffeurX | Login Page</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{asset('public/favicon_package_v0.16/apple-touch-icon.png')}}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{asset('public/favicon_package_v0.16/favicon-32x32.png')}}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{asset('public/favicon_package_v0.16/favicon-16x16.png')}}">
+    <link rel="manifest" href="{{asset('public/favicon_package_v0.16/site.webmanifest')}}">
+    <link rel="mask-icon" href="{{asset('public/favicon_package_v0.16/safari-pinned-tab.svg')}}" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
@@ -101,7 +108,7 @@
 
         <div class="loginForgot">
             <a class="loginAnchor" href="{{ url('/password/reset') }}">I forgot my password</a><br>
-            <a href="#" class="text-center loginAnchor">Do you want to drive on ChauffeurX?</a>
+            <a href="{{url('register')}}" class="text-center loginAnchor">Do you want to drive on ChauffeurX?</a>
         </div>
         </form>
         </center>

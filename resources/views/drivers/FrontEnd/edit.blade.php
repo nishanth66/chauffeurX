@@ -1,3 +1,4 @@
+<div class="overlay" id="overlay"></div>
 @include('drivers.FrontEnd.header')
 @include('drivers.FrontEnd.sideBar')
 <link rel="stylesheet" href="{{asset('public/css/profile.css')}}">
@@ -49,12 +50,17 @@
     {
         margin-left: 25%;
     }
+    #content
+    {
+        padding: 20px;
+    }
+
 </style>
     <div class="driver-profile-details">
         @include('flash::message')
         <div class="row">
-            <div class="col-md-1 col-sm-1"></div>
-            <div class="col-md-10 col-sm-11 col-xs-12">
+            <div class="col-md-3 col-sm-2 col-xs-1"></div>
+            <div class="col-md-8 col-sm-8 col-xs-10">
                 <form method="post" action="{{url('driver/editProfile')}}" enctype="multipart/form-data" id="editProfile">
                     {{csrf_field()}}
                     <input type="hidden" value="{{$driver->id}}" name="driverid" id="driverid">
@@ -90,7 +96,7 @@
 
 
             </div>
-            <div class="col-md-1"></div>
+            <div class="col-md-1 col-sm-2 col-xs-1"></div>
         </div>
     </div>
 </div>
@@ -208,12 +214,11 @@
 </div>
 </center>
 
-<!-- jQuery CDN - Slim version (=without AJAX) -->
-{{--<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>--}}
-<!-- Popper.JS -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
-<!-- Bootstrap JS -->
-{{--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>--}}
+<script src="{{asset('public/js/swipe.js')}}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+
 
 <script>
     var placeSearch, autocomplete;
@@ -289,16 +294,21 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
+        $("#sidebar").mCustomScrollbar({
+            theme: "minimal"
+        });
+        $('#dismiss, .overlay').on('click', function () {
+            $('#sidebar').removeClass('active');
+            $('.overlay').removeClass('active');
+            $("body").css("overflow","auto");
+        });
+
         $('#sidebarCollapse').on('click', function () {
-            $('#sidebar').toggleClass('active');
-            if ($('#sidebar').hasClass('active'))
-            {
-                $('.driver-header-name').hide();
-            }
-            else
-            {
-                $('.driver-header-name').show();
-            }
+            $('#sidebar').addClass('active');
+            $('.overlay').addClass('active');
+            $("body").css("overflow","hidden");
+            $('.collapse.in').toggleClass('in');
+            $('a[aria-expanded=true]').attr('aria-expanded', 'false');
         });
     });
 

@@ -369,7 +369,35 @@ class passengerApiController extends Controller
         }
         else
         {
-            $user = passengers::create(['phone'=>$mNumber,'otp'=>$otp,'email'=>$request->email]);
+            $i=1;
+            $j = 6;
+            while($i != 0)
+            {
+                $string = "";
+                for($i=0;$i < $j;$i++){
+                    srand((double)microtime()*1234567);
+                    $x = mt_rand(0,2);
+                    switch($x){
+                        case 0:$string.= chr(mt_rand(97,122));break;
+                        case 1:$string.= chr(mt_rand(65,90));break;
+                        case 2:$string.= chr(mt_rand(48,57));break;
+                    }
+                }
+                if (passengers::where('referral_code','like',$string)->exists())
+                {
+                    if ($i > 999)
+                    {
+                        $j++;
+                    }
+
+                    $i=1;
+                }
+                else
+                {
+                    $i=0;
+                    $user = passengers::create(['phone'=>$mNumber,'otp'=>$otp,'email'=>$request->email,'referral_code'=>$string]);
+                }
+            }
             $reference = $this->database->getReference('user');
             $postRef = $reference->push([
                 'userid ' => 'user_'.$user->id,

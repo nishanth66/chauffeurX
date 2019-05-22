@@ -76,7 +76,7 @@ class bookingApiController extends Controller
 
     public function getPaymentMethods(Request $request)
     {
-        $userDetails = explode(',',$request->user_lat_lng);
+        $userDetails = explode('-',$request->user_lat_lng);
         if (!isset($userDetails[0]) || !isset($userDetails[1]) || $userDetails[0] == '' || $userDetails[1] == '' || empty($userDetails[0]) || empty($userDetails[1]))
         {
             $response['code'] = 500;
@@ -113,7 +113,7 @@ class bookingApiController extends Controller
 
     public function getCategories(Request $request)
     {
-        $userDetails = explode(',',$request->user_lat_lng);
+        $userDetails = explode('-',$request->user_lat_lng);
         if (!isset($userDetails[0]) || !isset($userDetails[1]) || $userDetails[0] == '' || $userDetails[1] == '' || empty($userDetails[0]) || empty($userDetails[1]))
         {
             $response['code'] = 500;
@@ -191,7 +191,7 @@ class bookingApiController extends Controller
             return $response;
         }
         $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
-        $userDetais = explode(',',$request->user_lat_lng);
+        $userDetais = explode('-',$request->user_lat_lng);
         $latSrc1 = $userDetais[0];
         $lonSrc1 = $userDetais[1];
         $city1 = $this->getAddress($latSrc,$lonSrc);
@@ -215,13 +215,13 @@ class bookingApiController extends Controller
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'lat,lng'";
+            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'lat-lng'";
             $response['data'] = [];
             return $response;
         }
         if (!isset($request->payment_method_id) || $request->payment_method_id == '' || empty($request->payment_method_id))
         {
-            $drivers=$this->getDriver($request->discount,$request->favoriteDriver,$city1,$request->userid);
+            $drivers=$this->getDriver($request->discount,$request->favoriteDriver,$request->userid);
 
             if ($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 0)
             {
@@ -268,7 +268,7 @@ class bookingApiController extends Controller
         }
         else
         {
-            $drivers=$this->getDriver($request->discount,$request->favoriteDriver,$city1,$request->userid,$request->payment_method_id);
+            $drivers=$this->getDriver($request->discount,$request->favoriteDriver,$request->userid,$request->payment_method_id);
 
             if ($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 0)
             {
@@ -410,7 +410,7 @@ class bookingApiController extends Controller
             $distanceTime = $this->calculateDistance($latSrc,$lonSrc,$latDest,$lonDest);
             $city1 = $this->getAddress($latSrc,$lonSrc);
             $city2 = $this->getAddress($latDest,$lonDest);
-            $userDetais = explode(',',$request->user_lat_lng);
+            $userDetais = explode('-',$request->user_lat_lng);
             $lat1 = $userDetais[0];
             $long1 = $userDetais[1];
             $city3 = $this->getAddress($lat1,$long1);
@@ -460,7 +460,7 @@ class bookingApiController extends Controller
             {
                 $response['status'] = "failed";
                 $response['code'] = 500;
-                $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'lat,lng'";
+                $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'lat-lng'";
                 $response['data'] = [];
                 return $response;
             }
@@ -598,7 +598,6 @@ class bookingApiController extends Controller
         $booking = booking::whereId($request->bookingid)->where('userid',$request->userid)->first();
         $user = passengers::whereId($booking->userid)->first();
         $nextDrivers = DB::table('bookingDriver_push')->where('bookingid',$booking->id)->first();
-
         $nextDrivers = explode(',',$nextDrivers->array);
         if(!isset($nextDrivers[0]))
         {
@@ -614,6 +613,7 @@ class bookingApiController extends Controller
             $drievr[$driverNext[0]] = $driverNext[1];
         }
         $driverid = array_search(max($drievr),$drievr);
+
         $riderDetails = driver::whereId($driverid)->first();
 //        $riderDetails = driver::whereId(27)->first();
         unset($riderDetails->password);
@@ -647,6 +647,8 @@ class bookingApiController extends Controller
             }
         }
         DB::table('bookingDriver_push')->where('bookingid',$request->bookingid)->update(['bookingid'=>$request->bookingid,'array'=>$newScore]);
+
+
 
         $response['code'] = 200;
         $response['status'] = "success";
@@ -1048,17 +1050,6 @@ class bookingApiController extends Controller
                 $bookinDetailData['trip_end_time'] = $booking->trip_end_time;
                 $bookinDetailData['cancelled_at'] = $booking->cancelled_at;
                 $bookinDetailData['created_at'] = $booking->created_at;
-                foreach ($bookinDetailData as $key => $value) {
-                    if (is_null($value)) {
-                        $bookinDetailData[$key] = "";
-                    }
-                        $bookinDetailData['driverid'] = (string)$bookinDetailData['driverid'];
-                        if ($bookinDetailData['status'] == 'Booking Accepted')
-                        {
-                            $bookinDetailData['status'] = 'accepted';
-                        }
-
-                }
                 array_push($myBookings,$bookinDetailData);
             }
         }
@@ -1221,20 +1212,12 @@ class bookingApiController extends Controller
         $response = curl_exec($ch);
         curl_close($ch);
         $response_a = json_decode($response, true);
-        if ($response_a['rows'][0]['elements'][0]['status'] == 'OK')
-        {
-            $dist = $response_a['rows'][0]['elements'][0]['distance']['value']/1000;
-            $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
-            $mins = round(($response_a['rows'][0]['elements'][0]['duration']['value'])/60);
-            return array('distance' => $dist, 'time' => $time ,'city' => $this->getAddress($lat1,$lon1),'min' => $mins);
-        }
-        else
-        {
-            $dist = 9999;
-            $time = 9999;
-            $mins = 9999;
-            return array('distance' => $dist, 'time' => $time ,'city' => 9999,'min' => $mins);
-        }
+        $dist = $response_a['rows'][0]['elements'][0]['distance']['value']/1000;
+
+        $time = $response_a['rows'][0]['elements'][0]['duration']['text'];
+        $mins = round(($response_a['rows'][0]['elements'][0]['duration']['value'])/60);
+
+        return array('distance' => $dist, 'time' => $time ,'city' => $this->getAddress($lat1,$lon1),'min' => $mins);
     }
 
     function calculatePrice($category,$distance,$totalMin,$city)
@@ -1330,15 +1313,15 @@ class bookingApiController extends Controller
 //        return $response_a['results'][0]['address_components'];
     }
 
-    function getDriver($discount,$favorite,$city,$userid,$payment=null)
+    function getDriver($discount,$favorite,$userid,$payment=null)
     {
         if ($discount == 0)
         {
-            $drivers = driver::where('status',1)->where('isAvailable',1)->where('active_ride',0)->where('city','like',$city)->get();
+            $drivers = driver::where('status',1)->where('isAvailable',1)->where('active_ride',0)->get();
         }
         else
         {
-            $drivers = driver::where('status',1)->where('isAvailable',1)->where('active_ride',0)->where('discount','!=',0)->where('city','like',$city)->orderby('discount','desc')->get();
+            $drivers = driver::where('status',1)->where('isAvailable',1)->where('active_ride',0)->where('discount','!=',0)->orderby('discount','desc')->get();
         }
         if($payment != null && $favorite == 0)
         {
@@ -1387,11 +1370,11 @@ class bookingApiController extends Controller
                     {
                         if ($discount == 0)
                         {
-                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->where('city','like',$city)->first();
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->first();
                         }
                         else
                         {
-                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->where('city','like',$city)->where('discount','!=',0)->first();
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->where('discount','!=',0)->first();
                         }
                         if (isset($driverDetail) && !empty($driverDetail))
                         {
@@ -1424,7 +1407,7 @@ class bookingApiController extends Controller
         $totalDistance = $distanceTime['distance'];
         $totalMin = $distanceTime['min'];
         $city = $distanceTime['city'];
-        $userDetais = explode(',',$request->user_lat_lng);
+        $userDetais = explode('-',$request->user_lat_lng);
         $latSrc = $userDetais[0];
         $lonSrc = $userDetais[1];
         $driverDetails = [];
@@ -1457,12 +1440,7 @@ class bookingApiController extends Controller
                 {
                     $fetchDetails['favorite_driver_filter_applied'] = 0;
                 }
-                if(isset($driverCategories)&& isset($driverCategories->categoryid)){
-                    $fetchDetails['category'] = $driverCategories->categoryid;
-                }
-                else{
-                    $fetchDetails['category'] = "";
-                }
+                $fetchDetails['category'] = $driverCategories->categoryid;
                 $distanceDriver[$fetchDetails['driverid']] = $fetchDetails['min'];
                 array_push($driverDetails,$fetchDetails);
             }
@@ -1543,7 +1521,7 @@ class bookingApiController extends Controller
                 $discountPrice = $price-$totalDiscount;
                 $discountEstimate = ($discountPrice*10)/100;
                 $discountEstimate = $discountEstimate+$discountPrice;
-                $fetch['discount_price'] = number_format($discountPrice,2).' - '.number_format($discountEstimate,2);
+                $fetch['estimated_discount_price'] = number_format($discountPrice,2).' - '.number_format($discountEstimate,2);
             }
             else
             {

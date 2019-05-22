@@ -121,7 +121,8 @@ Route::get('newCategoryCoins', 'coins@newCategoryCoins');
 Route::post('categorySaveCoins', 'coins@newCategoryCoinsSave');
 
 Route::resource('ranks', 'rankController');
-Route::post('abc','driverController@abc');
+
+Route::get('abc','api\driverApiController@abc');
 
 Route::get('changeCity/{city}/{code}','driverController@changeCity');
 Route::get('changeCategoryCity/{city}','categoriesController@changeCity');
@@ -171,11 +172,14 @@ Route::prefix('driver/')->group(function () {
 
     Route::get('reject/{id}','driverController@reject');
 
+    Route::get('fromToDate/{from}/{to}/{driverid}','driverController@fromToDate');
+
 
 //    home pages
     Route::get('editProfile','driverController@editProfile');
     Route::get('history','driverController@history');
     Route::get('upcoming','driverController@upcoming');
+    Route::post('upcoming','driverController@saveUpcoming');
     Route::get('account','driverController@account');
     Route::post('editProfile','driverController@SaveeditProfile');
 });

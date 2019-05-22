@@ -2,7 +2,6 @@
 <link href="{{asset('public/css/pin.css')}}" rel="stylesheet">
 
 <style>
-
     .qw{
         padding: 10px;
         border: 1px solid #4D68B0;
@@ -11,6 +10,9 @@
         text-align: center;
         font-size: 20px;
         border-radius: 10px;
+    }
+    .qw:focus{
+        outline: none !important;
     }
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
@@ -72,7 +74,8 @@
             document.getElementById(nextFieldID).focus();
         }
     }
-    function getEmailValue() {
+    function getEmailValue()
+    {
 //        alert($('#1').val());
         var code = $('#1').val()+$('#2').val()+$('#3').val()+$('#4').val()+$('#5').val()+$('#6').val();
 //        console.log(code);
@@ -80,9 +83,9 @@
     }
     function checkKey(field,nextFieldID)
     {
-        if (event.keyCode == 8 || event.keyCode == 46)
+        if ((event.keyCode == 8 || event.keyCode == 46) && $(field).val() == '')
         {
-            $(field).val('');
+//            $(field).val('');
             document.getElementById(nextFieldID).focus();
         }
     }

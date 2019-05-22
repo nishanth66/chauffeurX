@@ -1916,7 +1916,7 @@ class driverController extends Controller
             $input = $request->except('_token');
             $driver = driver::where('userid',Auth::user()->id)->first();
             driverBasicDetails::where('driverid',$driver->id)->update($input);
-            driver::whereId($driver->id)->update(['address_details'=>1]);
+            driver::whereId($driver->id)->update(['address_details'=>1,'city'=>$request->city]);
             Flash::success("Address saved Successfully");
             return redirect('driver/verifyLicence');
         }
@@ -2086,7 +2086,7 @@ class driverController extends Controller
             }
             else
             {
-                return view('drivers.FrontEnd.agree',compact('name'));
+                return view('drivers.FrontEnd.agree',compact('name','driver'));
             }
         }
     }
@@ -2100,7 +2100,7 @@ class driverController extends Controller
         if (driver::where('userid',Auth::user()->id)->exists())
         {
             driver::where('userid',Auth::user()->id)->update(['signature'=>$request->signature,'status'=>0]);
-            Flash::success("Licence Details saved Successfully");
+            Flash::success("Account Created successfully");
             return redirect('driver/SubmitDocument');
         }
         Flash::error("Something went wrong! Please try again");
@@ -2151,6 +2151,7 @@ class driverController extends Controller
         }
         elseif ($driver->status != '1')
         {
+            Flash::warning("Please wait while we are verifying your Document");
             return redirect('driver/SubmitDocument');
         }
         else
@@ -3720,6 +3721,9 @@ EOD;
             return redirect('home');
         }
     }
+
+
+
     public function history()
     {
         if (Auth::user()->status == 1)
@@ -3755,8 +3759,27 @@ EOD;
             }
             else
             {
+                if($from = Session::get('fromDate') && $to = Session::get('toDate'))
+                {
+                    $from = Session::get('fromDate');
+                    $to = Session::get('toDate');
+                    if ($from == $to)
+                    {
+                        $rides = booking::where('driverid',$driver->id)->where('trip_start_time','!=',null)->whereDate('trip_end_time',$from)->paginate(3);
+                    }
+                    else
+                    {
+                        $rides = booking::where('driverid',$driver->id)->where('trip_start_time','!=',null)->whereDate('trip_end_time','>=',$from)->whereDate('trip_end_time','<=',$to)->paginate(3);
+                    }
+                }
+                else
+                {
+                    Session::put('fromDate',date('Y-m-d'.' 00:00:00',time()));
+                    Session::put('toDate',date('Y-m-d'.' 24:60:60',time()));
+                    $rides = booking::where('driverid',$driver->id)->where('trip_start_time','!=',null)->whereDate('trip_end_time',Carbon::today())->paginate(3);
+                }
                 $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
-                return view('drivers.FrontEnd.history',compact('driver','driver_name'));
+                return view('drivers.FrontEnd.history',compact('driver','driver_name','rides'));
             }
         }
         else
@@ -3764,18 +3787,26 @@ EOD;
             return redirect('home');
         }
     }
+
+
+
     public function SaveeditProfile(Request $request)
     {
         $input = $request->except('_token','image','type');
         if ($request->type == 1)
         {
             $driver = driverBasicDetails::where('driverid',$request->driverid)->update($input);
+            driver::whereId($request->driverid)->update(['city'=>$request->city]);
             return $driver;
         }
         elseif ($request->type == 2)
         {
             if ($request->hasFile('image'))
             {
+                $driverDetails = driver::whereId($request->driverid)->first();
+                $filepath2 = public_path('avatars'.'/'.$driverDetails->image);
+                $filepath1 = public_path('avatars' . '/' . $request->image);
+                $this->UnlinkImage($filepath1,$filepath2);
                 $photoName = rand(1,7257361) . time() . '.' . $request->image->getClientOriginalExtension();
                 $request->image->move(public_path('avatars'), $photoName);
                 $driver = driver::whereId($request->driverid)->update(['image'=>$photoName]);
@@ -3840,6 +3871,102 @@ EOD;
         }
     }
 
+    public function saveUpcoming(Request $request)
+    {
+        if ($request->hasFile('car_inspection'))
+        {
+            $driverDetails = driver::whereId($request->driverid)->first();
+            $driverVerification = driverVerification::where('driverid',$request->driverid)->first();
+            $filepath2 = public_path('avatars'.'/'.$driverVerification->car_inspection);
+            $filepath1 = public_path('avatars' . '/' . $request->car_inspection);
+            $this->UnlinkImage($filepath1,$filepath2);
+            $photoName = rand(1,7257361) . time() . '.' . $request->car_inspection->getClientOriginalExtension();
+            $request->car_inspection->move(public_path('avatars'), $photoName);
+            $driver = driverVerification::where('driverid',$request->driverid)->update(['car_inspection'=>$photoName]);
+            if($driverDetails->status == 1)
+            {
+                $array['name'] = $driverDetails->first_name;
+                $array['email'] = "nishanth.bajarngisoft@gmail.com";
+                $array['id'] = $driverDetails->id;
+                Mail::send('emails.docChange', ['array' => $array], function ($message) use ($array) {
+                    $message->to($array['email'])->subject("Documents Updated");
+                });
+            }
+            driver::whereId($driverDetails->id)->update(['status'=>0]);
+            return $driver;
+        }
+        elseif($request->hasFile('car_insurance'))
+        {
+            $driverDetails = driver::whereId($request->driverid)->first();
+            $driverVerification = driverVerification::where('driverid',$request->driverid)->first();
+            $filepath2 = public_path('avatars'.'/'.$driverVerification->car_insurance);
+            $filepath1 = public_path('avatars' . '/' . $request->car_insurance);
+            $this->UnlinkImage($filepath1,$filepath2);
+            $photoName = rand(1,7257361) . time() . '.' . $request->car_insurance->getClientOriginalExtension();
+            $request->car_insurance->move(public_path('avatars'), $photoName);
+            $driver = driverVerification::where('driverid',$request->driverid)->update(['car_insurance'=>$photoName]);
+            if($driverDetails->status == 1)
+            {
+                $array['name'] = $driverDetails->first_name;
+                $array['email'] = "nishanth.bajarngisoft@gmail.com";
+                $array['id'] = $driverDetails->id;
+                Mail::send('emails.docChange', ['array' => $array], function ($message) use ($array) {
+                    $message->to($array['email'])->subject("Documents Updated");
+                });
+            }
+            driver::whereId($driverDetails->id)->update(['status'=>0]);
+            return $driver;
+        }
+        elseif($request->hasFile('car_reg'))
+        {
+            $driverDetails = driver::whereId($request->driverid)->first();
+            $driverVerification = driverVerification::where('driverid',$request->driverid)->first();
+            $filepath2 = public_path('avatars'.'/'.$driverVerification->car_reg);
+            $filepath1 = public_path('avatars' . '/' . $request->car_reg);
+            $this->UnlinkImage($filepath1,$filepath2);
+            $photoName = rand(1,7257361) . time() . '.' . $request->car_reg->getClientOriginalExtension();
+            $request->car_reg->move(public_path('avatars'), $photoName);
+            $driver = driverVerification::where('driverid',$request->driverid)->update(['car_reg'=>$photoName]);
+            if($driverDetails->status == 1)
+            {
+                $array['name'] = $driverDetails->first_name;
+                $array['email'] = "nishanth.bajarngisoft@gmail.com";
+                $array['id'] = $driverDetails->id;
+                Mail::send('emails.docChange', ['array' => $array], function ($message) use ($array) {
+                    $message->to($array['email'])->subject("Documents Updated");
+                });
+            }
+            driver::whereId($driverDetails->id)->update(['status'=>0]);
+            return $driver;
+        }
+        elseif($request->hasFile('driving_licence'))
+        {
+            $driverDetails = driver::whereId($request->driverid)->first();
+            $driverVerification = driverVerification::where('driverid',$request->driverid)->first();
+            $filepath2 = public_path('avatars'.'/'.$driverVerification->driving_licence);
+            $filepath1 = public_path('avatars' . '/' . $request->driving_licence);
+            $this->UnlinkImage($filepath1,$filepath2);
+            $photoName = rand(1,7257361) . time() . '.' . $request->driving_licence->getClientOriginalExtension();
+            $request->driving_licence->move(public_path('avatars'), $photoName);
+            $driver = driverVerification::where('driverid',$request->driverid)->update(['driving_licence'=>$photoName]);
+            if($driverDetails->status == 1)
+            {
+                $array['name'] = $driverDetails->first_name;
+                $array['email'] = "nishanth.bajarngisoft@gmail.com";
+                $array['id'] = $driverDetails->id;
+                Mail::send('emails.docChange', ['array' => $array], function ($message) use ($array) {
+                    $message->to($array['email'])->subject("Documents Updated");
+                });
+            }
+            driver::whereId($driverDetails->id)->update(['status'=>0]);
+            return $driver;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
     public function account()
     {
         if (Auth::user()->status == 1)
@@ -3875,6 +4002,9 @@ EOD;
             }
             else
             {
+//                $date = new \DateTime();
+//                $date->add(new \DateInterval('P1M'));
+//                return $date->format('d/m/Y H:i:s');
                 $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
                 $cards = driverStripe::where('driverid',$driver->id)->get();
                 return view('drivers.FrontEnd.account',compact('driver','driver_name','cards'));
@@ -3883,6 +4013,43 @@ EOD;
         else
         {
             return redirect('home');
+        }
+    }
+
+    public function fromToDate($from,$to,$driverid)
+    {
+//        return $driverid;
+        $from = strtotime(str_replace('-','/',$from));
+        $to = strtotime(str_replace('-','/',$to));
+        $from = date('Y-m-d' . ' 00:00:00', $from); //need a space after dates.
+        $to = date('Y-m-d' . ' 24:60:60', $to);
+        Session::put('fromDate',$from);
+        Session::put('toDate',$to);
+       return "success";
+    }
+    function getAddress($lat,$lon)
+    {
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lon&key=AIzaSyB56Xh1A7HQDPQg_7HxrPTcSNnlpqYavc0";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_PROXYPORT, 3128);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response_a = json_decode($response, true);
+        return $response_a['results'][0]['formatted_address'];
+    }
+    function UnlinkImage($filepath1,$filepath2)
+    {
+        $old_image = $filepath2;
+        $new_image = $filepath1;
+        if (file_exists($old_image)) {
+            @unlink($old_image);
+        }
+        if (file_exists($new_image)) {
+            @unlink($new_image);
         }
     }
 }

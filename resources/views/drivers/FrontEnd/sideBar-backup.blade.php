@@ -1,4 +1,10 @@
 <link rel="stylesheet" href="{{asset('public/css/sideBarStyle.css')}}">
+<style>
+    #sidebar
+    {
+        overflow: hidden !important;
+    }
+</style>
 <div class="wrapper">
     <!-- Sidebar  -->
     <nav id="sidebar">
@@ -67,3 +73,4 @@
                 </button>
             </div>
         </nav>
+        <div class="overlay"></div>

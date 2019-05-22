@@ -37,7 +37,7 @@
                         </span>
                             </div>
                             <input type="hidden" name="code" value="{{$code}}" id="code">
-                            <input type="text" class="form-control form-control1 country" placeholder="Your phone" name="phone" aria-describedby="basic-addon2" onfocus="return $('#help-block').show()" onchange="return $('#help-block').hide()">
+                            <input type="text" class="form-control form-control1 country" value="{{$driver->phone}}" placeholder="Your phone" name="phone" aria-describedby="basic-addon2" onfocus="return $('#help-block').show()" onchange="return $('#help-block').hide()">
                             <span id="help-block">
                                 <strong>This number is used to assign the trip. So be carefull while entering the phone number</strong>
                             </span>
@@ -67,7 +67,6 @@
     function myFunc()
     {
         var code = $('#country').val();
-//        console.log(code);
         $('#code').val(code);
     }
     function getWarning() {

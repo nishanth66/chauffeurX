@@ -69,19 +69,20 @@ class bookingDriverApiController extends Controller
 
     public function getNearbyDrievrs(Request $request)
     {
-        $userDetais = explode('-',$request->user_lat_lng);
+        $userDetais = explode(',',$request->user_lat_lng);
         if ((!isset($userDetais[0]) || (!isset($userDetais[1]) || (!isset($userDetais[2]) || $userDetais[0] == '' || empty($userDetais[0])) || $userDetais[1] == '' ||  empty($userDetais[1])) || $userDetais[2] == '' || empty($userDetais[2])))
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid-lat-lng'";
+            $response['message'] = "Invalid user data Received! Format- user_lat_lng = 'userid,lat,lng'";
             $response['data'] = [];
             return $response;
         }
 
         $lat1 = $userDetais[1];
         $long1 = $userDetais[2];
-        $drivers = driver::where('isAvailable',1)->where('status',1)->where('active_ride','!=',1)->get();
+        $city = app('App\Http\Controllers\api\bookingApiController')->getAddress($lat1,$long1);
+        $drivers = driver::where('isAvailable',1)->where('status',1)->where('active_ride','!=',1)->where('city','like',$city)->get();
         if (count($drivers) == 0)
         {
             $response['status'] = "failed";
@@ -208,6 +209,7 @@ class bookingDriverApiController extends Controller
     function fetchNearbyDrivers($drivers,$lat1,$long1)
     {
         $driverLatLng = [];
+//        $drivers= driver::whereId(33)->get();
         foreach ($drivers as $driver)
         {
             $coordinates=$this->database->getReference('online_drivers')->getChild($driver->id)->getValue();
@@ -235,6 +237,10 @@ class bookingDriverApiController extends Controller
             if (isset($lat1) && isset($long1) && isset($lat2) && isset($long2))
             {
                 $Totaldistance=app('App\Http\Controllers\api\bookingApiController')->calculateDistance($lat1,$long1,$lat2,$long2);
+                if ($Totaldistance['distance'] == 9999)
+                {
+                    continue;
+                }
                 $city = $Totaldistance['city'];
                 if (DB::table('maximum_distance')->where('city','like',$city)->exists())
                 {

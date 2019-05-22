@@ -1,3 +1,4 @@
+<div class="overlay" id="overlay"></div>
 @include('drivers.FrontEnd.header')
 @include('drivers.FrontEnd.sideBar')
 <style>
@@ -32,25 +33,26 @@
 </div>
 
 
-<!-- jQuery CDN - Slim version (=without AJAX) -->
-{{--<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>--}}
-<!-- Popper.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
-<!-- Bootstrap JS -->
-{{--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>--}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="{{asset('public/js/swipe.js')}}"></script>
 
 <script type="text/javascript">
     $(document).ready(function () {
+        $("#sidebar").mCustomScrollbar({
+            theme: "minimal"
+        });
+        $('#dismiss, .overlay').on('click', function () {
+            $('#sidebar').removeClass('active');
+            $('.overlay').removeClass('active');
+            $("body").css("overflow","auto");
+        });
         $('#sidebarCollapse').on('click', function () {
-            $('#sidebar').toggleClass('active');
-            if ($('#sidebar').hasClass('active'))
-            {
-                $('.driver-header-name').hide();
-            }
-            else
-            {
-                $('.driver-header-name').show();
-            }
+            $('#sidebar').addClass('active');
+            $('.overlay').addClass('active');
+            $("body").css("overflow","hidden");
+            $('.collapse.in').toggleClass('in');
+            $('a[aria-expanded=true]').attr('aria-expanded', 'false');
         });
     });
 
