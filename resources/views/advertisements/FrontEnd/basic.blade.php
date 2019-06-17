@@ -6,6 +6,7 @@
 </style>
 <link rel="stylesheet" href="{{asset('public/css/profile.css')}}">
 <div class="container-fluid">
+    <div class="row row-master"></div>
     <div class="col-md-12 align">
         <div class="col-md-4">
             <p class="textclr login-div"> Thanks. <br> Now tell us about you </p>
@@ -16,7 +17,7 @@
                         @include('flash::message')
                         {{csrf_field()}}
                         <div class="form-group">
-                            <input class="form-control1" type="text" name="fname" value="{{$ads->fname}}" placeholder="your first name" required>
+                            <input class="form-control1" type="text" id="fname" name="fname" value="{{$ads->fname}}" placeholder="your first name" required>
                         </div>
                         <div class="form-group">
                             <input class="form-control1" type="text" name="mname" value="{{$ads->mname}}" placeholder="your middle name">
@@ -37,13 +38,10 @@
                         </span>
                             </div>
                             <input type="hidden" name="code" value="{{$code}}" id="code">
-                            <input type="text" class="form-control form-control1 country" placeholder="Your phone" name="phone" aria-describedby="basic-addon2" onfocus="return $('#help-block').show()" onchange="return $('#help-block').hide()">
-                            <span id="help-block">
-                                <strong>This number is used to assign the trip. So be carefull while entering the phone number</strong>
-                            </span>
+                            <input type="text" class="form-control form-control1 country" id="phone" placeholder="Your phone" name="phone" aria-describedby="basic-addon2">
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary next-btn">Next</button>
+                            <button type="submit" class="btn btn-primary next-btn" id="btnNext">Next</button>
                         </div>
                     </form>
                 </div>
@@ -72,4 +70,68 @@
     function getWarning() {
         $('#help-block').show();
     }
+    $(function () {
+        if (($('.alert-success').contents().length  != 0))
+        {
+            $('.alert-success').hide();
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        if (($('.alert-danger').contents().length  != 0))
+        {
+            $('.alert-danger').hide();
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
+    $('#btnNext').click(function (e) {
+       if ($('#fname').val() == '')
+       {
+           e.preventDefault();
+           $('input').removeClass('error');
+           $.toast({
+               heading: 'Failed',
+               text: "First Name is required",
+               icon: 'error',
+               hideAfter: 5000,
+               showHideTransition: 'slide',
+               loader: false
+           });
+           $('#fname').addClass('error');
+           return false;
+       }
+       else if($('#phone').val() == '')
+       {
+           e.preventDefault();
+           $('input').removeClass('error');
+           $.toast({
+               heading: 'Failed',
+               text: "Phone Number is required",
+               icon: 'error',
+               hideAfter: 5000,
+               showHideTransition: 'slide',
+               loader: false
+           });
+           $('#phone').addClass('error');
+           return false;
+       }
+       else
+       {
+           $('input').removeClass('error');
+       }
+    });
 </script>

@@ -15,6 +15,7 @@
         text-align: justify;
     }
 </style>
+<div class="row row-master"></div>
 <div class="container-fluid">
 
     <div class="col-md-12 align login-div">
@@ -30,18 +31,18 @@
 
 
                         <div class="form-group">
-                            <input type="checkbox" name="term" class="checkBox" id="checkbox1" required  @if(isset($driver) && $driver->signature != '') checked @endif>
+                            <input type="checkbox" name="term" class="checkBox error" id="checkbox1" @if(isset($driver) && $driver->signature != '') checked @endif>
                             <label for="checkbox1" class="CheckText"> I read and accept the terms and conditions</label>
                         </div>
                         <div class="form-group">
-                            <input type="checkbox" name="bgCheck" class="checkBox" id="checkbox2" required @if(isset($driver) && $driver->signature != '') checked @endif>
+                            <input type="checkbox" name="bgCheck" class="checkBox" id="checkbox2" @if(isset($driver) && $driver->signature != '') checked @endif>
                             <label for="checkbox2" class="CheckText"> I accept that ChauffeurX runs a background check on me</label>
                         </div>
                         <div class="form-group">
-                            <input class="form-control1" type="text" name="signature" placeholder="Sign your name" required value="{{$driver->signature}}">
+                            <input class="form-control1" type="text" name="signature" id="sign" placeholder="Sign your name" required value="{{$driver->signature}}">
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary next-btn">Sign</button>
+                            <button type="submit" class="btn btn-primary next-btn" id="btnNext">Sign</button>
                         </div>
                     </form>
                 </div>
@@ -66,5 +67,76 @@
     }
     $("#document").change(function() {
         readURL(this);
+    });
+    $(document).ready(function() {
+        $('.alert-success').hide();
+        if (($('.alert-success').contents().length != 0)) {
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        $('.alert-danger').hide();
+        if (($('.alert-danger').contents().length  != 0))
+        {
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
+</script>
+<script>
+    $('#btnNext').click(function (e) {
+        if ($('#checkbox1').is(':checked') == 0)
+        {
+            e.preventDefault();
+            $.toast({
+                heading: '',
+                text: "You need to agree to the terms and conditions",
+                icon: 'info',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            return false;
+        }
+        else if ($('#checkbox2').is(':checked') == 0)
+        {
+            e.preventDefault();
+            $.toast({
+                heading: '',
+                text: "You need to agree to the background verification",
+                icon: 'info',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            return false;
+        }
+        else if ($('#sign').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: '',
+                text: "You need to sign your name",
+                icon: 'info',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            return false;
+        }
+
     });
 </script>

@@ -37,10 +37,14 @@ Route::post('/coinsForTrip', 'api\passengerApiController@coinsForTrip')->name('c
 
 Route::get('/sendPush/{token}', 'api\passengerApiController@sendPush')->name('sendPush');
 
+Route::post('/userRank', 'api\passengerApiController@userRank')->name('userRank');
+
 
 
 //*****************************************************Bookings*******************************************************
 Route::post('/rideHistory', 'api\bookingApiController@rideHistory')->name('rideHistory');
+Route::post('/cancellationTime', 'api\bookingApiController@cancellationTime')->name('cancellationTime');
+Route::post('/checkActiveRide', 'api\bookingApiController@checkActiveRide')->name('checkActiveRide');
 Route::post('/rateRide', 'api\bookingApiController@rateRide')->name('rateRide');
 Route::post('/getRideRating', 'api\bookingApiController@getRideRating')->name('getRideRating');
 
@@ -48,7 +52,8 @@ Route::post('/confirmBooking', 'api\bookingApiController@booking')->name('bookin
 Route::post('/sendBookingOtp', 'api\bookingApiController@sendBookingOtp')->name('sendBookingOtp');
 Route::post('/editBooking', 'api\bookingApiController@editBooking')->name('editBooking');
 Route::get('/allBooking', 'api\bookingApiController@allBooking')->name('allBooking');
-Route::get('/readNotification', 'api\bookingApiController@readNotification')->name('readNotification');
+Route::post('/readNotification', 'api\bookingApiController@readNotification')->name('readNotification');
+Route::post('/deleteNotification', 'api\passengerApiController@deleteNotification')->name('deleteNotification');
 
 Route::post('/cancelBookingFee', 'api\bookingApiController@cancelBookingFee')->name('cancelBookingFee');
 Route::post('/cancelBooking', 'api\bookingApiController@cancelBooking')->name('cancelBooking');
@@ -67,6 +72,8 @@ Route::post('/getPaymentMethods', 'api\bookingApiController@getPaymentMethods')-
 Route::post('/getCategories', 'api\bookingApiController@getCategories')->name('getCategories');
 Route::post('/validatePromoCode', 'api\bookingApiController@validatePromoCode')->name('validatePromoCode');
 Route::post('/fetchNearbyAds', 'api\bookingApiController@fetchNearbyAds')->name('fetchNearbyAds');
+Route::post('/fetchAdCategory', 'api\bookingApiController@fetchAdCategory')->name('fetchAdCategory');
+Route::post('/fetchFilterdAds', 'api\bookingApiController@fetchFilterdAds')->name('fetchFilterdAds');
 Route::get('/getFormattedAddress/{id1}/{id2}', 'api\bookingApiController@getFormattedAddress')->name('getFormattedAddress');
 Route::get('/driverSevenBookings/{id}', 'api\bookingApiController@driverSevenBookings')->name('driverSevenBookings');
 Route::get('/calculateDistance/{id1}/{id2}/{id3}/{id4}', 'api\bookingApiController@calculateDistance')->name('calculateDistance');
@@ -112,12 +119,7 @@ Route::post('/deleteFavoriteAddress', 'api\favoriteAddressAPIController@deleteFa
 //*************************************************************Preferences********************************************
 Route::get('/getMusicPreference', 'api\preferencesAPIController@getMusicPreference')->name('getMusicPreference');
 
-
-
 Route::post('/userPreference', 'api\preferencesAPIController@addPreference')->name('addPreference');
-
-
-
 
 Route::get('/driverRating/{id}', 'api\driverApiController@driverRating')->name('driverRating');
 Route::get('/sendPushTest/{id}', 'api\driverApiController@sendPushTest')->name('sendPushTest');
@@ -126,7 +128,10 @@ Route::get('/getCity/{lat}/{lng}', 'api\bookingApiController@getAddress')->name(
 
 
 
+//**************************************************Advertisement**************************************************
 
+Route::post('/updateAdView', 'api\AdViewAPIController@updateAdView')->name('updateAdView');
+Route::post('/updateCategoryAdView', 'api\AdViewAPIController@updateCategoryAdView')->name('updateCategoryAdView');
 
 Route::prefix('driver')->group(function () {
     Route::group(['namespace' => 'api'], function()
@@ -154,6 +159,10 @@ Route::prefix('driver')->group(function () {
         Route::post('/refreshDeviceToken', 'driverApiController@refreshDeviceToken')->name('refreshDeviceToken');
         Route::post('/getNotifications', 'driverApiController@getNotifications')->name('getNotifications');
         Route::post('/readNotification', 'driverApiController@readNotification')->name('readNotification');
+        Route::post('/deleteNotification', 'driverApiController@deleteNotification')->name('deleteNotification');
+        Route::post('/checkActiveRide', 'driverApiController@checkActiveRide')->name('checkActiveRide');
+        Route::post('/checkSubscription', 'driverApiController@checkSubscription')->name('checkSubscription');
+        Route::post('/driverDetails', 'driverApiController@driverDetails')->name('driverDetails');
     });
 });
 

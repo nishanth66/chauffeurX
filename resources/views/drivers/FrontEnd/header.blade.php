@@ -19,9 +19,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
     <link href="{{asset('public/css/style.css')}}" rel="stylesheet">
+    <link href="{{asset('public/css/toast.css')}}" rel="stylesheet">
+    <script src="{{asset('public/js/toast.js')}}"></script>
     <style>
         .header{
             background-color: #4D68B0;
+            position: fixed;
+            top: 0;
+            height: 75px;
+            z-index: 2;
+            width: 100%;
+        }
+        .logo
+        {
+            height: 75px;
         }
         .align{
             align-items: center;
@@ -45,6 +56,9 @@
             margin-left: auto;
             margin-right: auto;
         }
+        .alert{
+            display: none !important;
+        }
         html, body {
             max-width: 100%;
             overflow-x: hidden;
@@ -54,6 +68,6 @@
 <body>
 <div class="container-fluid">
     <div class="row header">
-        <img src="{{asset('public/image/chauffeurX.jpg')}}">
+        <img src="{{asset('public/image/chauffeurX.jpg')}}" class="logo">
     </div>
 </div>

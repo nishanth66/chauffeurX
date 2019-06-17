@@ -1,4 +1,9 @@
 <div class="overlay" id="overlay"></div>
+<div class="loader" id="loader-2">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
 @include('drivers.FrontEnd.header')
 @include('drivers.FrontEnd.sideBar')
 <link rel="stylesheet" href="{{asset('public/css/profile.css')}}">
@@ -54,9 +59,41 @@
     {
         padding: 20px;
     }
+    .qw{
+        padding: 10px;
+        border: 1px solid #4D68B0;
+        width: 45px;
+        height: 45px;
+        text-align: center;
+        font-size: 20px;
+        border-radius: 10px;
+    }
+    .qw:focus{
+        outline: none !important;
+    }
+    .btn-next:focus{
+        outline: none !important;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        margin: 0;
+    }
+    .btn-next
+    {
+        width: 35%;
+        margin: 2.5rem 0;
+        border-radius: 10px;
+    }
+    .loginAnchor
+    {
+        cursor: pointer;
+    }
 
 </style>
-    <div class="driver-profile-details">
+    <div class="driver-profile-details" id="driver-profile-details">
         @include('flash::message')
         <div class="row">
             <div class="col-md-3 col-sm-2 col-xs-1"></div>
@@ -77,7 +114,7 @@
                 </form>
                     <h4 class="driver-edit-name">{{$driver_name}}</h4>
                     <div class="edit-driver-address">
-                        <i class="fa fa-pencil faPencilEdit faPencilEditAddress " data-toggle="modal" data-target="#address"></i>
+                        <i class="fa fa-pencil faPencilEdit faPencilEditAddress1" data-toggle="modal" data-target="#address"></i>
                         <span class="driver-edit-name autocomplete address-other">{{$address->address}}</span> <br/>
                         <span class="apt driver-edit-name address-other">{{$address->apartment}}</span> <br/>
                         <span class="locality driver-edit-name address-other">{{$address->city}}</span> <br/>
@@ -86,11 +123,11 @@
                         <span class="country driver-edit-name address-other">{{$address->country}}</span>
                     </div>
                     <div class="edit-driver-address">
-                        <i class="fa fa-pencil faPencilEdit faPencilEditEmail" data-toggle="modal" data-target="#email"></i>
+                        <i class="fa fa-pencil faPencilEdit faPencilEditEmail1" data-toggle="modal" data-target="#email"></i>
                         <span class="driver-edit-name email">{{$driver->email}}</span> <br/>
                     </div>
                     <div class="form-group edit-driver-address">
-                        <i class="fa fa-pencil faPencilEdit faPencilEditPhone" data-toggle="modal" data-target="#phone"></i>
+                        <i class="fa fa-pencil faPencilEdit faPencilEditPhone1" data-toggle="modal" data-target="#phone"></i>
                         <span class="driver-edit-name phone">{{$code}} {{$phone}}</span> <br/>
                     </div>
 
@@ -99,6 +136,45 @@
             <div class="col-md-1 col-sm-2 col-xs-1"></div>
         </div>
     </div>
+    <div id="driver-email-verify">
+    <div class="container-fluid">
+        <div class="col-md-12 align">
+            <div class="col-md-7 login-div">
+                <center>
+                    <div class="loginAnchor">We sent a verification code to your email.<br> Please type this code below</div>
+                    <form method="post" id="verify-submit">
+                        <div class="wrapper">
+                            @include('flash::message')
+                            <hr>
+                            <p class="message"><b>Email Verification Code</b></p>
+
+                            {{csrf_field()}}
+                            <input type="hidden" name="email" id="verify-email">
+                            <input type="hidden" id="driverid" name="driverid" value="{{$driver->id}}">
+                            <input type="hidden" name="email_otp" id="email1">
+                            <input class="qw" type="number" id="1" onkeyup="moveOnMax(this,'2')"  onKeyPress="if(this.value.length == 1) return false;"/>
+                            <input class="qw" type="number" id="2" onkeyup="moveOnMax(this,'3')"  onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,1)"/>
+                            <input class="qw" type="number" id="3" onkeyup="moveOnMax(this,'4')"  onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,2)"/>
+                            <input class="qw" type="number" id="4" onkeyup="moveOnMax(this,'5')" onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,3)"/>
+                            <input class="qw" type="number" id="5" onkeyup="moveOnMax(this,'6')" onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,4)"/>
+                            <input class="qw" type="number" id="6" onkeyup="getEmailValue()" onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,5)"/>
+                            {{--<hr>--}}
+                        </div>
+                        <button type="button" class="btn btn-primary btn-next" onclick="vewrifyEmail()">Next</button>
+                    </form>
+
+
+                    <div class="message">
+                        You didn't receive the OTP?
+                        <br>
+                        <a class="loginAnchor" onclick="resendVerification()">Click to send it again</a>
+                    </div>
+                </center>
+
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 </div>
 
@@ -344,57 +420,264 @@
             processData: false,
             contentType: false,
             success: function(result) {
+                $.toast({
+                    heading: 'Success',
+                    text: 'Profile image Changed.',
+                    icon: 'success',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                })
             }
 
         });
     }
     function saveAddress() {
-        var address = $('#autocomplete').val();
-        if (address != '')
-        {
-            $('.autocomplete').text(address);
-        }
+        $('.loader').show();
         var apt = $('#apt').val();
-        if (apt != '')
-        {
-            $('.apt').text(apt);
-        }
+        var address = $('#autocomplete').val();
         var city = $('#locality').val();
         var state = $('#administrative_area_level_1').val();
         var zip = $('#postal_code').val();
         var country = $('#country').val();
         var driverid = $('#driverid').val();
 
-        $('.locality').text(city);
-        $('.administrative_area_level_1').text(state);
-        $('.postal_code').text(zip);
-        $('.country').text(country);
-        $('#address').modal('hide');
-
         $.ajax({
             type: "POST",
             url: "{{url('driver/editProfile')}}",
             data: {address: address, city: city, state:state, country:country, zip:zip, apartment:apt, type:1, driverid:driverid, _token: "{{ csrf_token() }}"},
             success: function(result) {
-                console.log(result);
+                if (address != '')
+                {
+                    $('.autocomplete').text(address);
+                }
+                if (apt != '')
+                {
+                    $('.apt').text(apt);
+                }
+                $('.locality').text(city);
+                $('.administrative_area_level_1').text(state);
+                $('.postal_code').text(zip);
+                $('.country').text(country);
+                $('#address').modal('hide');
+                $('.loader').hide();
+                $.toast({
+                    heading: 'Succcess',
+                    text: 'Address Updated.',
+                    icon: 'success',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                });
+
+            },
+            error: function(error)
+            {
+                $('.loader').hide();
+                $.toast({
+                    heading: 'Failed',
+                    text: "Address couldn't be updated.",
+                    icon: 'error',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                });
             }
 
         });
     }
     function saveEmail() {
+        $('.loader').show();
         var email = $('#editEmail').val();
-        $('.email').text(email);
-        $('#email').modal('hide');
+        var oldEmail = $('.email').text();
+//        if(email == oldEmail)
+//        {
+//            $('#email').modal('hide');
+//            $('.loader').hide();
+//            return false;
+//        }
+        var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+        if (!regex.test(email))
+        {
+            $('.loader').hide();
+            $('#editEmail').addClass("error");
+            $.toast({
+                heading: 'Failed',
+                text: 'Email is not valid.',
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            return false;
+        }
         var driverid = $('#driverid').val();
-
+        $('#editEmail').removeClass("error");
         $.ajax({
             type: "POST",
             url: "{{url('driver/editProfile')}}",
             data: {email: email, driverid:driverid, _token: "{{ csrf_token() }}",type:3},
             success: function(result) {
-                console.log(result);
+                if(result == 1)
+                {
+//                    $('.email').text(email);
+//                    $('.email').css('color','#4d68b0');
+                    $('#email').modal('hide');
+                    $('.loader').hide();
+                    $('#driver-profile-details').hide();
+                    $('#driver-email-verify').show();
+                    $('#verify-email').val(email);
+                    $.toast({
+                        heading: 'Verify',
+                        text: 'You need to verify the Email.',
+                        icon: 'info',
+                        hideAfter: 5000,
+                        showHideTransition: 'slide',
+                        loader: false
+                    })
+                }
+                else if(result == 2)
+                {
+                    $('.email').css('color','red');
+                    $('#email').modal('hide');
+                    $('.loader').hide();
+                    $('#editEmail').val($('.email').text());
+                    $.toast({
+                        heading: 'Failed',
+                        text: 'Email is already exists.',
+                        icon: 'error',
+                        hideAfter: 5000,
+                        showHideTransition: 'slide',
+                        loader: false
+                    })
+                }
+                else
+                {
+                    $('#email').modal('hide');
+                    $('.loader').hide();
+                    $.toast({
+                        heading: 'Failed',
+                        text: 'We could not update your email. Please try again.',
+                        icon: 'error',
+                        hideAfter: 5000,
+                        showHideTransition: 'slide',
+                        loader: false
+                    })
+                }
+            },
+            error: function(error)
+            {
+                $('#email').modal('hide');
+                $('.loader').hide();
+                $.toast({
+                    heading: 'Failed',
+                    text: 'We could not update your email. Please try again.',
+                    icon: 'error',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                })
             }
 
+        });
+    }
+    function vewrifyEmail() {
+        $('.loader').show();
+        if ($('#email1').val() == '')
+        {
+            $.toast({
+                heading: 'Failed',
+                text: 'Verification code is empty.',
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('.loader').hide();
+            return false;
+        }
+        $.ajax({
+            type: "POST",
+            url: "{{url('driver/verifyChangeEmail')}}",
+            data: {_token:'{{csrf_token()}}',driverid:$('#driverid').val(),email:$('#verify-email').val(),otp:$('#email1').val()},
+            success: function(result) {
+                $('.loader').hide();
+                if (result ==1)
+                {
+                    $('.email').text($('#verify-email').val());
+                    $('#driver-profile-details').show();
+                    $('#driver-email-verify').hide();
+                    $('.qw').val('');
+                    $('#email1').val('');
+                    $.toast({
+                        heading: 'Success',
+                        text: 'Email is verified.',
+                        icon: 'success',
+                        hideAfter: 5000,
+                        showHideTransition: 'slide',
+                        loader: false
+                    })
+                }
+                else
+                {
+                    $('.qw').val('');
+                    $('#email1').val('');
+                    $.toast({
+                        heading: 'Failed',
+                        text: 'Email verification failed.',
+                        icon: 'error',
+                        hideAfter: 5000,
+                        showHideTransition: 'slide',
+                        loader: false
+                    })
+                }
+            },
+            error: function(error){
+                $('.qw').val('');
+                $('#email1').val('');
+                $('.loader').hide();
+                $.toast({
+                    heading: 'Failed',
+                    text: "We couldn't verify your email.",
+                    icon: 'error',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                })
+            }
+
+        });
+    }
+    function resendVerification() {
+        $('.loader').show();
+        var email = $('#verify-email').val();
+        $.ajax({
+            url: "{{url('driver/resentEmailOtp')}}",
+            type: "post",
+            data: {email:email, _token:"{{csrf_token()}}"},
+            success: function (result) {
+                $('.loader').hide();
+                $('.qw').val("");
+                $.toast({
+                    heading: 'Success',
+                    text: 'Verification code resent.',
+                    icon: 'success',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                })
+            },
+            error: function (error) {
+                $('.loader').hide();
+                $.toast({
+                    heading: 'Failed',
+                    text: 'Could not resent the verification.',
+                    icon: 'error',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                })
+            }
         });
     }
     function myFunc() {
@@ -434,5 +717,23 @@
             }
 
         });
+    }
+    moveOnMax =function (field, nextFieldID) {
+        if (field.value.length == 1) {
+            document.getElementById(nextFieldID).focus();
+        }
+    }
+    function checkKey(field,nextFieldID) {
+        if ((event.keyCode == 8 || event.keyCode == 46) && $(field).val() == '')
+        {
+//            $(field).val('');
+            document.getElementById(nextFieldID).focus();
+        }
+    }
+    function getEmailValue() {
+//        alert($('#1').val());
+        var code = $('#1').val()+$('#2').val()+$('#3').val()+$('#4').val()+$('#5').val()+$('#6').val();
+//        console.log(code);
+        $('#email1').val(code);
     }
 </script>

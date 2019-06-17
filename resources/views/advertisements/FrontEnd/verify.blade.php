@@ -11,6 +11,9 @@
         font-size: 20px;
         border-radius: 10px;
     }
+    .qw:focus{
+        outline: none !important;
+    }
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
         -webkit-appearance: none;
@@ -28,10 +31,11 @@
 {{--<script src="{{asset('public/js/pin.js')}}"></script>--}}
 
 <div class="container-fluid">
+    <div class="row row-master"></div>
     <div class="col-md-12 align">
         <div class="col-md-7 login-div">
             @include('flash::message')
-            <div class="message">We sent a verification code to your email and phone.<br> Please type this code below</div>
+            <div class="message">We sent a verification code to your email.<br> Please type this code below</div>
             <form method="post" action="{{url('advertisement/verify')}}">
                 <div class="wrapper">
                     @include('flash::message')
@@ -43,17 +47,17 @@
                     <input type="hidden" name="adsid" value="{{$ads->id}}">
                     <input type="hidden" name="email_otp" id="email1">
                     <center>
-                        <input class="qw" type="number" id="1" onkeyup="moveOnMax(this,'2')"  onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="2" onkeyup="moveOnMax(this,'3')"  onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="3" onkeyup="moveOnMax(this,'4')"  onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="4" onkeyup="moveOnMax(this,'5')" onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="5" onkeyup="moveOnMax(this,'6')" onKeyPress="if(this.value.length == 1) return false;"/>
-                        <input class="qw" type="number" id="6" onkeyup="getEmailValue()" onKeyPress="if(this.value.length == 1) return false;"/>
+                        <input class="qw" type="number" id="1" onkeyup="moveOnMax(this,'2')"  onKeyPress="if(this.value.length == 1) return false;" />
+                        <input class="qw" type="number" id="2" onkeyup="moveOnMax(this,'3')"  onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,1)"/>
+                        <input class="qw" type="number" id="3" onkeyup="moveOnMax(this,'4')"  onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,2)"/>
+                        <input class="qw" type="number" id="4" onkeyup="moveOnMax(this,'5')" onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,3)"/>
+                        <input class="qw" type="number" id="5" onkeyup="moveOnMax(this,'6')" onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,4)"/>
+                        <input class="qw" type="number" id="6" onkeyup="getEmailValue()" onKeyPress="if(this.value.length == 1) return false;" onkeydown="checkKey(this,5)"/>
                     </center>
                     {{--<hr>--}}
                 </div>
                 <center>
-                    <button type="submit" class="btn btn-primary btn-next">Next</button>
+                    <button type="submit" class="btn btn-primary btn-next" id="nextBtn">Next</button>
                 </center>
             </form>
 
@@ -77,4 +81,54 @@
 //        console.log(code);
         $('#email1').val(code);
     }
+    function checkKey(field,nextFieldID)
+    {
+        if ((event.keyCode == 8 || event.keyCode == 46) && $(field).val() == '')
+        {
+//            $(field).val('');
+            document.getElementById(nextFieldID).focus();
+        }
+    }
+    $(function () {
+        if (($('.alert-success').contents().length  != 0))
+        {
+            $('.alert-success').hide();
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        if (($('.alert-danger').contents().length  != 0))
+        {
+            $('.alert-danger').hide();
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
+    $('#nextBtn').click(function () {
+        if ($('#email1').val() == '')
+        {
+            $.toast({
+                heading: 'Failed',
+                text: "Verification code is empty",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            return false;
+        }
+    });
 </script>

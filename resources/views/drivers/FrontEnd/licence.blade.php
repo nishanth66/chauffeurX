@@ -10,7 +10,13 @@
     {
         max-width: none !important;
     }
+    #ssn::-webkit-inner-spin-button,
+    #ssn::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
 </style>
+<div class="row row-master"></div>
 <div class="container-fluid">
     <div class="col-md-12 align login-div">
         <div class="col-md-4">
@@ -26,16 +32,16 @@
                     <form method="post" action="{{url('driver/verifyLicence')}}">
                         {{csrf_field()}}
                         <div class="form-group">
-                            <input class="form-control1" type="text" value="{{$driver->licence}}" name="licence" placeholder="Your Driver License Number" required>
+                            <input class="form-control1" type="text" value="{{$driver->licence}}" name="licence" id="licence" placeholder="Your Driver License Number">
                         </div>
                         <div class="form-group"> <!-- Date input -->
                             <input class="form-control1" value="{{$driver->licence_expire}}" id="date" name="date" placeholder="Expiry Date" readonly type="text"/>
                         </div>
                         <div class="form-group">
-                            <input class="form-control1" type="text" maxlength="4" value="{{$driver->ssn}}" name="ssn" placeholder="the last 4 digits of your SSN" required>
+                            <input class="form-control1" type="number" maxlength="4" value="{{$driver->ssn}}" name="ssn" id="ssn" placeholder="the last 4 digits of your SSN" onKeyPress="if(this.value.length == 4) return false;">
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary next-btn">Next</button>
+                            <button type="submit" class="btn btn-primary next-btn" id="nextBtn">Next</button>
                         </div>
                     </form>
                 </div>
@@ -58,6 +64,80 @@
         };
         date_input.datepicker(options);
     });
+    $(document).ready(function() {
+        $('.alert-success').hide();
+        if (($('.alert-success').contents().length != 0)) {
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
 
+        }
+        $('.alert-danger').hide();
+        if (($('.alert-danger').contents().length  != 0))
+        {
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
+    $('#nextBtn').click(function (e) {
+        if ($('#licence').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Licence number is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('input').removeClass('error');
+            $('#licence').addClass('error');
+        }
+        else if($('#date').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Licence expiry date is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('input').removeClass('error');
+            $('#date').addClass('error');
+        }
+        else if($('#ssn').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "SSN is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('input').removeClass('error');
+            $('#ssn').addClass('error');
+        }
+        else
+        {
+            $('input').removeClass('error');
+        }
+    });
 </script>
 

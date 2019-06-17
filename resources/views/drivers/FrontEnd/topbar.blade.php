@@ -18,9 +18,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
     <link href="{{asset('public/css/style.css')}}" rel="stylesheet">
+    {{--<link href="{{asset('public/css/sideBarStyle.css')}}" rel="stylesheet">--}}
+    <link href="{{asset('public/css/toast.css')}}" rel="stylesheet">
+    <script src="{{asset('public/js/toast.js')}}"></script>
     <style>
-        .header{
+
+        .header {
             background-color: #4D68B0;
+            position: fixed;
+            top: 0;
+            height: 75px;
+            z-index: 2;
+            width: 100%;
         }
         .align{
             align-items: center;
@@ -44,11 +53,17 @@
             margin-left: auto;
             margin-right: auto;
         }
+        .logo{
+            height: 75px;
+        }
+        .alert{
+            display: none !important;
+        }
     </style>
 </head>
 <body>
 <div class="container-fluid">
     <div class="row header">
-        <img src="{{asset('public/image/chauffeurX.jpg')}}">
+        <img src="{{asset('public/image/chauffeurX.jpg')}}" class="logo">
     </div>
 </div>

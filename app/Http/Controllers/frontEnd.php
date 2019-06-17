@@ -66,6 +66,7 @@ class frontEnd extends Controller
         if ($validator->passes())
         {
             $input = $request->except('_token','password_confirmation','g-recaptcha-response','password');
+            $input['status'] = 2;
             $input['password'] = Hash::make($request->password);
             if ($user = User::create($input))
             {

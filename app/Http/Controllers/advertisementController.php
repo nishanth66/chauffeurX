@@ -4,13 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateadvertisementRequest;
 use App\Http\Requests\UpdateadvertisementRequest;
+use App\Models\adCategory;
+use App\Models\adSettings;
+use App\Models\advertisement;
 use App\Models\advertisement_users;
+use App\Models\AdView;
+use App\Models\categories;
 use App\Repositories\advertisementRepository;
 use App\Http\Controllers\AppBaseController;
+use App\User;
+use Carbon\Carbon;
+use Cartalyst\Stripe\Stripe;
 use Illuminate\Http\Request;
 use Flash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Response;
 
@@ -21,6 +31,7 @@ class advertisementController extends Controller
 
     public function __construct(advertisementRepository $advertisementRepo)
     {
+        $this->middleware('auth');
         $this->advertisementRepository = $advertisementRepo;
     }
 
@@ -58,10 +69,10 @@ class advertisementController extends Controller
      */
     public function store(CreateadvertisementRequest $request)
     {
+//        return $request->all();
         $address = str_replace(' ','+',$request->address);
-        $input = $request->all();
+        $input = $request->except('image');
         $url = "https://maps.googleapis.com/maps/api/geocode/json?address=".$address."&key=AIzaSyB56Xh1A7HQDPQg_7HxrPTcSNnlpqYavc0";
-//        return $url;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -75,16 +86,20 @@ class advertisementController extends Controller
         $input['lng'] = $response_a['results'][0]['geometry']['location']['lng'];
         if($request->hasFile('image'))
         {
+            $filepath1 = public_path('avatars' . '/' . $request->image);
+            $this->UnlinkImage($filepath1);
             $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
             $mime = $request->image->getClientOriginalExtension();
             $request->image->move(public_path('avatars'), $photoName);
             $input['image'] = $photoName;
         }
+        $ads = advertisement_users::where('userid',Auth::user()->id)->first();
+        $input['adUserid'] = $ads->id;
         $advertisement = $this->advertisementRepository->create($input);
 
         Flash::success('Advertisement saved successfully.');
 
-        return redirect(route('advertisements.index'));
+        return redirect('advertisement/home');
     }
 
     /**
@@ -145,7 +160,7 @@ class advertisementController extends Controller
             return redirect(route('advertisements.index'));
         }
         $address = str_replace(' ','+',$request->address);
-        $input = $request->all();
+        $input = $request->except('image');
         $url = "https://maps.googleapis.com/maps/api/geocode/json?address=".$address."&key=AIzaSyB56Xh1A7HQDPQg_7HxrPTcSNnlpqYavc0";
 //        return $url;
         $ch = curl_init();
@@ -161,6 +176,9 @@ class advertisementController extends Controller
         $input['lng'] = $response_a['results'][0]['geometry']['location']['lng'];
         if($request->hasFile('image'))
         {
+            $filepath2 = public_path('avatars'.'/'.$advertisement->image);
+            $filepath1 = public_path('avatars' . '/' . $request->image);
+            $this->UnlinkImage($filepath1,$filepath2);
             $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
             $mime = $request->image->getClientOriginalExtension();
             $request->image->move(public_path('avatars'), $photoName);
@@ -170,7 +188,7 @@ class advertisementController extends Controller
 
         Flash::success('Advertisement updated successfully.');
 
-        return redirect(route('advertisements.index'));
+        return redirect('advertisement/home');
     }
 
     /**
@@ -1459,7 +1477,7 @@ class advertisementController extends Controller
     public function saveProfile(Request $request)
     {
         $input = $request->except('_token','phone');
-        $input['phone'] = $request->code.$request->phone;
+        $input['phone'] = $request->phone;
         $input['basic_details'] = 1;
         if (advertisement_users::where('userid',Auth::user()->id)->exists())
         {
@@ -1786,7 +1804,1565 @@ class advertisementController extends Controller
         }
         else
         {
-            return view('home');
+            $name = $ads->fname.' '.$ads->mname.' '.$ads->lname;
+            $advertisements = advertisement::where('adUserid',$ads->id)->get();
+            return view('advertisements.FrontEnd.home',compact('ads','name','advertisements'));
         }
+    }
+    public function editProfile()
+    {
+        $ads = advertisement_users::where('userid',Auth::user()->id)->first();
+        if ($ads->activated != 1)
+        {
+            return redirect('advertisement/verify');
+        }
+        elseif($ads->basic_details != 1)
+        {
+            return redirect('advertisement/profile');
+        }
+        elseif($ads->address_details != 1)
+        {
+            return redirect('advertisement/address');
+        }
+        else
+        {
+            $name = $ads->fname.' '.$ads->mname.' '.$ads->lname;
+            $countries = array("AF" => "Afghanistan",
+                "AX" => "Åland Islands",
+                "AL" => "Albania",
+                "DZ" => "Algeria",
+                "AS" => "American Samoa",
+                "AD" => "Andorra",
+                "AO" => "Angola",
+                "AI" => "Anguilla",
+                "AQ" => "Antarctica",
+                "AG" => "Antigua and Barbuda",
+                "AR" => "Argentina",
+                "AM" => "Armenia",
+                "AW" => "Aruba",
+                "AU" => "Australia",
+                "AT" => "Austria",
+                "AZ" => "Azerbaijan",
+                "BS" => "Bahamas",
+                "BH" => "Bahrain",
+                "BD" => "Bangladesh",
+                "BB" => "Barbados",
+                "BY" => "Belarus",
+                "BE" => "Belgium",
+                "BZ" => "Belize",
+                "BJ" => "Benin",
+                "BM" => "Bermuda",
+                "BT" => "Bhutan",
+                "BO" => "Bolivia",
+                "BA" => "Bosnia and Herzegovina",
+                "BW" => "Botswana",
+                "BV" => "Bouvet Island",
+                "BR" => "Brazil",
+                "IO" => "British Indian Ocean Territory",
+                "BN" => "Brunei Darussalam",
+                "BG" => "Bulgaria",
+                "BF" => "Burkina Faso",
+                "BI" => "Burundi",
+                "KH" => "Cambodia",
+                "CM" => "Cameroon",
+                "CA" => "Canada",
+                "CV" => "Cape Verde",
+                "KY" => "Cayman Islands",
+                "CF" => "Central African Republic",
+                "TD" => "Chad",
+                "CL" => "Chile",
+                "CN" => "China",
+                "CX" => "Christmas Island",
+                "CC" => "Cocos (Keeling) Islands",
+                "CO" => "Colombia",
+                "KM" => "Comoros",
+                "CG" => "Congo",
+                "CD" => "Congo, The Democratic Republic of The",
+                "CK" => "Cook Islands",
+                "CR" => "Costa Rica",
+                "CI" => "Cote D'ivoire",
+                "HR" => "Croatia",
+                "CU" => "Cuba",
+                "CY" => "Cyprus",
+                "CZ" => "Czech Republic",
+                "DK" => "Denmark",
+                "DJ" => "Djibouti",
+                "DM" => "Dominica",
+                "DO" => "Dominican Republic",
+                "EC" => "Ecuador",
+                "EG" => "Egypt",
+                "SV" => "El Salvador",
+                "GQ" => "Equatorial Guinea",
+                "ER" => "Eritrea",
+                "EE" => "Estonia",
+                "ET" => "Ethiopia",
+                "FK" => "Falkland Islands (Malvinas)",
+                "FO" => "Faroe Islands",
+                "FJ" => "Fiji",
+                "FI" => "Finland",
+                "FR" => "France",
+                "GF" => "French Guiana",
+                "PF" => "French Polynesia",
+                "TF" => "French Southern Territories",
+                "GA" => "Gabon",
+                "GM" => "Gambia",
+                "GE" => "Georgia",
+                "DE" => "Germany",
+                "GH" => "Ghana",
+                "GI" => "Gibraltar",
+                "GR" => "Greece",
+                "GL" => "Greenland",
+                "GD" => "Grenada",
+                "GP" => "Guadeloupe",
+                "GU" => "Guam",
+                "GT" => "Guatemala",
+                "GG" => "Guernsey",
+                "GN" => "Guinea",
+                "GW" => "Guinea-bissau",
+                "GY" => "Guyana",
+                "HT" => "Haiti",
+                "HM" => "Heard Island and Mcdonald Islands",
+                "VA" => "Holy See (Vatican City State)",
+                "HN" => "Honduras",
+                "HK" => "Hong Kong",
+                "HU" => "Hungary",
+                "IS" => "Iceland",
+                "IN" => "India",
+                "ID" => "Indonesia",
+                "IR" => "Iran, Islamic Republic of",
+                "IQ" => "Iraq",
+                "IE" => "Ireland",
+                "IM" => "Isle of Man",
+                "IL" => "Israel",
+                "IT" => "Italy",
+                "JM" => "Jamaica",
+                "JP" => "Japan",
+                "JE" => "Jersey",
+                "JO" => "Jordan",
+                "KZ" => "Kazakhstan",
+                "KE" => "Kenya",
+                "KI" => "Kiribati",
+                "KP" => "Korea, Democratic People's Republic of",
+                "KR" => "Korea, Republic of",
+                "KW" => "Kuwait",
+                "KG" => "Kyrgyzstan",
+                "LA" => "Lao People's Democratic Republic",
+                "LV" => "Latvia",
+                "LB" => "Lebanon",
+                "LS" => "Lesotho",
+                "LR" => "Liberia",
+                "LY" => "Libyan Arab Jamahiriya",
+                "LI" => "Liechtenstein",
+                "LT" => "Lithuania",
+                "LU" => "Luxembourg",
+                "MO" => "Macao",
+                "MK" => "Macedonia, The Former Yugoslav Republic of",
+                "MG" => "Madagascar",
+                "MW" => "Malawi",
+                "MY" => "Malaysia",
+                "MV" => "Maldives",
+                "ML" => "Mali",
+                "MT" => "Malta",
+                "MH" => "Marshall Islands",
+                "MQ" => "Martinique",
+                "MR" => "Mauritania",
+                "MU" => "Mauritius",
+                "YT" => "Mayotte",
+                "MX" => "Mexico",
+                "FM" => "Micronesia, Federated States of",
+                "MD" => "Moldova, Republic of",
+                "MC" => "Monaco",
+                "MN" => "Mongolia",
+                "ME" => "Montenegro",
+                "MS" => "Montserrat",
+                "MA" => "Morocco",
+                "MZ" => "Mozambique",
+                "MM" => "Myanmar",
+                "NA" => "Namibia",
+                "NR" => "Nauru",
+                "NP" => "Nepal",
+                "NL" => "Netherlands",
+                "AN" => "Netherlands Antilles",
+                "NC" => "New Caledonia",
+                "NZ" => "New Zealand",
+                "NI" => "Nicaragua",
+                "NE" => "Niger",
+                "NG" => "Nigeria",
+                "NU" => "Niue",
+                "NF" => "Norfolk Island",
+                "MP" => "Northern Mariana Islands",
+                "NO" => "Norway",
+                "OM" => "Oman",
+                "PK" => "Pakistan",
+                "PW" => "Palau",
+                "PS" => "Palestinian Territory, Occupied",
+                "PA" => "Panama",
+                "PG" => "Papua New Guinea",
+                "PY" => "Paraguay",
+                "PE" => "Peru",
+                "PH" => "Philippines",
+                "PN" => "Pitcairn",
+                "PL" => "Poland",
+                "PT" => "Portugal",
+                "PR" => "Puerto Rico",
+                "QA" => "Qatar",
+                "RE" => "Reunion",
+                "RO" => "Romania",
+                "RU" => "Russian Federation",
+                "RW" => "Rwanda",
+                "SH" => "Saint Helena",
+                "KN" => "Saint Kitts and Nevis",
+                "LC" => "Saint Lucia",
+                "PM" => "Saint Pierre and Miquelon",
+                "VC" => "Saint Vincent and The Grenadines",
+                "WS" => "Samoa",
+                "SM" => "San Marino",
+                "ST" => "Sao Tome and Principe",
+                "SA" => "Saudi Arabia",
+                "SN" => "Senegal",
+                "RS" => "Serbia",
+                "SC" => "Seychelles",
+                "SL" => "Sierra Leone",
+                "SG" => "Singapore",
+                "SK" => "Slovakia",
+                "SI" => "Slovenia",
+                "SB" => "Solomon Islands",
+                "SO" => "Somalia",
+                "ZA" => "South Africa",
+                "GS" => "South Georgia and The South Sandwich Islands",
+                "ES" => "Spain",
+                "LK" => "Sri Lanka",
+                "SD" => "Sudan",
+                "SR" => "Suriname",
+                "SJ" => "Svalbard and Jan Mayen",
+                "SZ" => "Swaziland",
+                "SE" => "Sweden",
+                "CH" => "Switzerland",
+                "SY" => "Syrian Arab Republic",
+                "TW" => "Taiwan, Province of China",
+                "TJ" => "Tajikistan",
+                "TZ" => "Tanzania, United Republic of",
+                "TH" => "Thailand",
+                "TL" => "Timor-leste",
+                "TG" => "Togo",
+                "TK" => "Tokelau",
+                "TO" => "Tonga",
+                "TT" => "Trinidad and Tobago",
+                "TN" => "Tunisia",
+                "TR" => "Turkey",
+                "TM" => "Turkmenistan",
+                "TC" => "Turks and Caicos Islands",
+                "TV" => "Tuvalu",
+                "UG" => "Uganda",
+                "UA" => "Ukraine",
+                "AE" => "United Arab Emirates",
+                "GB" => "United Kingdom",
+                "US" => "United States",
+                "UM" => "United States Minor Outlying Islands",
+                "UY" => "Uruguay",
+                "UZ" => "Uzbekistan",
+                "VU" => "Vanuatu",
+                "VE" => "Venezuela",
+                "VN" => "Viet Nam",
+                "VG" => "Virgin Islands, British",
+                "VI" => "Virgin Islands, U.S.",
+                "WF" => "Wallis and Futuna",
+                "EH" => "Western Sahara",
+                "YE" => "Yemen",
+                "ZM" => "Zambia",
+                "ZW" => "Zimbabwe");
+            $array = json_decode('[
+    {
+      "code": "+840",
+      "name": "Abkhazia"
+    },
+    {
+      "code": "+93",
+      "name": "Afghanistan"
+    },
+    {
+      "code": "+355",
+      "name": "Albania"
+    },
+    {
+      "code": "+213",
+      "name": "Algeria"
+    },
+    {
+      "code": "+1 684",
+      "name": "American Samoa"
+    },
+    {
+      "code": "+376",
+      "name": "Andorra"
+    },
+    {
+      "code": "+244",
+      "name": "Angola"
+    },
+    {
+      "code": "+1 264",
+      "name": "Anguilla"
+    },
+    {
+      "code": "+1 268",
+      "name": "Antigua and Barbuda"
+    },
+    {
+      "code": "+54",
+      "name": "Argentina"
+    },
+    {
+      "code": "+374",
+      "name": "Armenia"
+    },
+    {
+      "code": "+297",
+      "name": "Aruba"
+    },
+    {
+      "code": "+247",
+      "name": "Ascension"
+    },
+    {
+      "code": "+61",
+      "name": "Australia"
+    },
+    {
+      "code": "+672",
+      "name": "Australian External Territories"
+    },
+    {
+      "code": "+43",
+      "name": "Austria"
+    },
+    {
+      "code": "+994",
+      "name": "Azerbaijan"
+    },
+    {
+      "code": "+1 242",
+      "name": "Bahamas"
+    },
+    {
+      "code": "+973",
+      "name": "Bahrain"
+    },
+    {
+      "code": "+880",
+      "name": "Bangladesh"
+    },
+    {
+      "code": "+1 246",
+      "name": "Barbados"
+    },
+    {
+      "code": "+1 268",
+      "name": "Barbuda"
+    },
+    {
+      "code": "+375",
+      "name": "Belarus"
+    },
+    {
+      "code": "+32",
+      "name": "Belgium"
+    },
+    {
+      "code": "+501",
+      "name": "Belize"
+    },
+    {
+      "code": "+229",
+      "name": "Benin"
+    },
+    {
+      "code": "+1 441",
+      "name": "Bermuda"
+    },
+    {
+      "code": "+975",
+      "name": "Bhutan"
+    },
+    {
+      "code": "+591",
+      "name": "Bolivia"
+    },
+    {
+      "code": "+387",
+      "name": "Bosnia and Herzegovina"
+    },
+    {
+      "code": "+267",
+      "name": "Botswana"
+    },
+    {
+      "code": "+55",
+      "name": "Brazil"
+    },
+    {
+      "code": "+246",
+      "name": "British Indian Ocean Territory"
+    },
+    {
+      "code": "+1 284",
+      "name": "British Virgin Islands"
+    },
+    {
+      "code": "+673",
+      "name": "Brunei"
+    },
+    {
+      "code": "+359",
+      "name": "Bulgaria"
+    },
+    {
+      "code": "+226",
+      "name": "Burkina Faso"
+    },
+    {
+      "code": "+257",
+      "name": "Burundi"
+    },
+    {
+      "code": "+855",
+      "name": "Cambodia"
+    },
+    {
+      "code": "+237",
+      "name": "Cameroon"
+    },
+    {
+      "code": "+1",
+      "name": "Canada"
+    },
+    {
+      "code": "+238",
+      "name": "Cape Verde"
+    },
+    {
+      "code": "+ 345",
+      "name": "Cayman Islands"
+    },
+    {
+      "code": "+236",
+      "name": "Central African Republic"
+    },
+    {
+      "code": "+235",
+      "name": "Chad"
+    },
+    {
+      "code": "+56",
+      "name": "Chile"
+    },
+    {
+      "code": "+86",
+      "name": "China"
+    },
+    {
+      "code": "+61",
+      "name": "Christmas Island"
+    },
+    {
+      "code": "+61",
+      "name": "Cocos-Keeling Islands"
+    },
+    {
+      "code": "+57",
+      "name": "Colombia"
+    },
+    {
+      "code": "+269",
+      "name": "Comoros"
+    },
+    {
+      "code": "+242",
+      "name": "Congo"
+    },
+    {
+      "code": "+243",
+      "name": "Congo, Dem. Rep. of (Zaire)"
+    },
+    {
+      "code": "+682",
+      "name": "Cook Islands"
+    },
+    {
+      "code": "+506",
+      "name": "Costa Rica"
+    },
+    {
+      "code": "+385",
+      "name": "Croatia"
+    },
+    {
+      "code": "+53",
+      "name": "Cuba"
+    },
+    {
+      "code": "+599",
+      "name": "Curacao"
+    },
+    {
+      "code": "+537",
+      "name": "Cyprus"
+    },
+    {
+      "code": "+420",
+      "name": "Czech Republic"
+    },
+    {
+      "code": "+45",
+      "name": "Denmark"
+    },
+    {
+      "code": "+246",
+      "name": "Diego Garcia"
+    },
+    {
+      "code": "+253",
+      "name": "Djibouti"
+    },
+    {
+      "code": "+1 767",
+      "name": "Dominica"
+    },
+    {
+      "code": "+1 809",
+      "name": "Dominican Republic"
+    },
+    {
+      "code": "+670",
+      "name": "East Timor"
+    },
+    {
+      "code": "+56",
+      "name": "Easter Island"
+    },
+    {
+      "code": "+593",
+      "name": "Ecuador"
+    },
+    {
+      "code": "+20",
+      "name": "Egypt"
+    },
+    {
+      "code": "+503",
+      "name": "El Salvador"
+    },
+    {
+      "code": "+240",
+      "name": "Equatorial Guinea"
+    },
+    {
+      "code": "+291",
+      "name": "Eritrea"
+    },
+    {
+      "code": "+372",
+      "name": "Estonia"
+    },
+    {
+      "code": "+251",
+      "name": "Ethiopia"
+    },
+    {
+      "code": "+500",
+      "name": "Falkland Islands"
+    },
+    {
+      "code": "+298",
+      "name": "Faroe Islands"
+    },
+    {
+      "code": "+679",
+      "name": "Fiji"
+    },
+    {
+      "code": "+358",
+      "name": "Finland"
+    },
+    {
+      "code": "+33",
+      "name": "France"
+    },
+    {
+      "code": "+596",
+      "name": "French Antilles"
+    },
+    {
+      "code": "+594",
+      "name": "French Guiana"
+    },
+    {
+      "code": "+689",
+      "name": "French Polynesia"
+    },
+    {
+      "code": "+241",
+      "name": "Gabon"
+    },
+    {
+      "code": "+220",
+      "name": "Gambia"
+    },
+    {
+      "code": "+995",
+      "name": "Georgia"
+    },
+    {
+      "code": "+49",
+      "name": "Germany"
+    },
+    {
+      "code": "+233",
+      "name": "Ghana"
+    },
+    {
+      "code": "+350",
+      "name": "Gibraltar"
+    },
+    {
+      "code": "+30",
+      "name": "Greece"
+    },
+    {
+      "code": "+299",
+      "name": "Greenland"
+    },
+    {
+      "code": "+1 473",
+      "name": "Grenada"
+    },
+    {
+      "code": "+590",
+      "name": "Guadeloupe"
+    },
+    {
+      "code": "+1 671",
+      "name": "Guam"
+    },
+    {
+      "code": "+502",
+      "name": "Guatemala"
+    },
+    {
+      "code": "+224",
+      "name": "Guinea"
+    },
+    {
+      "code": "+245",
+      "name": "Guinea-Bissau"
+    },
+    {
+      "code": "+595",
+      "name": "Guyana"
+    },
+    {
+      "code": "+509",
+      "name": "Haiti"
+    },
+    {
+      "code": "+504",
+      "name": "Honduras"
+    },
+    {
+      "code": "+852",
+      "name": "Hong Kong SAR China"
+    },
+    {
+      "code": "+36",
+      "name": "Hungary"
+    },
+    {
+      "code": "+354",
+      "name": "Iceland"
+    },
+    {
+      "code": "+91",
+      "name": "India"
+    },
+    {
+      "code": "+62",
+      "name": "Indonesia"
+    },
+    {
+      "code": "+98",
+      "name": "Iran"
+    },
+    {
+      "code": "+964",
+      "name": "Iraq"
+    },
+    {
+      "code": "+353",
+      "name": "Ireland"
+    },
+    {
+      "code": "+972",
+      "name": "Israel"
+    },
+    {
+      "code": "+39",
+      "name": "Italy"
+    },
+    {
+      "code": "+225",
+      "name": "Ivory Coast"
+    },
+    {
+      "code": "+1 876",
+      "name": "Jamaica"
+    },
+    {
+      "code": "+81",
+      "name": "Japan"
+    },
+    {
+      "code": "+962",
+      "name": "Jordan"
+    },
+    {
+      "code": "+7 7",
+      "name": "Kazakhstan"
+    },
+    {
+      "code": "+254",
+      "name": "Kenya"
+    },
+    {
+      "code": "+686",
+      "name": "Kiribati"
+    },
+    {
+      "code": "+965",
+      "name": "Kuwait"
+    },
+    {
+      "code": "+996",
+      "name": "Kyrgyzstan"
+    },
+    {
+      "code": "+856",
+      "name": "Laos"
+    },
+    {
+      "code": "+371",
+      "name": "Latvia"
+    },
+    {
+      "code": "+961",
+      "name": "Lebanon"
+    },
+    {
+      "code": "+266",
+      "name": "Lesotho"
+    },
+    {
+      "code": "+231",
+      "name": "Liberia"
+    },
+    {
+      "code": "+218",
+      "name": "Libya"
+    },
+    {
+      "code": "+423",
+      "name": "Liechtenstein"
+    },
+    {
+      "code": "+370",
+      "name": "Lithuania"
+    },
+    {
+      "code": "+352",
+      "name": "Luxembourg"
+    },
+    {
+      "code": "+853",
+      "name": "Macau SAR China"
+    },
+    {
+      "code": "+389",
+      "name": "Macedonia"
+    },
+    {
+      "code": "+261",
+      "name": "Madagascar"
+    },
+    {
+      "code": "+265",
+      "name": "Malawi"
+    },
+    {
+      "code": "+60",
+      "name": "Malaysia"
+    },
+    {
+      "code": "+960",
+      "name": "Maldives"
+    },
+    {
+      "code": "+223",
+      "name": "Mali"
+    },
+    {
+      "code": "+356",
+      "name": "Malta"
+    },
+    {
+      "code": "+692",
+      "name": "Marshall Islands"
+    },
+    {
+      "code": "+596",
+      "name": "Martinique"
+    },
+    {
+      "code": "+222",
+      "name": "Mauritania"
+    },
+    {
+      "code": "+230",
+      "name": "Mauritius"
+    },
+    {
+      "code": "+262",
+      "name": "Mayotte"
+    },
+    {
+      "code": "+52",
+      "name": "Mexico"
+    },
+    {
+      "code": "+691",
+      "name": "Micronesia"
+    },
+    {
+      "code": "+1 808",
+      "name": "Midway Island"
+    },
+    {
+      "code": "+373",
+      "name": "Moldova"
+    },
+    {
+      "code": "+377",
+      "name": "Monaco"
+    },
+    {
+      "code": "+976",
+      "name": "Mongolia"
+    },
+    {
+      "code": "+382",
+      "name": "Montenegro"
+    },
+    {
+      "code": "+1664",
+      "name": "Montserrat"
+    },
+    {
+      "code": "+212",
+      "name": "Morocco"
+    },
+    {
+      "code": "+95",
+      "name": "Myanmar"
+    },
+    {
+      "code": "+264",
+      "name": "Namibia"
+    },
+    {
+      "code": "+674",
+      "name": "Nauru"
+    },
+    {
+      "code": "+977",
+      "name": "Nepal"
+    },
+    {
+      "code": "+31",
+      "name": "Netherlands"
+    },
+    {
+      "code": "+599",
+      "name": "Netherlands Antilles"
+    },
+    {
+      "code": "+1 869",
+      "name": "Nevis"
+    },
+    {
+      "code": "+687",
+      "name": "New Caledonia"
+    },
+    {
+      "code": "+64",
+      "name": "New Zealand"
+    },
+    {
+      "code": "+505",
+      "name": "Nicaragua"
+    },
+    {
+      "code": "+227",
+      "name": "Niger"
+    },
+    {
+      "code": "+234",
+      "name": "Nigeria"
+    },
+    {
+      "code": "+683",
+      "name": "Niue"
+    },
+    {
+      "code": "+672",
+      "name": "Norfolk Island"
+    },
+    {
+      "code": "+850",
+      "name": "North Korea"
+    },
+    {
+      "code": "+1 670",
+      "name": "Northern Mariana Islands"
+    },
+    {
+      "code": "+47",
+      "name": "Norway"
+    },
+    {
+      "code": "+968",
+      "name": "Oman"
+    },
+    {
+      "code": "+92",
+      "name": "Pakistan"
+    },
+    {
+      "code": "+680",
+      "name": "Palau"
+    },
+    {
+      "code": "+970",
+      "name": "Palestinian Territory"
+    },
+    {
+      "code": "+507",
+      "name": "Panama"
+    },
+    {
+      "code": "+675",
+      "name": "Papua New Guinea"
+    },
+    {
+      "code": "+595",
+      "name": "Paraguay"
+    },
+    {
+      "code": "+51",
+      "name": "Peru"
+    },
+    {
+      "code": "+63",
+      "name": "Philippines"
+    },
+    {
+      "code": "+48",
+      "name": "Poland"
+    },
+    {
+      "code": "+351",
+      "name": "Portugal"
+    },
+    {
+      "code": "+1 787",
+      "name": "Puerto Rico"
+    },
+    {
+      "code": "+974",
+      "name": "Qatar"
+    },
+    {
+      "code": "+262",
+      "name": "Reunion"
+    },
+    {
+      "code": "+40",
+      "name": "Romania"
+    },
+    {
+      "code": "+7",
+      "name": "Russia"
+    },
+    {
+      "code": "+250",
+      "name": "Rwanda"
+    },
+    {
+      "code": "+685",
+      "name": "Samoa"
+    },
+    {
+      "code": "+378",
+      "name": "San Marino"
+    },
+    {
+      "code": "+966",
+      "name": "Saudi Arabia"
+    },
+    {
+      "code": "+221",
+      "name": "Senegal"
+    },
+    {
+      "code": "+381",
+      "name": "Serbia"
+    },
+    {
+      "code": "+248",
+      "name": "Seychelles"
+    },
+    {
+      "code": "+232",
+      "name": "Sierra Leone"
+    },
+    {
+      "code": "+65",
+      "name": "Singapore"
+    },
+    {
+      "code": "+421",
+      "name": "Slovakia"
+    },
+    {
+      "code": "+386",
+      "name": "Slovenia"
+    },
+    {
+      "code": "+677",
+      "name": "Solomon Islands"
+    },
+    {
+      "code": "+27",
+      "name": "South Africa"
+    },
+    {
+      "code": "+500",
+      "name": "South Georgia and the South Sandwich Islands"
+    },
+    {
+      "code": "+82",
+      "name": "South Korea"
+    },
+    {
+      "code": "+34",
+      "name": "Spain"
+    },
+    {
+      "code": "+94",
+      "name": "Sri Lanka"
+    },
+    {
+      "code": "+249",
+      "name": "Sudan"
+    },
+    {
+      "code": "+597",
+      "name": "Suriname"
+    },
+    {
+      "code": "+268",
+      "name": "Swaziland"
+    },
+    {
+      "code": "+46",
+      "name": "Sweden"
+    },
+    {
+      "code": "+41",
+      "name": "Switzerland"
+    },
+    {
+      "code": "+963",
+      "name": "Syria"
+    },
+    {
+      "code": "+886",
+      "name": "Taiwan"
+    },
+    {
+      "code": "+992",
+      "name": "Tajikistan"
+    },
+    {
+      "code": "+255",
+      "name": "Tanzania"
+    },
+    {
+      "code": "+66",
+      "name": "Thailand"
+    },
+    {
+      "code": "+670",
+      "name": "Timor Leste"
+    },
+    {
+      "code": "+228",
+      "name": "Togo"
+    },
+    {
+      "code": "+690",
+      "name": "Tokelau"
+    },
+    {
+      "code": "+676",
+      "name": "Tonga"
+    },
+    {
+      "code": "+1 868",
+      "name": "Trinidad and Tobago"
+    },
+    {
+      "code": "+216",
+      "name": "Tunisia"
+    },
+    {
+      "code": "+90",
+      "name": "Turkey"
+    },
+    {
+      "code": "+993",
+      "name": "Turkmenistan"
+    },
+    {
+      "code": "+1 649",
+      "name": "Turks and Caicos Islands"
+    },
+    {
+      "code": "+688",
+      "name": "Tuvalu"
+    },
+    {
+      "code": "+1 340",
+      "name": "U.S. Virgin Islands"
+    },
+    {
+      "code": "+256",
+      "name": "Uganda"
+    },
+    {
+      "code": "+380",
+      "name": "Ukraine"
+    },
+    {
+      "code": "+971",
+      "name": "United Arab Emirates"
+    },
+    {
+      "code": "+44",
+      "name": "United Kingdom"
+    },
+    {
+      "code": "+1",
+      "name": "United States"
+    },
+    {
+      "code": "+598",
+      "name": "Uruguay"
+    },
+    {
+      "code": "+998",
+      "name": "Uzbekistan"
+    },
+    {
+      "code": "+678",
+      "name": "Vanuatu"
+    },
+    {
+      "code": "+58",
+      "name": "Venezuela"
+    },
+    {
+      "code": "+84",
+      "name": "Vietnam"
+    },
+    {
+      "code": "+1 808",
+      "name": "Wake Island"
+    },
+    {
+      "code": "+681",
+      "name": "Wallis and Futuna"
+    },
+    {
+      "code": "+967",
+      "name": "Yemen"
+    },
+    {
+      "code": "+260",
+      "name": "Zambia"
+    },
+    {
+      "code": "+255",
+      "name": "Zanzibar"
+    },
+    {
+      "code": "+263",
+      "name": "Zimbabwe"
+    }
+]');
+            $code = $ads->code;
+            $phone = preg_replace("/^1?(\d{3})(\d{3})(\d{4})$/", "($1) $2-$3", $ads->phone);
+            $address = $ads->address;
+            $country = $ads->country;
+            $cards = "";
+            if(DB::table('ad_stripe')->where('adId',$ads->id)->exists())
+            {
+                $cards = DB::table('ad_stripe')->where('adId',$ads->id)->first();
+            }
+            return view('advertisements.FrontEnd.edit',compact('ads','name','address','code','array','phone','countries','cards'));
+//            return view('advertisements.FrontEnd.edit',compact('ads','name'));
+        }
+    }
+    public function createAd()
+    {
+        $ads = advertisement_users::where('userid',Auth::user()->id)->first();
+//        if($ads->stripeid == null || empty($ads->stripeid))
+//        {
+//            Flash::error("You need to setup the cards before creating the Ads");
+//            return redirect('advertisement/editProfile');
+//        }
+//        else
+//        {
+//            $stripe = Stripe::make(env('STRIPE_SECRET'));
+//            try
+//            {
+//                $cards = $stripe->cards()->all($ads->stripeid);
+//            }
+//            catch (\Exception $ex)
+//            {
+//                Flash::error("You need to setup the cards before creating the Ads");
+//                return redirect('advertisement/editProfile');
+//            }
+//            if (count($cards['data']) < 1)
+//            {
+//                Flash::error("You need to setup the cards before creating the Ads");
+//                return redirect('advertisement/editProfile');
+//            }
+//        }
+        if ($ads->activated != 1)
+        {
+            return redirect('advertisement/verify');
+        }
+        elseif($ads->basic_details != 1)
+        {
+            return redirect('advertisement/profile');
+        }
+        elseif($ads->address_details != 1)
+        {
+            return redirect('advertisement/address');
+        }
+        else
+        {
+            $viewCost = 0;
+            $catCost = 0;
+            if (adSettings::where('city',$ads->city)->exists())
+            {
+                $settings = adSettings::where('city',$ads->city)->first();
+                $viewCost = (float)$settings->view_cost;
+                $catCost = (float)$settings->category_view_cost;
+            }
+            $categories = adCategory::where('city','like',$ads->city)->get();
+            $name = $ads->fname.' '.$ads->mname.' '.$ads->lname;
+            return view('advertisements.FrontEnd.create',compact('ads','name','categories','viewCost','catCost'));
+        }
+    }
+    public function saveAds(Request $request)
+    {
+        return $request->all();
+    }
+    public function deleteAds(Request $request)
+    {
+        if(advertisement::whereId($request->id)->exists())
+        {
+            advertisement::whereId($request->id)->forcedelete();
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    public function adEdit($id)
+    {
+        $ads = advertisement_users::where('userid',Auth::user()->id)->first();
+        $viewCost = 0;
+        $catCost = 0;
+        if (adSettings::where('city',$ads->city)->exists())
+        {
+            $settings = adSettings::where('city',$ads->city)->first();
+            $viewCost = (float)$settings->view_cost;
+            $catCost = (float)$settings->category_view_cost;
+        }
+        $name = $ads->fname.' '.$ads->mname.' '.$ads->lname;
+        $categories = adCategory::where('city','like',$ads->city)->get();
+        $advrt = advertisement::whereId($id)->first();
+        return view('advertisements.FrontEnd.adEdit',compact('ads','name','advrt','categories','viewCost','catCost'));
+    }
+    public function visible($visible,$id)
+    {
+        $ads = advertisement::whereId($id)->first();
+        $maxBudget = (float)$ads->max_day_budget;
+        if (AdView::where('adId',$ads->id)->where('date',date('Y-m-d',time()))->exists())
+        {
+            $sum = AdView::where('adId',$ads->id)->where('date',date('Y-m-d',time()))->sum('ad_cost');
+            if($sum >= $maxBudget)
+            {
+                return 0;
+            }
+        }
+        $ad=advertisement::whereId($id)->update(['visible'=>$visible]);
+        return 1;
+    }
+    public function saveEditProfile(Request $request)
+    {
+        if($request->type == 2)
+        {
+            if($request->hasFile('image'))
+            {
+                $ads = advertisement_users::whereId($request->adId)->first();
+                $filepath2 = public_path('avatars'.'/'.$ads->image);
+                $filepath1 = public_path('avatars' . '/' . $request->image);
+                $this->UnlinkImage($filepath1,$filepath2);
+                $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
+                $request->image->move(public_path('avatars'), $photoName);
+                advertisement_users::whereId($request->adId)->update(['image'=>$photoName]);
+                return "1";
+            }
+        }
+        elseif ($request->type == 3)
+        {
+
+            if (User::where('id','!=',Auth::user()->id)->where('email',$request->email)->exists() || advertisement_users::where('id','!=',$request->adId)->where('email',$request->email)->exists())
+            {
+                return 2;
+            }
+            else
+            {
+                $ads = advertisement_users::whereId($request->adId)->update(['new_email'=>$request->email]);
+                $array['email'] = $request->email;
+                $email_otp = substr(str_shuffle("012345678901234567890123456789"), 0, 6);
+                $array['otp'] = $email_otp;
+                Mail::send('emails.verify', ['array' => $array], function ($message) use ($array) {
+                    $message->to($array['email'])->subject("Verify Email");
+                });
+                    $input['email_otp'] = $email_otp;
+                    advertisement_users::whereId($request->adId)->update($input);
+                return $ads;
+            }
+        }
+        elseif($request->type == 1)
+        {
+            $input = $request->except('_token','adId','type');
+            $ads = advertisement_users::whereId($request->adId)->update($input);
+            return $ads;
+        }
+        elseif ($request->type == 4)
+        {
+            $input = $request->except('_token','adId','type');
+            $ads = advertisement_users::whereId($request->adId)->update($input);
+            return $ads;
+        }
+
+    }
+    public function resentEmailOtp(Request $request)
+    {
+        $array['email'] = $request->email;
+        $email_otp = substr(str_shuffle("012345678901234567890123456789"), 0, 6);
+        $array['otp'] = $email_otp;
+        Mail::send('emails.verify', ['array' => $array], function ($message) use ($array) {
+            $message->to($array['email'])->subject("Verify Email");
+        });
+        $input['email_otp'] = $email_otp;
+        $ads=advertisement_users::where('userid',Auth::user()->id)->update($input);
+        return $ads;
+    }
+    public function verifyChangeEmail(Request $request)
+    {
+        if(advertisement_users::whereId($request->adId)->where('new_email',$request->email)->where('email_otp',$request->otp)->exists())
+        {
+            advertisement_users::whereId($request->adId)->update(['email'=>$request->email]);
+            User::whereId(Auth::user()->id)->update(['email'=>$request->email]);
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    public function saveCard(Request $request)
+    {
+        $stripe = Stripe::make(env('STRIPE_SECRET'));
+
+        $ads = advertisement_users::where('userid',Auth::user()->id)->first();
+        if (empty($ads->stripeid))
+        {
+            $customer = $stripe->customers()->create([
+                'email' => $ads->email,
+            ]);
+            $customerId = $customer['id'];
+            advertisement_users::whereId($ads->id)->update(['stripeid'=>$customerId]);
+        }
+        else
+        {
+            $customerId = $ads->stripeid;
+        }
+        try {
+            $token = $stripe->tokens()->create([
+                'card' => [
+                    'number' => $request->get('card_no'),
+                    'exp_month' => $request->get('ccExpiryMonth'),
+                    'exp_year' => $request->get('ccExpiryYear'),
+                    'cvc' => $request->get('cvvNumber'),
+                ],
+            ]);
+        } catch (Cartalyst\Stripe\Exception\NotFoundException $e) {
+            $customer = $stripe->customers()->create([
+                'email' => $ads->email,
+            ]);
+            advertisement_users::whereId($ads->id)->update(['stripeid'=>$customer['id']]);
+            $response['code'] = 0;
+            $response['message'] = $e->getMessage();
+            return $response;
+        }
+        catch (\Exception $e) {
+            $response['code'] = 0;
+            $response['message'] = $e->getMessage();
+            return $response;
+        }
+        if(DB::table('ad_stripe')->where('adId',$ads->id)->where('fingerprint',$token['card']['fingerprint'])->exists() == 0)
+        {
+            if (DB::table('ad_stripe')->where('adId',$ads->id)->exists())
+            {
+                $oldCard = DB::table('ad_stripe')->where('adId',$ads->id)->first();
+                $stripe->cards()->delete($customerId, $oldCard->cardNo);
+                DB::table('ad_stripe')->whereId($oldCard->id)->delete();
+            }
+            $card = $stripe->cards()->create($customerId, $token['id']);
+            $input['adId'] = $ads->id;
+            $input['cardNo'] = $card['id'];
+            $input['fingerprint'] = $card['fingerprint'];
+            $input['status'] = 1;
+            $input['customerId'] = $customerId;
+            $input['brand'] = $card['brand'];
+            $input['digits'] = '************'.$card['last4'];
+            DB::table('ad_stripe')->insert($input);
+            $response['code'] = 1;
+            $response['card'] = $input['digits'];
+            return $response;
+        }
+        else
+        {
+            $response['code'] = 2;
+            $response['message'] = "Card already Exists";
+            return $response;
+        }
+    }
+    function UnlinkImage($filepath1,$filepath2=null)
+    {
+        $old_image = $filepath2;
+        $new_image = $filepath1;
+        if (file_exists($old_image)) {
+            @unlink($old_image);
+        }
+        if (file_exists($new_image)) {
+            @unlink($new_image);
+        }
+    }
+    public function changeData($value)
+    {
+        $adUser = advertisement_users::whereUserid(Auth::user()->id)->first();
+        $ads = advertisement::where('adUserid',$adUser->id)->get();
+        $result = [];
+        foreach ($ads as $ad)
+        {
+            if ($value == 1)
+            {
+                if(AdView::where('adId',$ad->id)->whereDate('created_at',Carbon::today())->exists())
+                {
+                    $array['views'] = 0;
+                    $views = AdView::where('adId',$ad->id)->whereDate('created_at',Carbon::today())->get();
+                    foreach ($views as $view)
+                    {
+                        $array['views'] +=(int)$view->base_view;
+                    }
+                }
+                else
+                {
+                    $array['views'] = 0;
+                }
+                $result['message'] = "Displaying today's stats";
+            }
+
+            elseif($value == 2)
+            {
+                if(AdView::where('adId',$ad->id)->whereDate('created_at','>',Carbon::now()->subDays(7))->exists())
+                {
+                    $array['views'] = 0;
+                    $views = AdView::where('adId',$ad->id)->whereDate('created_at','>',Carbon::now()->subDays(7))->get();
+                    foreach ($views as $view)
+                    {
+                        $array['views'] +=(int)$view->base_view;
+                    }
+                }
+                else
+                {
+                    $array['views'] = 0;
+                }
+                $result['message'] = "Displaying last 7 days stats";
+            }
+            elseif($value == 3)
+            {
+                if(AdView::where('adId',$ad->id)->whereDate('created_at','>',Carbon::now()->subDays(30))->exists())
+                {
+                    $array['views'] = 0;
+                    $views = AdView::where('adId',$ad->id)->whereDate('created_at','>',Carbon::now()->subDays(30))->get();
+                    foreach ($views as $view)
+                    {
+                        $array['views'] +=(int)$view->base_view;
+                    }
+                }
+                else
+                {
+                    $array['views'] = 0;
+                }
+                $result['message'] = "Displaying last 30 days stats";
+            }
+            else
+            {
+                if(AdView::where('adId',$ad->id)->whereMonth('created_at',Carbon::now()->month)->exists())
+                {
+                    $array['views'] = 0;
+                    $views = AdView::where('adId',$ad->id)->whereMonth('created_at',Carbon::now()->month)->get();
+                    foreach ($views as $view)
+                    {
+                        $array['views'] +=(int)$view->base_view;
+                    }
+                }
+                else
+                {
+                    $array['views'] = 0;
+                }
+                $result['message'] = "Displaying this month's stats";
+            }
+            $result[$ad->id] = $array;
+        }
+        return $result;
     }
 }

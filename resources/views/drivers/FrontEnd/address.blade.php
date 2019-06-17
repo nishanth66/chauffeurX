@@ -4,6 +4,9 @@
         color: #4D68B0 !important;
     }
 </style>
+<div class="row row-master">
+
+</div>
 <div class="container-fluid">
     <div class="col-md-12 align">
         <div class="col-md-4">
@@ -15,10 +18,10 @@
                     <form method="post" action="{{url('driver/address')}}">
                         {{csrf_field()}}
                         <div class="form-group">
-                            <input id="autocomplete" class="form-control1" value="{{$driver->address}}" type="text" name="address" placeholder="Your address" onFocus="geolocate()" required>
+                            <input id="autocomplete" class="form-control1" value="{{$driver->address}}" type="text" name="address" placeholder="Your address" onFocus="geolocate()">
                         </div>
                         <div class="form-group">
-                            <input class="form-control1" value="{{$driver->apartment}}" type="text" name="apartment" placeholder="Your apartment number" required>
+                            <input class="form-control1" value="{{$driver->apartment}}" type="text" name="apartment" id="apt" placeholder="Your apartment number">
                         </div>
                         <div class="form-group">
                             <input class="form-control1" id="locality" type="text" value="{{$driver->city}}" name="city" placeholder="Your city" required>
@@ -38,7 +41,7 @@
                                 </select>
                             </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary next-btn">Next</button>
+                            <button type="submit" class="btn btn-primary next-btn" id="btnNext">Next</button>
                         </div>
                     </form>
                 </div>
@@ -101,7 +104,163 @@
             });
         }
     }
+    $(document).ready(function() {
+        if (($('.alert-success').contents().length != 0)) {
+            $('.alert-success').hide();
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        if (($('.alert-danger').contents().length  != 0))
+        {
+            $('.alert-danger').hide();
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
+//    $('#btnNext').click(function () {
+//        if ($('#autocomplete').val() == '')
+//        {
+//            $.toast({
+//                heading: 'Faield',
+//                text: "Address can't be null",
+//                icon: 'error',
+//                hideAfter: 5000,
+//                showHideTransition: 'slide',
+//                loader: false
+//            });
+//            $('#autocomplete').addClass("error");
+//            $('#apt').removeClass("error");
+//            return false;
+//
+//        }
+//        if ($('#apt').val() == '')
+//        {
+//            $.toast({
+//                heading: 'Faield',
+//                text: "Please fill Apartment Number",
+//                icon: 'error',
+//                hideAfter: 5000,
+//                showHideTransition: 'slide',
+//                loader: false
+//            });
+//            $('#autocomplete').removeClass("error");
+//            $('#apt').addClass("error");
+//            return false;
+//        }
+//    })
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB56Xh1A7HQDPQg_7HxrPTcSNnlpqYavc0&libraries=places&callback=initAutocomplete"
         async defer>
+</script>
+<script>
+    $('#btnNext').click(function (e) {
+        if ($('#autocomplete').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Address is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('input').removeClass('error');
+            $('#autocomplete').addClass('error');
+            return false;
+        }
+        else if($('#locality').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "City is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('input').removeClass('error');
+            $('#locality').addClass('error');
+            return false;
+        }
+        else if($('#administrative_area_level_1').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "State is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('input').removeClass('error');
+            $('#administrative_area_level_1').addClass('error');
+            return false;
+        }
+        else if($('#postal_code').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Zip code is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('input').removeClass('error');
+            $('#postal_code').addClass('error');
+            return false;
+        }
+        else if($('#country').val() == '' || $('#country').val() == null)
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Country is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('input').removeClass('error');
+            $('#country').addClass('error');
+            return false;
+        }
+        else if($('#apt').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Apartment number is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('input').removeClass('error');
+            $('#apt').addClass('error');
+            return false;
+        }
+        else
+        {
+            $('input').removeClass('error');
+        }
+    });
 </script>

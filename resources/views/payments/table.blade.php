@@ -4,6 +4,7 @@
             <th>#</th>
             <th>City</th>
             <th>Name</th>
+            <th>Cancellation</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -13,6 +14,13 @@
             <td>{!! $i !!}</td>
             <td>{!! $payment->city !!}</td>
             <td>{!! $payment->name !!}</td>
+            <td>
+                @if($payment->free == 1)
+                    <button class="btn btn-success" type="button">Free</button>
+                @else
+                    <button class="btn btn-danger" type="button">Not Free</button>
+                @endif
+            </td>
             <td>
                 {!! Form::open(['route' => ['paymentMethod.destroy', $payment->id], 'method' => 'delete']) !!}
                 <div class='btn-group'>

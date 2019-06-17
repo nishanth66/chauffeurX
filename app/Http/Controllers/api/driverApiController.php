@@ -7,11 +7,13 @@ use App\Models\categories;
 use App\Models\driver;
 use App\Models\driverCategory;
 use App\Models\driverNotification;
+use App\Models\driverPaymentHistory;
 use App\Models\passenger_rating;
 use App\Models\passengers;
 use App\Models\preferences;
 use App\Models\rating;
 use App\Models\template;
+use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\api\Controller;
 use Illuminate\Support\Facades\DB;
@@ -24,16 +26,32 @@ class driverApiController extends Controller
     {
         $email = $request->email;
         $password = $request->password;
-        if (driver::where('email',$email)->where('status',1)->exists()) {
+        if (driver::where('email',$email)->exists()) {
             $driverDetails = explode(',',$request->driver_lat_lng);
             $driver = driver::where('email', $email)->first();
-            if(isset($driverDetails[0]) && isset($driverDetails[1]) && !empty($driverDetails[0]) && !empty($driverDetails[1]))
+//            if(isset($driverDetails[0]) && isset($driverDetails[1]) && !empty($driverDetails[0]) && !empty($driverDetails[1]))
+//            {
+//                $lat = $driverDetails[0];
+//                $lng = $driverDetails[1];
+//                $city = app('App\Http\Controllers\api\bookingApiController')->getAddress($lat,$lng);
+//                driver::whereId($driver->id)->update(['city'=>$city]);
+//                $driver = driver::whereId($driver->id)->first();
+//            }
+            if ($driver->payment == 0)
             {
-                $lat = $driverDetails[0];
-                $lng = $driverDetails[1];
-                $city = app('App\Http\Controllers\api\bookingApiController')->getAddress($lat,$lng);
-                driver::whereId($driver->id)->update(['city'=>$city]);
-                $driver = driver::whereId($driver->id)->first();
+                $response['code'] = 500;
+                $response['status'] = "failed";
+                $response['message'] = "You cant ride without paying subscription.";
+                $response['data'] = [];
+                return $response;
+            }
+            elseif ($driver->status != 1)
+            {
+                $response['code'] = 500;
+                $response['status'] = "failed";
+                $response['message'] = "You cant ride without getting verified.";
+                $response['data'] = [];
+                return $response;
             }
             if (Hash::check($password, $driver->password) && $email == $driver->email) {
                 $response['code'] = 200;
@@ -54,7 +72,7 @@ class driverApiController extends Controller
         {
             $response['code'] = 500;
             $response['status'] = "failed";
-            $response['message'] = "This user doesn’t exist";
+            $response['message'] = "This driver doesn’t exist";
             $response['data'] = [];
         }
         return $response;
@@ -62,40 +80,30 @@ class driverApiController extends Controller
     
     public function rateCustomer(Request $request)
     {
-        if (booking::whereId($request->bookingid)->where('userid',$request->userid)->exists())
+        if(booking::whereId($request->bookingid)->where('driverid',$request->driverid)->exists())
         {
-            if(booking::whereId($request->bookingid)->where('userid',$request->userid)->exists())
-            {
-                $rate = passenger_rating::create([
-                    'userid' => $request->userid,
-                    'bookingid' => $request->bookingid,
-                    'driverid' => $request->driverid,
-                    'rating' => $request->rating,
-                    'comments' => $request->comments,
-                ]);
-                $response['status'] = "success";
-                $response['code'] = 200;
-                $response['Message'] = "Rating saved Successfully";
-                $response['data'] = $rate;
-            }
-            else
-            {
-                $response['status'] = "failed";
-                $response['code'] = 500;
-                $response['Message'] = "Booking is not assigned to this driver";
-                $response['data'] = [];
-            }
+            $booking = booking::whereId($request->bookingid)->first();
+            $rate = passenger_rating::create([
+                'userid' => $booking->userid,
+                'bookingid' => $booking->id,
+                'driverid' => $request->driverid,
+                'rating' => $request->rating,
+                'comments' => $request->comments,
+            ]);
+            $response['status'] = "success";
+            $response['code'] = 200;
+            $response['message'] = "Rating saved Successfully";
+            $response['data'] = $rate;
         }
         else
         {
             $response['status'] = "failed";
             $response['code'] = 500;
-            $response['Message'] = "Booking could not be found";
+            $response['message'] = "Booking is not assigned to this driver";
             $response['data'] = [];
         }
         return $response;
     }
-
 
     public function tripEnd(Request $request)
     {
@@ -129,8 +137,9 @@ class driverApiController extends Controller
                     $response['amount_to_pay'] = round($descPrice);
                 }
                 booking::whereId($request->bookingid)->update($priceUpdate);
-                driver::whereId($request->driverid)->update(['active_ride'=>0]);
+                driver::whereId($request->driverid)->update(['active_ride'=>0,'isAvailable'=>1]);
                 $booking = booking::whereId($request->bookingid)->first();
+                passengers::whereId($booking->userid)->update(['active_ride'=>0]);
                 $user = passengers::whereId($booking->userid)->first();
                 $response['code'] = 200;
                 $response['status'] = "success";
@@ -142,9 +151,18 @@ class driverApiController extends Controller
                 $pushFor = "Ride End";
                 $token = $user->device_token;
                 $body['username'] = $user->fname.' '.$user->lname;
-                $body['message'] = "Ride End";
-                $body['booking_details'] = $booking;
-                $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor);
+                $msg = "Ride End";
+                $body['message'] = $msg;
+                $body['booking_id'] = $booking->id;
+                $body['userid'] = $booking->userid;
+                $body['phone'] = $booking->phone;
+                $body['source'] = $booking->source;
+                $body['destination'] = $booking->destination;
+                $body['original_price'] = $booking->original_price;
+                $body['price'] = $booking->price;
+                $body['distance'] = $booking->distance;
+                $body['estimated_time'] = $booking->estimated_time;
+                $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor,$msg,1);
 //                **************************************************************************************
             }
             else
@@ -182,35 +200,25 @@ class driverApiController extends Controller
             $response['message'] = "Driver has no Ride History";
             $response['data'] = [];
         }
-        $bookings = booking::where('driverid',$request->driverid)->get();
         $myBookings = array();
-        $toDate = strtotime($request->date);
-        foreach ($bookings as $booking)
+        if (isset($request->date) && ($request->date != '' || $request->date != null))
         {
-            $date = $booking->trip_start_time;
-            $tripDate = strtotime($date);
-            $tripDate = strtotime(date('Y-m-d',$tripDate));
-            if ($toDate == $tripDate)
+            $toDate = strtotime(str_replace('/','-',$request->date));
+            $newDate = date('Y-m-d',$toDate);
+            $newDate = new \DateTime($newDate);
+            $bookings = booking::where('driverid',$request->driverid)->whereDate('trip_start_time',$newDate)->orderby('id','desc')->get();
+        }
+        else
+        {
+            $bookings = booking::where('driverid',$request->driverid)->orderby('id','desc')->get();
+        }
+        foreach ($bookings as $booking) {
+            if ($booking->source_address == null || empty($booking->source_address))
             {
-                $booking = $booking->toArray();
-                foreach ($booking as $key => $value)
-                {
-                    if (is_null($value))
-                    {
-                        $booking[$key] = "";
-                    }
-                    $booking['driverid'] = (string)$booking['driverid'];
-                    if ($booking['status'] == 'Booking Accepted')
-                    {
-                        $booking['status'] = 'accepted';
-                    }
-                }
-                $source = explode(',',$booking['source']);
-                $destination = explode(',',$booking['destination']);
-                $booking['source_address'] = app('App\Http\Controllers\api\bookingApiController')->getFormattedAddress($source[0],$source[1]);
-                $booking['destination_address'] = app('App\Http\Controllers\api\bookingApiController')->getFormattedAddress($destination[0],$destination[1]);
-                array_push($myBookings,$booking);
+                $booking->source_address = "";
+                $booking->destination_address = "";
             }
+            array_push($myBookings,$booking);
         }
         if (empty($myBookings) || count($myBookings) < 1)
         {
@@ -245,9 +253,10 @@ class driverApiController extends Controller
             $response['data'] = [];
             return $response;
         }
-        booking::whereId($request->bookingid)->where('driverid',$request->driverid)->update(['driver_arrived_at'=>new \DateTime()]);
+        booking::whereId($request->bookingid)->where('driverid',$request->driverid)->update(['driver_arrived_at'=>new \DateTime(),'status'=>'driver arrived']);
         $booking = booking::whereId($request->bookingid)->first();
         $user = passengers::whereId($booking->userid)->first();
+        $riderDetails = driver::whereId($booking->driverid)->first();
 //        $user = passengers::whereId(1)->first();
         $response['status'] = "success";
         $response['code'] = 200;
@@ -260,10 +269,24 @@ class driverApiController extends Controller
         $pushFor = "Booking Verification Code";
         $token = (string)$user->device_token;
         $body['username'] = $user->fname.' '.$user->lname;
-        $body['booking_details'] = $booking;
+        $body['booking_id'] = $booking->id;
+        $body['driver_id'] = $booking->driverid;
+        $body['driver_name'] = $riderDetails->first_name.' '.$riderDetails->middle_name.' '.$riderDetails->last_name;
+        $body['driver_email'] = $riderDetails->email;
+        $body['driver_phone'] = $riderDetails->code.$riderDetails->phone;
+        $body['driver_rating'] = $this->driverRating($riderDetails->id);
+        $body['userid'] = $booking->userid;
+        $body['phone'] = $booking->phone;
+        $body['source'] = $booking->source;
+        $body['destination'] = $booking->destination;
+        $body['original_price'] = $booking->original_price;
+        $body['price'] = $booking->price;
+        $body['distance'] = $booking->distance;
+        $body['estimated_time'] = $booking->estimated_time;
         $body['booking_otp'] = $booking->otp;
-        $body['message'] = "Ride Request";
-        $UserpushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor);
+        $msg = "Ride Request";
+        $body['message'] = $msg;
+        $UserpushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor,$msg,1);
 //        *************************************************************************************************
         return $response;
     }
@@ -338,7 +361,6 @@ class driverApiController extends Controller
         }
     }
 
-
     public function changeAvailableStatus(Request $request)
     {
         if (driver::whereId($request->driverid)->exists() == 0)
@@ -409,9 +431,9 @@ class driverApiController extends Controller
             $input['price'] = $newPrice.' - '.$estimate;
         }
         $input['driverid'] = $request->driverid;
-        $input['status'] = 'Booking Accepted';
+        $input['status'] = 'accepted';
         booking::whereId($request->bookingid)->update($input);
-//        driver::whereId($request->driverid)->update(['active_ride'=>1]);
+        driver::whereId($request->driverid)->update(['active_ride'=>1]);
         $booking = booking::whereId($request->bookingid)->first();
         $user = passengers::whereId($booking->userid)->first();
         if (template::where('type','system')->where('title','Booking Confirm')->exists())
@@ -436,11 +458,25 @@ class driverApiController extends Controller
         $pushFor = "Driver Assigned";
         $token = $user->device_token;
         $body['driver_name'] = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
-        $body['booking_details'] = $booking;
-        $body['message'] = "Driver Assigned";
-        $body['driver_details'] = $driver;
+        $body['booking_id'] = $booking->id;
+        $body['userid'] = $booking->userid;
+        $body['phone'] = $booking->phone;
+        $body['source'] = $booking->source;
+        $body['destination'] = $booking->destination;
+        $body['original_price'] = $booking->original_price;
+        $body['price'] = $booking->price;
+        $body['distance'] = $booking->distance;
+        $body['estimated_time'] = $booking->estimated_time;
+        $msg = "Driver Assigned";
+        $body['message'] = $msg;
+        $body['driver_id'] = $driver->id;
+        $body['driver_image'] = $driver->image;
+        $body['driver_email'] = $driver->email;
+        $body['driver_phone'] = $driver->code.$driver->phone;
         $body['driver_rating'] = $this->driverRating($driver->id);
-        $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor);
+        $body['driver_device_token'] = (string)$driver->device_token;
+        $body['title'] = $title;
+        $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor,$msg,1);
 
 //        *************************************************************************************************
         $response['code'] = 200;
@@ -468,22 +504,34 @@ class driverApiController extends Controller
             $response['data'] = [];
             return $response;
         }
-        $penalty['penalty'] = 1;
-        driver::whereId($request->drievrid)->update($penalty);
         $driver = driver::whereId($request->driverid)->first();
         $booking = booking::whereId($request->bookingid)->first();
+        $src = explode(',',$booking->source);
+        $city = app('App\Http\Controllers\api\bookingApiController')->getAddress($src[0],$src[1]);
+        $penalty['penalty'] = (float)$driver->penalty;
+        if(DB::table('driver_penalty')->where('city',$city)->exists())
+        {
+            $fine = DB::table('driver_penalty')->where('city',$city)->first();
+            $finePenalty = (float)$fine->penalty;
+        }
+        else
+        {
+            $finePenalty = 0;
+        }
+        $penalty['penalty'] = $penalty['penalty']+$finePenalty;
+        driver::whereId($request->drievrid)->update($penalty);;
         $user = passengers::whereId($booking->userid)->first();
         if (template::where('type','system')->where('title','Reject Ride')->exists())
         {
             $template = template::where('type','system')->where('title','Reject Ride')->first();
-            $message = str_replace('xxx',1,$template->message);
+            $message = str_replace('xxx',$finePenalty,$template->message);
             $notification['message'] = $message;
             $notification['image'] = $template->image;
             $notification['title'] = $template->title;
         }
         else
         {
-            $notification['message'] = "Penalty of 1 has been charged due to not accepting the Ride Request";
+            $notification['message'] = "Penalty of $finePenalty has been charged due to not accepting the Ride Request";
         }
         $notification['driverid'] = $driver->id;
         $notification['type'] = "System";
@@ -501,7 +549,7 @@ class driverApiController extends Controller
 
         $nextDrivers = DB::table('bookingDriver_push')->where('bookingid',$request->bookingid)->first();
         $nextDrivers = explode(',',$nextDrivers->array);
-        if (!isset($nextDrivers[0]) || !isset($nextDrivers[1]) || empty($nextDrivers[0]) || empty($nextDrivers[1]))
+        if (!isset($nextDrivers[0]) || empty($nextDrivers[0]))
         {
             $response['code'] = 500;
             $response['status'] = "failed";
@@ -514,10 +562,20 @@ class driverApiController extends Controller
             $pushFor = "Drivers are Busy";
             $token = (string)$user->device_token;
             $body['username'] = $user->fname.' '.$user->lname;
-            $body['message'] = "Sorry! Our all drivers are busy at the moment. Try again later";
-            $body['booking_details'] = $booking;
-            $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor);
-
+            $msg = "Sorry! Our all drivers are busy at the moment. Try again later";
+            $body['message'] = $msg;
+            $body['booking_id'] = $booking->id;
+            $body['userid'] = $booking->userid;
+            $body['phone'] = $booking->phone;
+            $body['source'] = $booking->source;
+            $body['destination'] = $booking->destination;
+            $body['original_price'] = $booking->original_price;
+            $body['price'] = $booking->price;
+            $body['distance'] = $booking->distance;
+            $body['estimated_time'] = $booking->estimated_time;
+            $body['title'] = $title;
+            $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor,$msg,1);
+            passengers::whereId($booking->userid)->update(['active_ride'=>0]);
 //            *************************************************************************************************************
 
             return $response;
@@ -529,16 +587,28 @@ class driverApiController extends Controller
         }
         $driverid = array_search(max($drievr),$drievr);
         $driver_score = max($drievr);
+        $driver = driver::whereId($driverid)->first();
 //        *********************************Code for Push Notification *************************************************
 
         $title = "Ride Request";
         $pushFor = "Accept Ride";
         $token = $driver->device_token;
         $body['username'] = $user->fname.' '.$user->lname;
-        $body['message'] = "Ride Request";
+        $body['user_device_token'] = (string)$user->device_token;
+        $msg = "Ride Request";
+        $body['message'] = $msg;
         $body['user_rating'] = app('App\Http\Controllers\api\bookingApiController')->getUserRating($user->id);
-        $body['bookingDetails'] = $booking;
-        $pushNotification = parent::pushNotification($title,$body,$token,$driver,$pushFor);
+        $body['booking_id'] = $booking->id;
+        $body['userid'] = $booking->userid;
+        $body['phone'] = $booking->phone;
+        $body['source'] = $booking->source;
+        $body['destination'] = $booking->destination;
+        $body['original_price'] = $booking->original_price;
+        $body['price'] = $booking->price;
+        $body['distance'] = $booking->distance;
+        $body['estimated_time'] = $booking->estimated_time;
+        $body['title'] = $title;
+        $pushNotification = parent::pushNotification($title,$body,$token,$driver,$pushFor,$msg,2);
 //        **************************************************************************************************************
         unset($drievr[$driverid]);
         $newScore = "";
@@ -609,9 +679,19 @@ class driverApiController extends Controller
             $pushFor = "Ride Start";
             $token = (string)$user->device_token;
             $body['username'] = $user->fname.' '.$user->lname;
-            $body['booking_details'] = $booking;
-            $body['message'] = "Ride Start";
-            $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor);
+            $body['booking_id'] = $booking->id;
+            $body['userid'] = $booking->userid;
+            $body['phone'] = $booking->phone;
+            $body['source'] = $booking->source;
+            $body['destination'] = $booking->destination;
+            $body['original_price'] = $booking->original_price;
+            $body['price'] = $booking->price;
+            $body['distance'] = $booking->distance;
+            $body['estimated_time'] = $booking->estimated_time;
+            $msg = "Ride Start";
+            $body['message'] = $msg;
+            $body['title'] = $title;
+            $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor,$msg,1);
 
 //            **********************************************************************************************
         }
@@ -693,14 +773,15 @@ class driverApiController extends Controller
             $updateBooking['status'] = "cancelled";
             $updateBooking['cancelled_at'] = new \DateTime();
             $updateBooking['cancelled_by'] = "driver";
-            booking::whereId($request->bookingid)->update($updateBooking);
+//            booking::whereId($request->bookingid)->update($updateBooking);
             $booking = booking::whereId($request->bookingid)->first();
-            $user = passengers::whereId($request->userid)->first();
+            $user = passengers::whereId($booking->userid)->first();
             $response['code'] = 200;
             $response['status'] = "success";
             $response['message'] = "Booking cancelled Successfully";
             $response['data'] = $booking;
-
+            passengers::whereId($booking->userid)->update(['active_ride'=>0]);
+            driver::whereId($booking->driverid)->update(['active_ride'=>0,'isAvailable'=>1]);
             if (template::where('type','system')->where('title','Booking Cancel')->exists())
             {
                 $template = template::where('type','system')->where('title','Booking Cancel')->first();
@@ -723,9 +804,19 @@ class driverApiController extends Controller
             $pushFor = "Ride Cancel";
             $token = $user->device_token;
             $body['username'] = $user->fname.' '.$user->lname;
-            $body['message'] = "Ride Cancel";
-            $body['booking_details'] = $booking;
-            $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor);
+            $msg = "Ride Cancel";
+            $body['message'] = $msg;
+            $body['booking_id'] = $booking->id;
+            $body['userid'] = $booking->userid;
+            $body['phone'] = $booking->phone;
+            $body['source'] = $booking->source;
+            $body['destination'] = $booking->destination;
+            $body['original_price'] = $booking->original_price;
+            $body['price'] = $booking->price;
+            $body['distance'] = $booking->distance;
+            $body['estimated_time'] = $booking->estimated_time;
+            $body['title'] = $title;
+            $pushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor,$msg,1);
 
 //                ***************************************************************************************
             return $response;
@@ -847,6 +938,31 @@ class driverApiController extends Controller
         $response['data'] = [];
         return $response;
     }
+    public function deleteNotification(Request $request)
+    {
+        if (driver::whereId($request->driverid)->where('status',1)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Driver could not be found";
+            $response['data'] = [];
+            return $response;
+        }
+        if (driverNotification::exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Notification not Found";
+            $response['data'] = [];
+            return $response;
+        }
+        driverNotification::where('driverid',$request->driverid)->forcedelete();
+        $response['code'] = 200;
+        $response['status'] = "success";
+        $response['message'] = "Notification deleted successfully";
+        $response['data'] = [];
+        return $response;
+    }
 
     function driverRating($driverid)
     {
@@ -858,22 +974,6 @@ class driverApiController extends Controller
             $totalRating = $ratings/$count;
         }
         return $totalRating;
-    }
-
-    public function sendPushTest($userid)
-    {
-//        $user = passengers::whereId($userid)->first();
-        $user = driver::whereId($userid)->first();
-        $title = "Booking Verification Code";
-        $pushFor = "Booking Verification Code";
-        $token = (string)$user->device_token;
-        $body['username'] = $user->fname.' '.$user->lname;
-        $body['booking_details'] = $user;
-        $body['message'] = "Booking Verification Code";
-        $UserpushNotification = parent::pushNotification($title,$body,$token,$user,$pushFor);
-        echo '<pre>';
-        print_r($UserpushNotification);
-        exit;
     }
 
     public function logout(Request $request)
@@ -932,5 +1032,222 @@ class driverApiController extends Controller
             return strtoupper($string); //to uppercase
 
         return strtoupper(substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 6));
+    }
+    public function checkActiveRide(Request $request)
+    {
+        if(driver::whereId($request->driverid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['message'] = "Driver doesn't exists";
+            $response['status'] = "failed";
+            $response['data'] = [];
+            return $response;
+        }
+        $user = driver::whereId($request->driverid)->first();
+        if($user->active_ride == 0)
+        {
+            $response['code'] = 200;
+            $response['message'] = "Driver is not actively on ride";
+            $response['status'] = "success";
+            $response['active_ride'] = 0;
+            $response['data'] = [];
+            return $response;
+        }
+        else
+        {
+            $booking = booking::where('driverid',$request->driverid)->orderby('id','desc')->first();
+            $user = User::whereId($booking['userid'])->first();
+            $booking['username'] = $user->fname.' '.$user->lname;
+            $response['code'] = 200;
+            $response['message'] = "Driver is actively on a ride";
+            $response['status'] = "success";
+            $response['active_ride'] = 1;
+            $response['data'] = $booking;
+            return $response;
+        }
+    }
+
+    public function checkSubscription(Request $request)
+    {
+        if (driver::whereId($request->driverid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Driver doesn't exists";
+            $response['data'] = [];
+            return $response;
+        }
+        $driver = driver::whereId($request->driverid)->first();
+        if ($driver->status != 1)
+        {
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "You will not be getting any rides without getting verified";
+            $response['payment'] = 0;
+            $response['status'] = 0;
+            $response['remaining_day'] = 0;
+            $response['data'] = [];
+            return $response;
+        }
+        if ($driver->payment != 1)
+        {
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "You will not be getting any rides without paying the subscription";
+            $response['payment'] = 0;
+            $response['remaining_day'] = 0;
+            $response['status'] = 1;
+            $response['data'] = [];
+            return $response;
+        }
+        $nextPay = $driver->next_pay;
+        $dateDiff = $nextPay - time();
+        $days = round($dateDiff/(60*60*24));
+        if ($days <= 15)
+        {
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "Your subscription will be renewed automatically in ".$days." days. Please cancel the subscription to avoid auto renewal";
+            $response['payment'] = 1;
+            $response['remaining_day'] = $days;
+            $response['status'] = 1;
+            $response['data'] = [];
+            return $response;
+        }
+        else
+        {
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "Login successfull";
+            $response['payment'] = 1;
+            $response['status'] = 1;
+            $response['data'] = [];
+            return $response;
+        }
+    }
+
+    public function driverDetails(Request $request)
+    {
+        if (driver::whereId($request->driverid)->exists())
+        {
+            $user = driver::whereId($request->driverid)->first();
+//            unset($user->password);
+            if ($user->image != '' || !empty($user->image))
+            {
+                $user->image = asset('public/avatars').'/'.$user->image;
+            }
+            else
+            {
+                $user->image = "";
+            }
+            $user = $user->makeHidden(['remember_token','email_verified_at','otp','passengers']);
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "";
+            $response['data'] = $user;
+        }
+        else
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "This driver doesn’t exist";
+            $response['data'] = [];
+        }
+        return $response;
+    }
+    public function profile(Request $request)
+    {
+        if (!isset($request->phone) || empty($request->phone))
+        {
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['message'] = "Please enter the Phone number";
+            $response['data'] = [];
+            return $response;
+        }
+        $mNumber = $request->phone;
+        if (driver::where('id','!=',$request->drievrid)->where('phone',$mNumber)->exists()){
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['message'] = "This mobile number already used by other user.";
+            $response['data'] = [];
+            return $response;
+        }
+        if (driver::where('id','!=',$request->drievrid)->where('email',$request->email)->exists())
+        {
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['message'] = "This email already used by other user.";
+            $response['data'] = [];
+            return $response;
+        }
+        if (driver::whereId($request->userid)->exists() == 0)
+        {
+            $response['status'] = "failed";
+            $response['code'] = 500;
+            $response['message'] = "This user doesn’t exist";
+            $response['data'] = [];
+            return $response;
+        }
+
+//        if (isset($request->password) && $request->password != $request->confirm_password)
+//        {
+//            $response['status'] = "failed";
+//            $response['code'] = 500;
+//            $response['message'] = "Passwords don’t match";
+//            $response['data'] = [];
+//            return $response;
+//        }
+
+        $update = $request->except('except','password','confirm_password','userid','phone');
+        if (isset($request->password) && $request->password != '')
+        {
+//                $update['password'] = Hash::make($request->password);
+        }
+        if($request->hasFile('image'))
+        {
+            $photoName = rand(1, 777777777) . time() . '.' . $request->image->getClientOriginalExtension();
+            $mime = $request->image->getClientOriginalExtension();
+            $request->image->move(public_path('avatars'), $photoName);
+            $update['image'] = $photoName;
+        }
+        driver::whereId($request->userid)->update($update);
+        $user = driver::whereId($request->userid)->where('phone',$mNumber)->first();
+        unset($user->password);
+        if ($user->image != '' || !empty($user->image))
+        {
+            $user->image = asset('public/avatars').'/'.$user->image;
+        }
+        else
+        {
+            $user->image = "";
+        }
+        $response['status'] = "success";
+        $response['code'] = 200;
+        $response['message'] = "Saved";
+        $response['data'] = $user;
+
+        $reference = $this->database->getReference('user');
+
+        $postData[$user->firebase_key] = [
+            'userid' => 'driver_'.$user->id,
+            'username'=> $user->fname,
+            'usertype'=> 'driver',
+            'email' => $user->email,
+            'message' => [
+                'idSender' => '',
+                'idReceiver' => '',
+                'text' => '',
+                'timestamp' => '',
+            ],
+            'status' => [
+                'isOnline' => true,
+                'timestamp' => ''
+            ],
+        ];
+        $reference->update($postData);
+//
+
+        return $response;
     }
 }

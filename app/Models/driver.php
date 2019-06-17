@@ -71,6 +71,8 @@ class driver extends Model
         'firebase_key',
         'active_ride',
         'stripeid',
+        'new_email',
+        'next_pay',
     ];
 
     /**
@@ -119,6 +121,8 @@ class driver extends Model
         'firebase_key' => 'string',
         'active_rides' => 'string',
         'stripeid' => 'string',
+        'new_email' => 'string',
+        'next_pay' => 'string',
     ];
 
     /**

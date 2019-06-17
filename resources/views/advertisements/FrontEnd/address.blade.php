@@ -5,6 +5,7 @@
     }
 </style>
 <div class="container-fluid">
+    <div class="row row-master"></div>
     <div class="col-md-12 align">
         <div class="col-md-4">
             <p class="textclr login-div"> Hi {{$name}}, <br> Where is your Bussiness Located?</p>
@@ -18,7 +19,7 @@
                             <input id="autocomplete" class="form-control1" value="{{$ads->address}}" type="text" name="address" placeholder="Your address" onFocus="geolocate()" required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control1" value="{{$ads->suite_number}}" type="text" name="suite_number" placeholder="Suit Number" required>
+                            <input class="form-control1" value="{{$ads->suite_number}}" type="text" name="suite_number" id="suite" placeholder="Suit Number" required>
                         </div>
                         <div class="form-group">
                             <input class="form-control1" id="locality" type="text" value="{{$ads->city}}" name="city" placeholder="Your city" required>
@@ -38,7 +39,7 @@
                                 </select>
                             </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary next-btn">Next</button>
+                            <button type="submit" class="btn btn-primary next-btn" id="btnNext">Next</button>
                         </div>
                     </form>
                 </div>
@@ -104,4 +105,131 @@
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB56Xh1A7HQDPQg_7HxrPTcSNnlpqYavc0&libraries=places&callback=initAutocomplete"
         async defer>
+</script>
+<script>
+    $('#btnNext').click(function (e) {
+        if ($('#autocomplete').val() == '')
+        {
+            e.preventDefault();
+            $('input').removeClass('error');
+            $.toast({
+                heading: 'Failed',
+                text: "Address is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('#autocomplete').addClass('error');
+            return false;
+        }
+        if ($('#suite').val() == '')
+        {
+            e.preventDefault();
+            $('input').removeClass('error');
+            $.toast({
+                heading: 'Failed',
+                text: "Suite Number is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('#suite').addClass('error');
+            return false;
+        }
+        if ($('#locality').val() == '')
+        {
+            e.preventDefault();
+            $('input').removeClass('error');
+            $.toast({
+                heading: 'Failed',
+                text: "City is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('#locality').addClass('error');
+            return false;
+        }
+        if ($('#administrative_area_level_1').val() == '')
+        {
+            e.preventDefault();
+            $('input').removeClass('error');
+            $.toast({
+                heading: 'Failed',
+                text: "State is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('#administrative_area_level_1').addClass('error');
+            return false;
+        }
+        if ($('#postal_code').val() == '')
+        {
+            e.preventDefault();
+            $('input').removeClass('error');
+            $.toast({
+                heading: 'Failed',
+                text: "Zipcode is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('#postal_code').addClass('error');
+            return false;
+        }
+        if ($('#country').val() == '')
+        {
+            e.preventDefault();
+            $('input').removeClass('error');
+            $.toast({
+                heading: 'Failed',
+                text: "Country is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('#country').addClass('error');
+            return false;
+        }
+        else
+        {
+            $('input').removeClass('error');
+        }
+    });
+
+    $(function () {
+        if (($('.alert-success').contents().length  != 0))
+        {
+            $('.alert-success').hide();
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        if (($('.alert-danger').contents().length  != 0))
+        {
+            $('.alert-danger').hide();
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
 </script>

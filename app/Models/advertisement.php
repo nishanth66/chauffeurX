@@ -33,6 +33,15 @@ class advertisement extends Model
         'address',
         'lat',
         'lng',
+        'place',
+        'adUserid',
+        'visible',
+        'max_day_budget',
+        'filter_category',
+        'category',
+        'status',
+        'exceed_daily_budget',
+        'link',
     ];
 
     /**
@@ -47,8 +56,16 @@ class advertisement extends Model
         'address' => 'string',
         'lat' => 'string',
         'lng' => 'string',
+        'place' => 'string',
+        'adUserid' => 'string',
+        'visible' => 'string',
+        'max_day_budget' => 'string',
+        'filter_category' => 'string',
+        'category' => 'string',
+        'status' => 'string',
+        'exceed_daily_budget' => 'string',
+        'link' => 'string',
     ];
-
     /**
      * Validation rules
      *

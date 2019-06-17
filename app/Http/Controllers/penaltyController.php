@@ -33,6 +33,11 @@ class penaltyController extends Controller
     public function store(Request $request)
     {
         $input = $request->except('_token');
+        if (DB::table('driver_penalty')->where('city',$request->city)->exists())
+        {
+            Flash::error("Entry already exists");
+            return redirect(route('penalty.index'));
+        }
         DB::table('driver_penalty')->insert($input);
         Flash::success("Driver Penalty Saved Successfully");
         return redirect(route('penalty.index'));
@@ -40,6 +45,11 @@ class penaltyController extends Controller
     public function update($id,Request $request)
     {
         $input = $request->except('_token','_method');
+        if (DB::table('driver_penalty')->where('city',$request->city)->where('id','!=',$id)->exists())
+        {
+            Flash::error("Entry already exists");
+            return redirect(route('penalty.index'));
+        }
         DB::table('driver_penalty')->whereId($id)->update($input);
         Flash::success("Driver Penalty Saved Successfully");
         return redirect(route('penalty.index'));

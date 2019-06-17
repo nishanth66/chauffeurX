@@ -1,4 +1,5 @@
 @include('drivers.FrontEnd.topbar')
+<div class="row row-master"></div>
 <div class="container">
         <div class="login-div">
             <center>
@@ -50,5 +51,45 @@
         }
 
     })(window);
+    $(document).ready(function() {
+        $('.alert-success').hide();
+        $('.alert-warning').hide();
+        $('.alert-danger').hide();
 
+        if (($('.alert-success').contents().length != 0)) {
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        if (($('.alert-danger').contents().length  != 0))
+        {
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        if (($('.alert-warning').contents().length  != 0))
+        {
+            $.toast({
+                heading: '',
+                text: $('.alert-warning').text(),
+                icon: 'warning',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
 </script>

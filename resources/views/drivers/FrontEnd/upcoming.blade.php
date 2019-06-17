@@ -1,4 +1,9 @@
 <div class="overlay" id="overlay"></div>
+<div class="loader" id="loader-2">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
 @include('drivers.FrontEnd.header')
 @include('drivers.FrontEnd.sideBar')
 <style>
@@ -110,8 +115,22 @@
             $('.collapse.in').toggleClass('in');
             $('a[aria-expanded=true]').attr('aria-expanded', 'false');
         });
+        if (($('.alert-success').contents().length  != 0))
+        {
+            $('.alert-success').hide();
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
     });
     function readURL(input) {
+        $('.loader').show();
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -132,12 +151,22 @@
             contentType: false,
             success: function(result) {
                 $('#upcomingEdit')[0].reset();
+                $('.loader').hide();
+                    $.toast({
+                        heading: 'Success',
+                        text: "Car Inspection is updated",
+                        icon: 'success',
+                        hideAfter: 5000,
+                        showHideTransition: 'slide',
+                        loader: false
+                    })
             }
 
         });
     }
 
     function readURL2(input) {
+        $('.loader').show();
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -157,12 +186,22 @@
             processData: false,
             contentType: false,
             success: function(result) {
+                $('.loader').hide();
                 $('#upcomingEdit')[0].reset();
+                $.toast({
+                    heading: 'Success',
+                    text: "Car Insurance is updated",
+                    icon: 'success',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                })
             }
 
         });
     }
     function readURL3(input) {
+        $('.loader').show();
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -182,12 +221,22 @@
             processData: false,
             contentType: false,
             success: function(result) {
+                $('.loader').hide();
                 $('#upcomingEdit')[0].reset();
+                $.toast({
+                    heading: 'Success',
+                    text: "Car Registration is updated",
+                    icon: 'success',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                })
             }
 
         });
     }
     function readURL4(input) {
+        $('.loader').show();
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -207,7 +256,16 @@
             processData: false,
             contentType: false,
             success: function(result) {
+                $('.loader').hide();
                 $('#upcomingEdit')[0].reset();
+                $.toast({
+                    heading: 'Success',
+                    text: "Driving Licence is updated",
+                    icon: 'success',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                })
             }
 
         });

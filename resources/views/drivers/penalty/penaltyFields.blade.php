@@ -4,7 +4,7 @@
     <select name="city" class="form-control">
         <option value="" selected disabled>Select a City</option>
         @foreach($cities as $city)
-            <option value="{{$city->id}}" <?php if(isset($penalty) && $penalty->city == $city->id) { echo "selected"; } ?>>{{$city->city}}</option>
+            <option value="{{$city->city}}" <?php if(isset($penalty) && $penalty->city == $city->city) { echo "selected"; } ?>>{{$city->city}}</option>
         @endforeach
     </select>
 </div>

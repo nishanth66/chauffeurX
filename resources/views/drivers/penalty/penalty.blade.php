@@ -27,11 +27,9 @@
                     </thead>
                     <tbody>
                     @foreach($penalties as $penalty)
-                        <?php
-                            $city = \App\Models\availableCities::whereId($penalty->city)->first();
-                        ?>
+
                         <tr>
-                            <td>{!! $city->city !!}</td>
+                            <td>{!! $penalty->city !!}</td>
                             <td>{!! $penalty->penalty !!}</td>
                             <td>
                                 {!! Form::open(['route' => ['penalty.destroy', $penalty->id], 'method' => 'delete']) !!}

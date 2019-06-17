@@ -29,12 +29,12 @@
     }
 </style>
 {{--<script src="{{asset('public/js/pin.js')}}"></script>--}}
-
+<div class="row row-master"></div>
 <div class="container-fluid">
     <div class="col-md-12 align">
         <div class="col-md-7 login-div">
             @include('flash::message')
-            <div class="message">We sent a verification code to your email and phone.<br> Please type this code below</div>
+            <div class="message">We sent a verification code to your email.<br> Please type this code below</div>
             <form method="post" action="{{url('driver/verify')}}">
                 <div class="wrapper">
                     @include('flash::message')
@@ -56,7 +56,7 @@
                     {{--<hr>--}}
                 </div>
                 <center>
-                    <button type="submit" class="btn btn-primary btn-next">Next</button>
+                    <button type="submit" class="btn btn-primary btn-next" id="nextBtn">Next</button>
                 </center>
             </form>
 
@@ -74,6 +74,20 @@
             document.getElementById(nextFieldID).focus();
         }
     }
+    $('#nextBtn').click(function () {
+        if ($('#email1').val() == '')
+        {
+            $.toast({
+                heading: 'Failed',
+                text: "Verification code is empty",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            return false;
+        }
+    });
     function getEmailValue()
     {
 //        alert($('#1').val());
@@ -89,4 +103,31 @@
             document.getElementById(nextFieldID).focus();
         }
     }
+    $(document).ready(function() {
+        if (($('.alert-success').contents().length != 0)) {
+            $('.alert-success').hide();
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        if (($('.alert-danger').contents().length  != 0))
+        {
+            $('.alert-danger').hide();
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
 </script>

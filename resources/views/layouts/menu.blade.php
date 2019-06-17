@@ -1,11 +1,11 @@
 
 @if(Auth::user()->status == 0)
 <li class="{{ Request::is('availableCities*') ? 'active' : '' }}">
-    <a href="{!! route('availableCities.index') !!}"><i class="fa fa-building-o"></i><span>Available Cities</span></a>
+    <a href="{!! route('availableCities.index') !!}"><i class="fas fa-city"></i><span>Available Cities</span></a>
 </li>
 
 <li class="treeview {{ Request::is('driver/approved*') || Request::is('driver/pending*') || Request::is('driver/rejected*') ? 'active' : '' }}">
-    <a href="#"><i class="fa fa-car"></i> <span>Drivers</span>
+    <a href="#"><i class="fas fa-car"></i> <span>Drivers</span>
         <span class="pull-right-container">
                 <i class="fa fa-angle-left pull-right"></i>
               </span>
@@ -18,6 +18,15 @@
     </ul>
 </li>
 
+<li class="{{ Request::is('driverSubscriptions*') ? 'active' : '' }}">
+    <a href="{!! url('driverSubscriptions') !!}"><i class="fas fa-sign-in-alt"></i><span>Driver Subscription</span></a>
+</li>
+<li class="{{ Request::is('adSettings*') ? 'active' : '' }}">
+    <a href="{!! route('adSettings.index') !!}"><i class="fas fa-ad"></i><span>Advertisement Settings</span></a>
+</li>
+<li class="{{ Request::is('adCategories*') ? 'active' : '' }}">
+    <a href="{!! route('adCategories.index') !!}"><i class="fa fa-ad"></i><span>Advertisement Categories</span></a>
+</li>
 <li class="{{ Request::is('cancellations*') ? 'active' : '' }}">
     <a href="{!! url('cancellations') !!}"><i class="fa fa-gift"></i><span>Cancellation</span></a>
 </li>

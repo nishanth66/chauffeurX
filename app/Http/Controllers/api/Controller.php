@@ -13,7 +13,7 @@ use Twilio\Rest\Client;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-    public function sendOtp($sid,$token,$mNumber,$otp)
+    public function sendOtp($sid,$token,$mNumber,$otp,$text)
     {
         $twilio = new Client($sid, $token);
         try
@@ -21,7 +21,7 @@ class Controller extends BaseController
             $message = $twilio->messages
                 ->create($mNumber, // to
                     array("from" => "+19562759175",
-                        "body" => "Your ChauffeurX verification code is: ".$otp
+                        "body" => $text.": ".$otp
                     )
                 );
         }
@@ -40,47 +40,96 @@ class Controller extends BaseController
         return $response;
     }
 
-    public function pushNotification($title,$body,$token,$user,$pushFor)
+    public function pushNotification($title,$body,$token,$user,$pushFor,$msg,$app)
     {
-        $push = new PushNotification( $user->device_type );
-        if ($user->device_type == 'apn' || $user->device_type == 'APN')
-        {
-            $message=$push->setMessage( [
+        $push = new PushNotification($user->device_type);
+        if ($user->device_type == 'apn' || $user->device_type == 'APN') {
+            if ($app == 2)
+            {
+                $push->setConfig([
+                    'certificate' => __DIR__ .'/iosCertificate/driver_cer.pem'
+                ]);
+            }
+            else
+            {
+                $push->setConfig([
+                    'certificate' => __DIR__ .'/iosCertificate/passenger.pem'
+                ]);
+            }
+
+//            $va= array('aps' => [
+//                'alert' => [
+//                    'title' => $title,
+//                    'body' => $body,
+//                    'pushFor' => $pushFor
+//                ],
+//                'sound' => 'default',
+//                'badge' => 1
+//
+//            ]);
+            $message = $push->setMessage([
                 'aps' => [
                     'alert' => [
                         'title' => $title,
-                        'body'  => $body,
+                        'body' => $body,
                         'pushFor' => $pushFor
                     ],
                     'sound' => 'default',
                     'badge' => 1
 
                 ]
-            ] )
-                ->setDevicesToken( $token )
+            ])
+                ->setDevicesToken($token)
                 ->send()->getFeedback();
 
-        }
-        else
-        {
+        } else {
+
             $push->setConfig([
                 'priority' => 'high'
             ]);
-            $message = $push->setMessage([
-                'notification' => [
-                    'title'=>$title,
-                    'body'=>$body,
-                    'pushFor' => $pushFor,
-                    'sound' => 'default'
-                ]
-            ])
-                ->setApiKey('AIzaSyD1a4xgqMOan0hCbb5itVOkjBKyCD7A8Gc')
-                ->setDevicesToken($token)
-                ->send()
-                ->getFeedback();
+            $body['title']=$title;
+            $message = $this->push_notification_android($token,$title,$msg,$body);
+
         }
         return $message;
-
     }
+    public function push_notification_android($device_id,$title,$message,$body){
 
+        //API URL of FCM
+        $url = 'https://fcm.googleapis.com/fcm/send';
+
+        /*api_key available in:
+        Firebase Console -> Project Settings -> CLOUD MESSAGING -> Server key*/
+        $api_key = 'AIzaSyD1a4xgqMOan0hCbb5itVOkjBKyCD7A8Gc';
+
+        $fields = array (
+            'registration_ids' => array (
+                $device_id
+            ),
+            'data' => $body,
+            'priority' => 'high'
+        );
+
+//        echo json_encode($fields);
+        //header includes Content type and api key
+        $headers = array(
+            'Content-Type:application/json',
+            'Authorization:key='.$api_key
+        );
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+        $result = curl_exec($ch);
+//        if ($result === FALSE) {
+//           return $result
+//        }
+        curl_close($ch);
+        return $result;
+    }
 }

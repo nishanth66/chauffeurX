@@ -1,4 +1,9 @@
 <div class="overlay" id="overlay"></div>
+<div class="loader" id="loader-2">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
 @include('drivers.FrontEnd.header')
 @include('drivers.FrontEnd.sideBar')
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
@@ -9,7 +14,7 @@
      * element that contains the map. */
     #map {
         height: 500px;
-        width: 450px;
+        width: 400px;
         display: none;
         float: right !important;
     }
@@ -60,6 +65,10 @@
     .modal-header
     {
         border-bottom: none;
+    }
+    #mapMob
+    {
+        display: none !important;
     }
     @media (max-width: 768px)
     {
@@ -149,6 +158,7 @@
         <div class="col-md-5 col-sm-5 desktop">
             <div id="map"></div>
         </div>
+
     </div>
 <div class="row">
     <center>
@@ -203,7 +213,7 @@ function getAddress($lat,$lon)
                 </div>
                 <div class="row">
                     <center>
-                        <button type="button" class="btn btn-primary" onclick="assignNewDate()">Save</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="assignNewDate()">Save</button>
                     </center>
                 </div>
             </div>
@@ -269,7 +279,7 @@ function getAddress($lat,$lon)
         var map = new google.maps.Map(document.getElementById('map'), {
             zoom: 7,
             center: {lat: 12.9716, lng: 77.5946}
-        });
+        })
         directionsDisplay.setMap(map);
         calculateAndDisplayRoute(directionsService, directionsDisplay);
     }
@@ -312,6 +322,7 @@ function getAddress($lat,$lon)
     });
     function assignNewDate()
     {
+        $('.loader').show();
         var from = $('#date1').val();
         var to = $('#date2').val();
         var driverid = $('#driverid').val();
@@ -323,8 +334,9 @@ function getAddress($lat,$lon)
             url: "{{url('driver/fromToDate')}}"+"/"+from+"/"+to+"/"+driverid,
             success: function(result)
             {
-                $('#betweenValues').modal('toggle');
+                $('#betweenValues').modal('hide');
                 window.location.reload();
+                $('.loader').hide();
             }
         });
     }

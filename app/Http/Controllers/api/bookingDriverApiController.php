@@ -82,7 +82,7 @@ class bookingDriverApiController extends Controller
         $lat1 = $userDetais[1];
         $long1 = $userDetais[2];
         $city = app('App\Http\Controllers\api\bookingApiController')->getAddress($lat1,$long1);
-        $drivers = driver::where('isAvailable',1)->where('status',1)->where('active_ride','!=',1)->where('city','like',$city)->get();
+        $drivers = driver::where('isAvailable',1)->where('status',1)->where('active_ride','!=',1)->where('city','like',$city)->where('payment',1)->get();
         if (count($drivers) == 0)
         {
             $response['status'] = "failed";
@@ -213,6 +213,7 @@ class bookingDriverApiController extends Controller
         foreach ($drivers as $driver)
         {
             $coordinates=$this->database->getReference('online_drivers')->getChild($driver->id)->getValue();
+
             if (empty($coordinates['driverId']) || empty($coordinates['lat']) || empty($coordinates['lng']))
             {
                 continue;
@@ -294,15 +295,15 @@ class bookingDriverApiController extends Controller
         }
     }
 
-    function driverByCategory($categoryid,$fav,$discount,$userid=null,$payment=null)
+    function driverByCategory($city,$categoryid,$fav,$discount,$userid=null,$payment=null)
     {
         if ($discount == 0)
         {
-            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1' and d.active_ride=0");
+            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1' and d.active_ride=0 and d.payment=1 and d.city like '%$city%'");
         }
         else
         {
-            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1' and discount != 0 and d.active_ride=0");
+            $drivers = DB::select("select d.* from drivers d,driver_categories c where d.id=c.driverid and c.categoryid=$categoryid and d.deleted_at is null and c.deleted_at is null and d.isAvailable = 1 and d.status = '1' and discount != 0 and d.active_ride=0 and d.payment=1 and d.city like '%$city%'");
         }
         if($payment != null && $fav == 0)
         {
@@ -351,11 +352,11 @@ class bookingDriverApiController extends Controller
                     {
                         if ($discount == 0)
                         {
-                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->first();
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->where('payment',1)->where('city','like',$city)->first();
                         }
                         else
                         {
-                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('discount','!=',0)->where('active_ride',0)->first();
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('discount','!=',0)->where('active_ride',0)->where('payment',1)->where('city','like',$city)->first();
                         }
                         if (isset($driverDetail) && !empty($driverDetail))
                         {

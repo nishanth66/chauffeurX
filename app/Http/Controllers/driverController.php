@@ -4,16 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatedriverRequest;
 use App\Http\Requests\UpdatedriverRequest;
+use App\Models\advertisement_users;
 use App\Models\availableCities;
 use App\Models\booking;
 use App\Models\driver;
 use App\Models\driverBasicDetails;
+use App\Models\driverCategory;
+use App\Models\driverPaymentHistory;
 use App\Models\driverStripe;
+use App\Models\driverSubscription;
 use App\Models\driverVerification;
 use App\Models\rating;
 use App\Repositories\driverRepository;
 use App\Http\Controllers\AppBaseController;
+use App\User;
 use Carbon\Carbon;
+use Cartalyst\Stripe\Stripe;
 use Illuminate\Http\Request;
 use Flash;
 use Illuminate\Support\Facades\Auth;
@@ -136,6 +142,7 @@ class driverController extends Controller
                                 ->where('address_details', 1)
                                 ->where('licence_details', 1)
                                 ->where('documents', 1)
+                                ->where('signature','!=',null)
                                 ->exists())
                             {
                                 array_push($drivers,driver::whereId($driversCity->driverid)->where('status',0)
@@ -144,6 +151,7 @@ class driverController extends Controller
                                     ->where('address_details', 1)
                                     ->where('licence_details', 1)
                                     ->where('documents', 1)
+                                    ->where('signature','!=',null)
                                     ->first());
                             }
                         }
@@ -156,6 +164,7 @@ class driverController extends Controller
                             ->where('address_details', 1)
                             ->where('licence_details', 1)
                             ->where('documents', 1)
+                            ->where('signature','!=',null)
                             ->get();
                     }
 
@@ -2156,7 +2165,10 @@ class driverController extends Controller
         }
         else
         {
-            $driver = driver::where('userid',Auth::user()->id)->first();
+            if($driver->payment == 0)
+            {
+                return redirect('driver/payment');
+            }
             $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
             $revenue = 0;
             $rides = 0;
@@ -2315,6 +2327,7 @@ EOD;
                                 ->where('address_details', 1)
                                 ->where('licence_details', 1)
                                 ->where('documents', 1)
+                                ->where('signature','!=',null)
                                 ->first();
                     }
                     elseif ($code == 1)
@@ -2419,6 +2432,7 @@ EOD;
                 $count = rating::where('driverid', $driver->id)->where('created_at', '>=', Carbon::today())->count();
                 $rating = ($rating*100)/($count*5);
             }
+            $result['message'] = "Today's Stats";
         }
         elseif ($value == 2)
         {
@@ -2438,6 +2452,7 @@ EOD;
                 $count = rating::where('driverid',$driver->id)->where('created_at','>=',Carbon::now()->subDays(7))->count();
                 $rating = ($rating*100)/($count*5);
             }
+            $result['message'] = "Last 7 day's Stats";
         }
         elseif ($value ==3)
         {
@@ -2457,6 +2472,7 @@ EOD;
                 $count = rating::where('driverid',$driver->id)->where('created_at','>=',Carbon::now()->subDays(30))->count();
                 $rating = ($rating*100)/($count*5);
             }
+            $result['message'] = "Last 30 day's Stats";
         }
         else
         {
@@ -2476,6 +2492,7 @@ EOD;
                 $count = rating::where('driverid',$driver->id)->whereYear('created_at',Carbon::now()->year)->whereMonth('created_at', Carbon::now()->month)->count();
                 $rating = ($rating*100)/($count*5);
             }
+            $result['message'] = "This month's stats";
         }
         $distance = $distance * 0.621371;
         $result['revenue'] = '$'.number_format($revenue);
@@ -2519,6 +2536,10 @@ EOD;
             }
             else
             {
+                if($driver->payment == 0)
+                {
+                    return redirect('driver/payment');
+                }
                 $countries = array("AF" => "Afghanistan",
                     "AX" => "Åland Islands",
                     "AL" => "Albania",
@@ -3759,6 +3780,10 @@ EOD;
             }
             else
             {
+                if($driver->payment == 0)
+                {
+                    return redirect('driver/payment');
+                }
                 if($from = Session::get('fromDate') && $to = Session::get('toDate'))
                 {
                     $from = Session::get('fromDate');
@@ -3815,8 +3840,23 @@ EOD;
         }
         elseif ($request->type == 3)
         {
-            $driver = driver::whereId($request->driverid)->update(['email'=>$request->email]);
-            return $driver;
+            if (User::where('id','!=',Auth::user()->id)->where('email',$request->email)->exists() || driver::where('id','!=',$request->driverid)->where('email',$request->email)->exists())
+            {
+                return 2;
+            }
+            else
+            {
+                $driver = driver::whereId($request->driverid)->update(['new_email'=>$request->email]);
+                $array['email'] = $request->email;
+                $email_otp = substr(str_shuffle("012345678901234567890123456789"), 0, 6);
+                $array['otp'] = $email_otp;
+                Mail::send('emails.verify', ['array' => $array], function ($message) use ($array) {
+                    $message->to($array['email'])->subject("Verify Email");
+                });
+                $input1['email_otp'] = $email_otp;
+                driver::whereId($request->driverid)->update($input1);
+                return $driver;
+            }
         }
         else
         {
@@ -3860,6 +3900,10 @@ EOD;
             }
             else
             {
+                if($driver->payment == 0)
+                {
+                    return redirect('driver/payment');
+                }
                 $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
                 $documents = driverVerification::where('driverid',$driver->id)->first();
                 return view('drivers.FrontEnd.upcoming',compact('driver','driver_name','documents'));
@@ -4002,12 +4046,20 @@ EOD;
             }
             else
             {
+                if($driver->payment == 0)
+                {
+                    return redirect('driver/payment');
+                }
 //                $date = new \DateTime();
 //                $date->add(new \DateInterval('P1M'));
 //                return $date->format('d/m/Y H:i:s');
+                $driverPay = driverPaymentHistory::where('driverid',$driver->id)->get();
+                $DriverCategory = driverCategory::where('driverid',$driver->id)->first();
+                $subscription = driverSubscription::where('city','like',$driver->city)->where('category',$DriverCategory->categoryid)->first();
                 $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
-                $cards = driverStripe::where('driverid',$driver->id)->get();
-                return view('drivers.FrontEnd.account',compact('driver','driver_name','cards'));
+                $cards = driverStripe::where('driverid',$driver->id)->first();
+                $histories = driverPaymentHistory::where('driverid',$driver->id)->get();
+                return view('drivers.FrontEnd.account',compact('driver','driver_name','cards','subscription','histories'));
             }
         }
         else
@@ -4050,6 +4102,178 @@ EOD;
         }
         if (file_exists($new_image)) {
             @unlink($new_image);
+        }
+    }
+
+    public function payment()
+    {
+        $driver = driver::where('userid',Auth::user()->id)->first();
+        $DriverCategory = driverCategory::where('driverid',$driver->id)->first();
+        $subscription = driverSubscription::where('city','like',$driver->city)->where('category',$DriverCategory)->first();
+        $driver_name = $driver->first_name.' '.$driver->middle_name.' '.$driver->last_name;
+        return view('drivers.FrontEnd.payment',compact('driver_name','driver','subscription'));
+    }
+
+    public function payWithStripe(Request $request)
+    {
+        $stripe = Stripe::make(env('STRIPE_SECRET'));
+
+        $driver = driver::where('userid', Auth::user()->id)->first();
+        if (empty($driver->stripeid)) {
+            $customer = $stripe->customers()->create([
+                'email' => $driver->email,
+            ]);
+            $customerId = $customer['id'];
+            driver::whereId($driver->id)->update(['stripeid' => $customerId]);
+        } else {
+            $customerId = $driver->stripeid;
+        }
+        try {
+            $token = $stripe->tokens()->create([
+                'card' => [
+                    'number' => $request->get('card_no'),
+                    'exp_month' => $request->get('ccExpiryMonth'),
+                    'exp_year' => $request->get('ccExpiryYear'),
+                    'cvc' => $request->get('cvvNumber'),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            $response['code'] = 0;
+            $response['message'] = $e->getMessage();
+            return $response;
+        }
+        if(driverStripe::where('driverid',$driver->id)->where('fingerprint',$token['card']['fingerprint'])->exists() == 0)
+        {
+            if (driverStripe::where('driverid',$driver->id)->exists())
+            {
+                $oldCard = driverStripe::where('driverid',$driver->id)->first();
+                $stripe->cards()->delete($customerId, $oldCard->cardNo);
+                driverStripe::whereId($oldCard->id)->forcedelete();
+            }
+            $card = $stripe->cards()->create($customerId, $token['id']);
+            $input['driverid'] = $driver->id;
+            $input['cardNo'] = $card['id'];
+            $input['fingerprint'] = $card['fingerprint'];
+            $input['status'] = 1;
+            $input['customerId'] = $customerId;
+            $input['brand'] = $card['brand'];
+            $input['digits'] = '************'.$card['last4'];
+            driverStripe::create($input);
+        }
+        else
+        {
+            $response['code'] = 2;
+            $response['message'] = "Card already Exists";
+            return $response;
+        }
+        $DriverCategory = driverCategory::where('driverid',$driver->id)->first();
+        $driverPlans = driverSubscription::where('city','like',$driver->city)->where('category',$DriverCategory)->first();
+        $subscription = $stripe->subscriptions()->create($customerId, [
+            'plan' => $driverPlans->stripe_id,
+        ]);
+        if ($subscription['status'] == 'active')
+        {
+            $time = strtotime('+30 days');
+            driverPaymentHistory::create(['driverid'=>$driver->id,'amount'=>$driverPlans->amount,'stripe_sub'=>$subscription['id']]);
+            driver::whereId($driver->id)->update(['payment'=>1,'next_pay'=>$time]);
+            Flash::success("Payment Successfull");
+            $response['code'] = 1;
+            $response['message'] = "Payment Successfull";
+            return $response;
+        }
+        else
+        {
+            $response['code'] = 0;
+            $response['message'] = "Could not complete the Payment";
+            return $response;
+        }
+    }
+
+    public function verifyChangeEmail(Request $request)
+    {
+        if(driver::whereId($request->driverid)->where('new_email',$request->email)->where('email_otp',$request->otp)->exists())
+        {
+            driver::whereId($request->driverid)->update(['email'=>$request->email]);
+            User::whereId(Auth::user()->id)->update(['email'=>$request->email]);
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    public function resentEmailOtp(Request $request)
+    {
+        $array['email'] = $request->email;
+        $email_otp = substr(str_shuffle("012345678901234567890123456789"), 0, 6);
+        $array['otp'] = $email_otp;
+        Mail::send('emails.verify', ['array' => $array], function ($message) use ($array) {
+            $message->to($array['email'])->subject("Verify Email");
+        });
+        $input['email_otp'] = $email_otp;
+        $driver=driver::where('userid',Auth::user()->id)->update($input);
+        return $driver;
+    }
+
+    public function changeCardDetails(Request $request)
+    {
+        $stripe = Stripe::make(env('STRIPE_SECRET'));
+
+        $driver = driver::where('userid',Auth::user()->id)->first();
+        if (empty($driver->stripeid))
+        {
+            $customer = $stripe->customers()->create([
+                'email' => $driver->email,
+            ]);
+            $customerId = $customer['id'];
+            driver::whereId($driver->id)->update(['stripeid'=>$customerId]);
+        }
+        else
+        {
+            $customerId = $driver->stripeid;
+        }
+        try {
+            $token = $stripe->tokens()->create([
+                'card' => [
+                    'number' => $request->get('card_no'),
+                    'exp_month' => $request->get('ccExpiryMonth'),
+                    'exp_year' => $request->get('ccExpiryYear'),
+                    'cvc' => $request->get('cvvNumber'),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            $response['code'] = 0;
+            $response['message'] = $e->getMessage();
+            return $response;
+        }
+        if(driverStripe::where('driverid',$driver->id)->where('fingerprint',$token['card']['fingerprint'])->exists() == 0)
+        {
+            if (driverStripe::where('driverid',$driver->id)->exists())
+            {
+                $oldCard = driverStripe::where('driverid',$driver->id)->first();
+                $stripe->cards()->delete($customerId, $oldCard->cardNo);
+                driverStripe::whereId($oldCard->id)->forcedelete();
+            }
+            $card = $stripe->cards()->create($customerId, $token['id']);
+            $input['driverid'] = $driver->id;
+            $input['cardNo'] = $card['id'];
+            $input['fingerprint'] = $card['fingerprint'];
+            $input['status'] = 1;
+            $input['customerId'] = $customerId;
+            $input['brand'] = $card['brand'];
+            $input['digits'] = '************'.$card['last4'];
+            driverStripe::create($input);
+            $response['code'] = 1;
+            $response['card'] = $input['digits'];
+            $response['message'] = "Card saved Successfully";
+            return $response;
+        }
+        else
+        {
+            $response['code'] = 2;
+            $response['message'] = "Card already Exists";
+            return $response;
         }
     }
 }

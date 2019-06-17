@@ -5,13 +5,14 @@
         /*object-fit: contain;*/
     }
 </style>
+<div class="row row-master"></div>
 <div class="container-fluid">
     <div class="col-md-12 align login-div">
         <center>
             <form method="post" enctype="multipart/form-data" action="{{url('driver/documents')}}">
                 @include('flash::message')
                 {{csrf_field()}}
-                    <div class="col-md-6 col-sm-6" id="doc1">
+                    <div class="col-md-6 col-sm-6 docs" id="doc1">
                         <p class="textclr">Thanks {{$name}}.<br> Now upload your driver's license <br> <br> If you don't have it with you, you can come back later, login and you will get to this very page</p>
                         <br>
                         <center>
@@ -32,7 +33,7 @@
                             </div>
                         </center>
                     </div>
-                    <div class="col-md-6 col-sm-6" id="doc2">
+                    <div class="col-md-6 col-sm-6 docs" id="doc2">
                         <p class="textclr">Great!.<br> Now upload your Proof of Insurance <br> <br> If you don't have it with you, you can come back later, login and you will get to this very page</p>
                         <br>
                         <center>
@@ -54,14 +55,14 @@
                             </div>
                         </center>
                     </div>
-                    <div class="col-md-6 col-sm-6" id="doc3">
+                    <div class="col-md-6 col-sm-6 docs" id="doc3">
                         <p class="textclr">Perfect!.<br> Let's Validate You Car. Please Upload Your Registration <br> <br> If you don't have it with you, you can come back later, login and you will get to this very page</p>
                         <br>
                         <center>
                             <div class="col-md-12">
                                 <div class="form-group" style="position: relative;">
                                     @if(isset($driver) && $driver->car_reg != '' || !empty($driver->car_reg))
-                                        <img src="{{asset('public/avatars').'/'.$driver->car_reg}}" class="license" id="preview">
+                                        <img src="{{asset('public/avatars').'/'.$driver->car_reg}}" class="license" id="preview3">
                                     @else
                                         <img src="{{asset('public/image/rc.png')}}" class="license" id="preview3">
                                     @endif
@@ -75,7 +76,7 @@
                             </div>
                         </center>
                     </div>
-                    <div class="col-md-6 col-sm-6" id="doc4">
+                    <div class="col-md-6 col-sm-6 docs" id="doc4">
                         <p class="textclr">Almost There!.<br> Upload Your Car Inspection Document <br>If You had it done for Another app (Uber,Lyft..), we can use it <br> <br> If you don't have it with you, you can come back later, login and you will get to this very page</p>
                         <br>
                         <center>
@@ -83,7 +84,7 @@
                             <div class="col-md-12">
                                 <div class="form-group" style="position: relative;">
                                     @if(isset($driver) && $driver->car_inspection != '' || !empty($driver->car_inspection))
-                                        <img src="{{asset('public/avatars').'/'.$driver->car_inspection}}" class="license" id="preview">
+                                        <img src="{{asset('public/avatars').'/'.$driver->car_inspection}}" class="license" id="preview4">
                                     @else
                                         <img src="{{asset('public/image/inspect.png')}}" class="license" id="preview4">
                                     @endif
@@ -91,7 +92,7 @@
                                     <input type="file" name="car_inspection" style="display: none;" id="car_inspection" accept="image/*">
                                 </div>
                                 <div class="form-group">
-                                    <button type="submit" class="btn btn-primary btn-next">Next</button>
+                                    <button type="submit" class="btn btn-primary btn-next" id="btnNext">Next</button>
                                     <button type="button" class="btn btn-default btn-back" onclick="showDoc('3','4')">Back</button>
                                 </div>
                             </div>
@@ -166,4 +167,106 @@
         $('#doc'+hide).hide();
         $('#doc'+show).show();
     }
+    $(document).ready(function() {
+        $('.alert-success').hide();
+        if (($('.alert-success').contents().length != 0)) {
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        $('.alert-danger').hide();
+        if (($('.alert-danger').contents().length  != 0)) {
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
+</script>
+<script>
+    $('#btnNext').click(function (e) {
+        if ($('#licence').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Upload Licence is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('img').removeClass('error');
+            $('#preview').addClass('error');
+            $('.docs').hide();
+            $('#doc1').show();
+            return false;
+        }
+        else if($('#car_insurance').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Upload Car Insurance is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('img').removeClass('error');
+            $('#preview2').addClass('error');
+            $('.docs').hide();
+            $('#doc2').show();
+            return false;
+        }
+        else if($('#car_reg').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Upload Car Registration is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('img').removeClass('error');
+            $('#preview3').addClass('error');
+            $('.docs').hide();
+            $('#doc3').show();
+            return false;
+        }
+        else if($('#car_inspection').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Upload Car Inspection is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('img').removeClass('error');
+            $('#preview4').addClass('error');
+            $('.docs').hide();
+            $('#doc4').show();
+            return false;
+        }
+        else
+        {
+            $('img').removeClass('error');
+        }
+    });
 </script>

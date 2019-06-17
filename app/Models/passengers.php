@@ -48,6 +48,8 @@ class passengers extends Model
         'device_token',
         'device_type',
         'activated',
+        'active_ride',
+        'image',
     ];
 
     /**
@@ -73,6 +75,8 @@ class passengers extends Model
         'device_token' => 'string',
         'device_type' => 'string',
         'activated' => 'string',
+        'active_ride' => 'string',
+        'image' => 'string',
     ];
 
     /**

@@ -20,7 +20,6 @@
                     <tr>
                         <th>City</th>
                         <th>Near by Car Distance</th>
-                        <th>Near by Advertisement Distance</th>
                         <th>Action</th>
                     </tr>
                     </thead>
@@ -30,7 +29,6 @@
                         <tr>
                             <td>{!! $distance->city !!}</td>
                             <td>{!! $distance->car !!}</td>
-                            <td>{!! $distance->ads !!}</td>
                             <td>
                                 {!! Form::open(['route' => ['maximumDistance.destroy', $distance->id], 'method' => 'delete']) !!}
                                 <div class='btn-group'>

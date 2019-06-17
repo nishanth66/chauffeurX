@@ -56,6 +56,8 @@ class advertisement_users extends Model
         'address_details',
         'email_otp',
         'code',
+        'image',
+        'new_email',
     ];
 
     /**
@@ -83,6 +85,8 @@ class advertisement_users extends Model
         'address_details' => 'string',
         'email_otp' => 'string',
         'code' => 'string',
+        'image' => 'string',
+        'new_email' => 'string',
     ];
 
     /**

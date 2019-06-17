@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\driver;
+use App\Models\passengers;
 use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -93,10 +94,39 @@ class RegisterController extends Controller
             $input['password'] = Hash::make($data['password']);
             $input['email'] = $data['email'];
             $input['email_otp'] = $email_otp;
+            $i=1;
+            $j = 6;
+            while($i != 0)
+            {
+                $string = "";
+                for($i=0;$i < $j;$i++){
+                    srand((double)microtime()*1234567);
+                    $x = mt_rand(0,2);
+                    switch($x){
+                        case 0:$string.= chr(mt_rand(97,122));break;
+                        case 1:$string.= chr(mt_rand(65,90));break;
+                        case 2:$string.= chr(mt_rand(48,57));break;
+                    }
+                }
+                if (driver::where('referal_code','like',$string)->exists() || passengers::where('referral_code','like',$string)->exists())
+                {
+                    if ($i > 99)
+                    {
+                        $j++;
+                    }
+
+                    $i=1;
+                }
+                else
+                {
+                    $i=0;
+                    $input['referal_code'] = $string;
+                    $driver = driver::create($input);
+                }
+            }
             Mail::send('emails.verify', ['array' => $array], function ($message) use ($array) {
                 $message->to($array['email'])->subject("Verify Email");
             });
-            $driver = driver::create($input);
             $reference = $this->database->getReference('user');
             $postRef = $reference->push([
                 'userid ' => 'driver_'.$driver->id,

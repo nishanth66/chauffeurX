@@ -51,6 +51,10 @@ Route::resource('cancellations', 'cencellationController');
 
 Route::resource('passengerStripes', 'passengerStripeController');
 
+Route::resource('driverSubscriptions', 'driverSubscriptionController');
+
+Route::resource('driverPaymentHistories', 'driverPaymentHistoryController');
+
 Auth::routes();
 
 Route::get('/home', 'HomeController@index');
@@ -123,9 +127,12 @@ Route::post('categorySaveCoins', 'coins@newCategoryCoinsSave');
 Route::resource('ranks', 'rankController');
 
 Route::get('abc','api\driverApiController@abc');
+Route::get('changeSubscriptionCity/{city}','driverSubscriptionController@changeSubscriptionCity');
 
 Route::get('changeCity/{city}/{code}','driverController@changeCity');
 Route::get('changeCategoryCity/{city}','categoriesController@changeCity');
+Route::get('changeAdCatCity/{city}','adCategoryController@changeAdCatCity');
+Route::get('changeAdCity/{city}','adSettingsController@changeCity');
 Route::get('changePaymentCity/{city}','driverTipsController@changeCity');
 Route::get('changeData/{val}','driverController@changeData');
 Route::get('category/delete/{id}','categoriesController@delete');
@@ -135,6 +142,11 @@ Route::get('fetchCityCategory/{city}','priceController@fetchCityCategory');
 Route::prefix('driver/')->group(function () {
 //    login/register
     Route::get('home','driverController@home');
+    Route::get('payment','driverController@payment');
+    Route::post('payment','driverController@payWithStripe');
+    Route::post('verifyChangeEmail','driverController@verifyChangeEmail');
+    Route::post('resentEmailOtp','driverController@resentEmailOtp');
+    Route::post('changeCardDetails','driverController@changeCardDetails');
     Route::get('delete','driverController@delete');
     Route::get('approved','driverController@index');
     Route::get('pending','driverController@pending');
@@ -188,9 +200,11 @@ Route::prefix('advertisement/')->group(function () {
     Route::get('register', 'frontEnd@adRegister');
     Route::post('register', 'frontEnd@SaveadRegister');
     Route::get('login','frontEnd@login');
+    Route::get('changeData/{id}','advertisementController@changeData');
 
     Route::get('verify','advertisementController@verify');
     Route::get('resendOtp','advertisementController@resendOtp');
+
     Route::post('verify','advertisementController@verifyOtp');
 
     Route::get('profile','advertisementController@profile');
@@ -200,9 +214,23 @@ Route::prefix('advertisement/')->group(function () {
     Route::post('address','advertisementController@saveAddress');
 
     Route::get('gettingStarted','advertisementController@gettingStarted');
+    Route::get('visible/{visible}/{id}','advertisementController@visible');
+//    Route::get('create','advertisementController@createAd');
 
 
     Route::get('home','advertisementController@home');
+
+    Route::get('editProfile','advertisementController@editProfile');
+    Route::post('editProfile','advertisementController@saveEditProfile');
+    Route::post('resentEmailOtp','advertisementController@resentEmailOtp');
+    Route::post('verifyChangeEmail','advertisementController@verifyChangeEmail');
+    Route::post('saveCard','advertisementController@saveCard');
+
+
+    Route::get('edit/{id}','advertisementController@adEdit');
+    Route::get('create','advertisementController@createAd');
+    Route::post('create','advertisementController@saveAds');
+    Route::post('delete','advertisementController@deleteAds');
 
 });
 
@@ -225,6 +253,7 @@ Route::resource('serviceFees', 'serviceFeeController');
 
 Route::get('fireBase', 'affiliateStripeController@fireBase');
 Route::get('calculateDistance/{lat1}/{lon1}/{lat2}/{lon2}', 'api\bookingApiController@calculateDistance');
+Route::get('sendPushDemo/{id}', 'api\passengerApiController@sendPush');
 
 
 Route::resource('driverStripes', 'driverStripeController');
@@ -232,3 +261,14 @@ Route::resource('driverStripes', 'driverStripeController');
 Route::resource('passengerPayments', 'passengerPaymentController');
 
 Route::resource('driverPayments', 'driverPaymentController');
+
+//*************************************Cron Jobs***********************************************************************
+
+Route::get('driverSubscription', 'cronController@driverSubscription');
+Route::get('payAdBudget','cronController@payAdBudget');
+
+
+
+
+Route::resource('adSettings', 'adSettingsController');
+Route::resource('adCategories', 'adCategoryController');

@@ -85,6 +85,10 @@ class driverTipsController extends Controller
     public function store(CreatedriverTipsRequest $request)
     {
         $input = $request->except('_token','_method');
+        if ($input['free'] == null)
+        {
+            $input['free'] = 0;
+        }
         if (DB::table('payment_methods')->where('city',$request->city)->where('name',$request->name)->exists())
         {
             Flash::error("The entry is already Exists! Please try editing it");

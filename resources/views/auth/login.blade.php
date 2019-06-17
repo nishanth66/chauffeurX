@@ -54,7 +54,8 @@
         }
     </style>
 </head>
-<body class="hold-transition login-page">
+<body class="hold-transition login-page login-div">
+<div class="row cow-master"></div>
 <div class="login-box">
     @include('flash::message')
     <div class="login-logo">
@@ -63,12 +64,13 @@
 
     <!-- /.login-logo -->
     <div class="login-box-body">
+        @include('adminlte-templates::common.errors')
         <center>
             <form method="post" action="{{ url('/login') }}">
             {!! csrf_field() !!}
 
             <div class="form-group has-feedback {{ $errors->has('email') ? ' has-error' : '' }}">
-                <input type="email" class="form-control1" id="email1" name="email" value="{{ old('email') }}" placeholder="Your Email" onchange="">
+                <input type="email" class="form-control1" id="email1" name="email" value="{{ old('email') }}" placeholder="Your Email">
                 <strong>
                     <p id="email" class="help-block1">Email is Required</p>
                 </strong>

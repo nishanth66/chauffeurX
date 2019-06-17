@@ -1,3 +1,8 @@
+<div class="loader" id="loader-2">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,7 +28,7 @@
 
     <!-- iCheck -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/skins/square/_all.css">
-
+    <link href="{{asset('public/css/toast.css')}}" rel="stylesheet">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -100,7 +105,7 @@
             </div>
 
             <div class="form-group col-md-12">
-                <button class="btn btn-primary btn-reg" id="btnLogin" onclick="validate()">Signup</button>
+                <button class="btn btn-primary btn-reg" id="btnLogin">Signup</button>
             </div>
 
             <div class="form-group col-md-12">
@@ -118,7 +123,7 @@
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
+<script src="{{asset('public/js/toast.js')}}"></script>
 <!-- AdminLTE App -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.3/js/adminlte.min.js"></script>
 
@@ -131,6 +136,97 @@
             radioClass: 'iradio_square-blue',
             increaseArea: '20%' // optional
         });
+        if (($('.alert-success').contents().length  != 0))
+        {
+            $('.alert-success').hide();
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+        if (($('.alert-danger').contents().length  != 0))
+        {
+            $('.alert-danger').hide();
+            $.toast({
+                heading: 'Failed',
+                text: $('.alert-danger').text(),
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
+    });
+    $('#btnLogin').click(function (e) {
+        if ($('#email1').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Email is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('#email1').addClass('error');
+            $('#psw1').removeClass('error');
+            return false;
+        }
+        else if($('#psw1').val() == '')
+        {
+            e.preventDefault();
+            $.toast({
+                heading: 'Failed',
+                text: "Password is required",
+                icon: 'error',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            });
+            $('#psw1').addClass('error');
+            $('#email1').removeClass('error');
+            return false;
+        }
+        else
+        {
+            if ($('#psw1').val() != $('#psw2').val())
+            {
+                e.preventDefault();
+                $.toast({
+                    heading: 'Failed',
+                    text: "Password and Confirm Password do not match",
+                    icon: 'error',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                });
+                $('#psw1').addClass('error');
+                $('#email1').removeClass('error');
+                return false;
+            }
+            if (grecaptcha.getResponse().length == 0)
+            {
+                e.preventDefault();
+                $.toast({
+                    heading: 'Failed',
+                    text: "Please verify that you are not robot",
+                    icon: 'error',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                });
+                return false;
+            }
+            $('#psw1').removeClass('error');
+            $('#email1').removeClass('error');
+        }
     });
 </script>
 
@@ -142,58 +238,6 @@
             increaseArea: '20%' // optional
         });
     });
-    function validate() {
-        var email = $('#email1').val();
-        var psw = $('#psw1').val();
-        var cpsw = $('#psw2').val();
-        if (email == '')
-        {
-            $('#btnLogin').prop('type','button');
-            $('#email').show();
-        }
-        else
-        {
-            $('#btnLogin').prop('type','submit');
-            $('#email').hide();
-        }
-        if (psw == '')
-        {
-            $('#btnLogin').prop('type','button');
-            $('#psw').show();
-        }
-        else
-        {
-            $('#btnLogin').prop('type','submit');
-            $('#psw').hide();
-        }
-        if (cpsw == '')
-        {
-            $('#btnLogin').prop('type','button');
-            $('#cpsw').show();
-        }
-        else
-        {
-            $('#btnLogin').prop('type','submit');
-            $('#cpsw').hide();
-            if (psw != cpsw)
-            {
-                $('#btnLogin').prop('type','button');
-                $('#mpsw').show();
-            }
-            else
-            {
-                $('#btnLogin').prop('type','submit');
-                $('#mpsw').hide();
-            }
-        }
-    }
-    function Novalidate() {
-        $('#btnLogin').prop('type','submit');
-        $('#mpsw').hide();
-        $('#psw').hide();
-        $('#cpsw').hide();
-        $('#email').hide();
-    }
 </script>
 
 </body>

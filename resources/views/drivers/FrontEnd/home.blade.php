@@ -1,3 +1,8 @@
+<div class="loader" id="loader-2">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
 <div class="overlay" id="overlay"></div>
 @include('drivers.FrontEnd.header')
 @include('drivers.FrontEnd.sideBar')
@@ -92,6 +97,19 @@
     });
 
     $(document).ready(function() {
+        if (($('.alert-success').contents().length  != 0))
+        {
+            $('.alert-success').hide();
+            $.toast({
+                heading: 'Success',
+                text: $('.alert-success').text(),
+                icon: 'success',
+                hideAfter: 5000,
+                showHideTransition: 'slide',
+                loader: false
+            })
+
+        }
         // Gets the span width of the filled-ratings span
         // this will be the same for each rating
         var star_rating_width = $('.fill-ratings span').width();
@@ -118,6 +136,7 @@
         }
     });
     function changeData(val) {
+        $('.loader').show();
         $.ajax({
             url: "{{url('changeData')}}"+"/"+val,
             success: function(result)
@@ -126,6 +145,15 @@
                 $('#rides').text(result['rides']);
                 $('#distance').text(result['distance']);
                 $('#rate').css('width',result['rating']);
+                $.toast({
+                    heading: '',
+                    text: result['message'],
+                    icon: 'info',
+                    hideAfter: 5000,
+                    showHideTransition: 'slide',
+                    loader: false
+                });
+                $('.loader').hide();
             }
         });
     }

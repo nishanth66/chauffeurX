@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Models\adCategory;
+use App\Models\adSettings;
 use App\Models\advertisement;
 use App\Models\availableCities;
 use App\Models\basicFare;
+use App\Models\AdView;
 use App\Models\booking;
 use App\Models\categories;
 use App\Models\cencellation;
@@ -94,7 +97,7 @@ class bookingApiController extends Controller
             return $checkCity;
         }
         $payments = DB::table('payment_methods')->where('city','like',$city1)->get();
-        if (empty($payments))
+        if (count($payments) < 1)
         {
             $response['status'] = "failed";
             $response['code'] = 500;
@@ -269,7 +272,7 @@ class bookingApiController extends Controller
         else
         {
             $drivers=$this->getDriver($request->discount,$request->favoriteDriver,$city1,$request->userid,$request->payment_method_id);
-
+//            return $drivers;
             if ($request->favoriteDriver == 1 && count($drivers) < 1 && $request->discount == 0)
             {
                 $response['code'] = 500;
@@ -314,7 +317,10 @@ class bookingApiController extends Controller
                 return $response;
             }
         }
+
         $responseDriver=app('App\Http\Controllers\api\bookingDriverApiController')->fetchNearbyDrivers($drivers,$latSrc,$lonSrc);
+//        return $responseDriver;
+//        return $coordinates=$this->database->getReference('online_drivers')->getChild(27)->getValue();
         $drivers = $responseDriver['data'];
         if (empty($drivers))
         {
@@ -480,7 +486,7 @@ class bookingApiController extends Controller
             {
                 $request->payment_method_id = null;
             }
-            $drivers=app('App\Http\Controllers\api\bookingDriverApiController')->driverByCategory($request->categoryId,$request->favoriteDriver,$request->discount,$request->userid,$request->payment_method_id);
+            $drivers=app('App\Http\Controllers\api\bookingDriverApiController')->driverByCategory($city1,$request->categoryId,$request->favoriteDriver,$request->discount,$request->userid,$request->payment_method_id);
             if (count($drivers) < 1)
             {
                 $response['code'] = 500;
@@ -513,6 +519,8 @@ class bookingApiController extends Controller
             $input['otp'] = substr(str_shuffle("0123456789"), 0, 4);
             if (isset($score) && count($score) > 0)
             {
+                $input['status'] = 'Booking Requested';
+                passengers::whereId($user->id)->update(['active_ride'=>1]);
                 $booking = booking::create($input);
                 if ($booking->image != '' || !empty($booking->image))
                 {
@@ -577,6 +585,7 @@ class bookingApiController extends Controller
             return $response;
         }
     }
+
     public function rideAcceptNotification(Request $request)
     {
         if (passengers::whereId($request->userid)->exists() == 0)
@@ -599,6 +608,7 @@ class bookingApiController extends Controller
         $user = passengers::whereId($booking->userid)->first();
         $nextDrivers = DB::table('bookingDriver_push')->where('bookingid',$booking->id)->first();
 
+//        return $nextDrivers;
         $nextDrivers = explode(',',$nextDrivers->array);
         if(!isset($nextDrivers[0]))
         {
@@ -626,12 +636,22 @@ class bookingApiController extends Controller
         $pushFor = "Accept Ride";
         $token = (string)$riderDetails->device_token;
         $body['username'] = $user->fname.' '.$user->lname;
-        $body['booking_details'] = $booking;
+        $body['booking_id'] = $booking->id;
+        $body['userid'] = $booking->userid;
+        $body['phone'] = $booking->phone;
+        $body['source'] = $booking->source;
+        $body['destination'] = $booking->destination;
+        $body['original_price'] = $booking->original_price;
+        $body['price'] = $booking->price;
+        $body['distance'] = $booking->distance;
+        $body['estimated_time'] = $booking->estimated_time;
         $body['driverid'] = $riderDetails->id;
         $body['user_rating'] = $this->getUserRating($user->id);
-        $body['message'] = "Ride Request";
-        $UserpushNotification = parent::pushNotification($title,$body,$token,$riderDetails,$pushFor);
-
+        $body['user_device_token'] = (string)$user->device_token;
+        $msg = "Ride Request";
+        $body['message'] = $msg;
+        $body['title'] = $title;
+        $UserpushNotification = parent::pushNotification($title,$body,$token,$riderDetails,$pushFor,$msg,2);
 //        **************************************************************************************************************
         unset($drievr[$driverid]);
         $newScore = "";
@@ -656,7 +676,6 @@ class bookingApiController extends Controller
         return $response;
 
     }
-
 
     public function editBooking(Request $request)
     {
@@ -728,10 +747,20 @@ class bookingApiController extends Controller
             $pushFor = "Accept Ride";
             $token = $riderDetails->device_token;
             $body['username'] = $user->fname.' '.$user->lname;
-            $body['message'] = "Ride Request";
+            $msg = "Ride Request";
             $body['user_rating'] = $this->getUserRating($user->id);
-            $body['bookingDetails'] = $booking;
-            $pushNotification = parent::pushNotification($title,$body,$token,$riderDetails,$pushFor);
+            $body['booking_id'] = $booking->id;
+            $body['userid'] = $booking->userid;
+            $body['phone'] = $booking->phone;
+            $body['source'] = $booking->source;
+            $body['destination'] = $booking->destination;
+            $body['original_price'] = $booking->original_price;
+            $body['price'] = $booking->price;
+            $body['distance'] = $booking->distance;
+            $body['estimated_time'] = $booking->estimated_time;
+            $body['message'] = $msg;
+            $body['title'] = $title;
+            $pushNotification = parent::pushNotification($title,$body,$token,$riderDetails,$pushFor,$msg,2);
 
 
 //                            When Booking is changed, Driver App will get notified
@@ -750,43 +779,142 @@ class bookingApiController extends Controller
 
     public function cancelBookingFee(Request $request)
     {
-        date_default_timezone_set('Asia/Kolkata');
         if (passengers::whereId($request->userid)->exists())
         {
             if (booking::whereId($request->bookingid)->where('userid',$request->userid)->exists())
             {
                 $booking = booking::whereId($request->bookingid)->where('userid',$request->userid)->first();
-                if (cencellation::exists())
+                $payMethod = $booking->payment_method;
+                $paymentDetails = DB::table('payment_methods')->whereId($payMethod)->first();
+                $riderDetails = driver::whereId($booking->driverid)->first();
+                $user = passengers::whereId($booking->userid)->first();
+                if (!empty($paymentDetails->free) && $paymentDetails->free == 1)
                 {
-                    $cancellation = cencellation::first();
-                    $cancellationFee = (int)$cancellation->amount;
-                    $max_time = (int)$cancellation->max_time;
+                    $updateBooking['status'] = "cancelled";
+                    $updateBooking['cancelled_at'] = new \DateTime();
+                    $updateBooking['cancelled_by'] = "user";
+                    booking::whereId($request->bookingid)->update($updateBooking);
+                    driver::whereId($booking->driverid)->update(['active_ride'=>0,'isAvailable'=>1]);
+                    passengers::whereId($booking->userid)->update(['active_ride'=>0]);
+                    if (template::where('type','system')->where('title','Booking Cancel')->exists())
+                    {
+                        $template = template::where('type','system')->where('title','Booking Cancel')->first();
+                        $message = str_replace('xxx',$booking->id,$template->message);
+                        $driver_notification['message'] = $message;
+                        $notification['message'] = $message;
+                        $driver_notification['image'] = $template->image;
+                        $notification['image'] = $template->image;
+                    }
+                    else
+                    {
+                        $notification['message'] = "Your Booking #".$booking->id." is Cancelled";
+                        $driver_notification['message'] = "Your Booking #".$booking->id." is Cancelled";
+                    }
+                    $notification['userid'] = $request->userid;
+                    $driver_notification['driverid'] = $booking->driverid;
+                    $notification['type'] = "System";
+                    notification::create($notification);
+                    driverNotification::create($driver_notification);
+
+                    $response['status'] = "success";
+                    $response['code'] = 200;
+                    $response['ride_cancelled'] = 1;
+                    $response['cancellation_fee'] = 0;
+                    $response['message'] = "Booking Cancelled Successfully!";
+                    $response['data'] = booking::whereId($request->bookingid)->first();
+
+//            *****************************************Code to send the Push Notification****************************
+                    $title = "Ride Cancel";
+                    $pushFor = "Cancel Ride";
+                    $token = $riderDetails->device_token;
+                    $body['username'] = $user->fname.' '.$user->lname;
+                    $msg = "Ride Cancel";
+                    $body['user_rating'] = $this->getUserRating($user->id);
+                    $body['booking_id'] = $booking->id;
+                    $body['userid'] = $booking->userid;
+                    $body['phone'] = $booking->phone;
+                    $body['source'] = $booking->source;
+                    $body['destination'] = $booking->destination;
+                    $body['original_price'] = $booking->original_price;
+                    $body['price'] = $booking->price;
+                    $body['distance'] = $booking->distance;
+                    $body['estimated_time'] = $booking->estimated_time;
+                    $body['message'] = $msg;
+                    $body['title'] = $title;
+                    $pushNotification = parent::pushNotification($title,$body,$token,$riderDetails,$pushFor,$msg,2);
                 }
                 else
                 {
-                    $cancellationFee = 0;
-                    $max_time=1;
+                    $source = explode(',',$booking->source);
+                    $city = $this->getAddress($source[0],$source[1]);
+                    if (cencellation::where('city','like',$city)->exists() == 0)
+                    {
+                        $updateBooking['status'] = "cancelled";
+                        $updateBooking['cancelled_at'] = new \DateTime();
+                        $updateBooking['cancelled_by'] = "user";
+                        booking::whereId($request->bookingid)->update($updateBooking);
+                        driver::whereId($booking->driverid)->update(['active_ride'=>0,'isAvailable'=>1]);
+                        passengers::whereId($booking->userid)->update(['active_ride'=>0]);
+                        if (template::where('type','system')->where('title','Booking Cancel')->exists())
+                        {
+                            $template = template::where('type','system')->where('title','Booking Cancel')->first();
+                            $message = str_replace('xxx',$booking->id,$template->message);
+                            $driver_notification['message'] = $message;
+                            $notification['message'] = $message;
+                            $driver_notification['image'] = $template->image;
+                            $notification['image'] = $template->image;
+                        }
+                        else
+                        {
+                            $notification['message'] = "Your Booking #".$booking->id." is Cancelled";
+                            $driver_notification['message'] = "Your Booking #".$booking->id." is Cancelled";
+                        }
+                        $notification['userid'] = $request->userid;
+                        $driver_notification['driverid'] = $booking->driverid;
+                        $notification['type'] = "System";
+                        notification::create($notification);
+                        driverNotification::create($driver_notification);
+
+                        $response['status'] = "success";
+                        $response['code'] = 200;
+                        $response['ride_cancelled'] = 1;
+                        $response['cancellation_fee'] = 0;
+                        $response['message'] = "Booking Cancelled Successfully!";
+                        $response['data'] = booking::whereId($request->bookingid)->first();
+
+//            *****************************************Code to send the Push Notification****************************
+                        $title = "Ride Cancel";
+                        $pushFor = "Cancel Ride";
+                        $token = $riderDetails->device_token;
+                        $body['username'] = $user->fname.' '.$user->lname;
+                        $msg = "Ride Cancel";
+                        $body['user_rating'] = $this->getUserRating($user->id);
+                        $body['booking_id'] = $booking->id;
+                        $body['userid'] = $booking->userid;
+                        $body['phone'] = $booking->phone;
+                        $body['source'] = $booking->source;
+                        $body['destination'] = $booking->destination;
+                        $body['original_price'] = $booking->original_price;
+                        $body['price'] = $booking->price;
+                        $body['distance'] = $booking->distance;
+                        $body['estimated_time'] = $booking->estimated_time;
+                        $body['message'] = $msg;
+                        $body['title'] = $title;
+                        $pushNotification = parent::pushNotification($title,$body,$token,$riderDetails,$pushFor,$msg,2);
+                    }
+                    else
+                    {
+                        $cancellation = cencellation::where('city','like',$city)->first();
+                        $cancellationFee = (float)$cancellation->amount;
+                        $response['code'] = 200;
+                        $response['status'] = "success";
+                        $response['message'] = "Cancellation fee";
+                        $response['data'] = [];
+                        $response['ride_cancelled'] = 0;
+                        $response['cancellation_fee'] = $cancellationFee;
+                    }
                 }
-                $now = time();
-                $bookingTime = strtotime(str_replace('/','-',$booking->trip_date_time));
-//                return date('d/m/Y h:i',$now);
-                $date = $now-$bookingTime;
-                $minute_difference = round(abs($date) / 60,2);
-                if ($minute_difference > $max_time)
-                {
-                    $response['status'] = "success";
-                    $response['code'] = 200;
-                    $response['message'] = "Cancellation Fees Obtained Successfully";
-                    $response['data'] = $cancellationFee;
-                }
-                else
-                {
-                    $cancellationFee= 0;
-                    $response['status'] = "success";
-                    $response['code'] = 200;
-                    $response['message'] = "Cancellation Fees Obtained Successfully";
-                    $response['data'] = $cancellationFee;
-                }
+
             }
             else
             {
@@ -808,7 +936,6 @@ class bookingApiController extends Controller
 
     public function cancelBooking(Request $request)
     {
-        $now = time();
         if (booking::whereId($request->bookingid)->where('userid',$request->userid)->exists() == 0)
         {
             $response['status'] = "failed";
@@ -830,69 +957,12 @@ class bookingApiController extends Controller
             $user = passengers::whereId($request->userid)->first();
             $booking = booking::whereId($request->bookingid)->where('userid',$request->userid)->where('cancelled_at',null)->orWhere('cancelled_at','')->first();
             $riderDetails = driver::whereId($booking->driverid)->first();
-            $then = strtotime($booking->created_at);
-            $totalTime = ($now-$then)/60;
-
-            if (cencellation::exists())
-            {
-                $cancellTime = cencellation::first();
-                $totalMin = (float)$cancellTime->max_time;
-                $totalPrice = (float)$cancellTime->amount;
-            }
-            else
-            {
-                $totalMin=1;
-                $totalPrice=0;
-            }
-
-        if ($booking->payment_method == 1)
-        {
             $updateBooking['status'] = "cancelled";
             $updateBooking['cancelled_at'] = new \DateTime();
             $updateBooking['cancelled_by'] = "user";
             booking::whereId($request->bookingid)->update($updateBooking);
-
-            if (template::where('type','system')->where('title','Booking Cancel')->exists())
-            {
-                $template = template::where('type','system')->where('title','Booking Cancel')->first();
-                $message = str_replace('xxx',$booking->id,$template->message);
-                $driver_notification['message'] = $message;
-                $notification['message'] = $message;
-                $driver_notification['image'] = $template->image;
-                $notification['image'] = $template->image;
-            }
-            else
-            {
-                $notification['message'] = "Your Booking #".$booking->id." is Cancelled";
-                $driver_notification['message'] = "Your Booking #".$booking->id." is Cancelled";
-            }
-            $notification['userid'] = $request->userid;
-            $driver_notification['driverid'] = $booking->driverid;
-            $notification['type'] = "System";
-            notification::create($notification);
-            driverNotification::create($driver_notification);
-            $response['status'] = "success";
-            $response['code'] = 200;
-            $response['message'] = "Booking Cancelled Successfully!";
-            $response['data'] = booking::whereId($request->bookingid)->first();
-            return $response;
-
-        }
-
-            if ($totalTime > $totalMin && $totalPrice > 0)
-            {
-                $response['code'] = 500;
-                $response['success'] = "failed";
-                $response['message'] = "Cancellation time is exceeded";
-                $response['cancellation_fee'] = $totalPrice;
-                $response['data'] = [];
-                return $response;
-            }
-            $updateBooking['status'] = "cancelled";
-            $updateBooking['cancelled_at'] = new \DateTime();
-            $updateBooking['cancelled_by'] = "user";
-            booking::whereId($request->bookingid)->update($updateBooking);
-
+            driver::whereId($booking->driverid)->update(['active_ride'=>0,'isAvailable'=>1]);
+            passengers::whereId($booking->userid)->update(['active_ride'=>0]);
             if (template::where('type','system')->where('title','Booking Cancel')->exists())
             {
                 $template = template::where('type','system')->where('title','Booking Cancel')->first();
@@ -915,6 +985,8 @@ class bookingApiController extends Controller
 
             $response['status'] = "success";
             $response['code'] = 200;
+            $response['ride_cancelled'] = 1;
+            $response['cancellation_fee'] = 0;
             $response['message'] = "Booking Cancelled Successfully!";
             $response['data'] = booking::whereId($request->bookingid)->first();
 
@@ -923,10 +995,20 @@ class bookingApiController extends Controller
             $pushFor = "Cancel Ride";
             $token = $riderDetails->device_token;
             $body['username'] = $user->fname.' '.$user->lname;
-            $body['message'] = "Ride Cancel";
+            $msg = "Ride Cancel";
             $body['user_rating'] = $this->getUserRating($user->id);
-            $body['bookingDetails'] = $booking;
-            $pushNotification = parent::pushNotification($title,$body,$token,$riderDetails,$pushFor);
+            $body['booking_id'] = $booking->id;
+            $body['userid'] = $booking->userid;
+            $body['phone'] = $booking->phone;
+            $body['source'] = $booking->source;
+            $body['destination'] = $booking->destination;
+            $body['original_price'] = $booking->original_price;
+            $body['price'] = $booking->price;
+            $body['distance'] = $booking->distance;
+            $body['estimated_time'] = $booking->estimated_time;
+            $body['message'] = $msg;
+            $body['title'] = $title;
+            $pushNotification = parent::pushNotification($title,$body,$token,$riderDetails,$pushFor,$msg,2);
 
 //            ************************************************************
 
@@ -1017,49 +1099,29 @@ class bookingApiController extends Controller
             $response['data'] = [];
             return $response;
         }
-        $bookings = booking::where('userid',$userid)->get();
+        $bookings = booking::where('userid',$userid)->orderby('id','desc')->get();
         $myBookings= [];
-        foreach ($bookings as $booking)
-        {
+        foreach ($bookings as $booking) {
             $date = $booking->created_at;
             $tripDate = strtotime($date);
-            $tripDate = strtotime(date('d-m-Y',$tripDate));
-            if ($toDate == $tripDate)
-            {
-                $source = explode(',',$booking->source);
-                $destination = explode(',',$booking->destination);
-                $bookinDetailData['id'] = $booking->id;
-                $bookinDetailData['userid'] = $booking->userid;
-                $bookinDetailData['phone'] = $booking->phone;
-                $bookinDetailData['driverid'] = $booking->driverid;
-                $bookinDetailData['categoryId'] = $booking->categoryId;
-                $bookinDetailData['completed'] = $booking->completed;
-                $bookinDetailData['source'] = $booking->source;
-                $bookinDetailData['destination'] = $booking->destination;
-                $bookinDetailData['source_address'] = $this->getFormattedAddress($source[0],$source[1]);
-                $bookinDetailData['destination_address'] = $this->getFormattedAddress($destination[0],$destination[1]);
-                $bookinDetailData['price'] = $booking->price;
-                $bookinDetailData['original_price'] = $booking->original_price;
-                $bookinDetailData['distance'] = $booking->distance;
-                $bookinDetailData['status'] = $booking->status;
-                $bookinDetailData['paid'] = $booking->paid;
-                $bookinDetailData['driver_tips'] = $booking->driver_tips;
-                $bookinDetailData['trip_start_time'] = $booking->trip_start_time;
-                $bookinDetailData['trip_end_time'] = $booking->trip_end_time;
-                $bookinDetailData['cancelled_at'] = $booking->cancelled_at;
-                $bookinDetailData['created_at'] = $booking->created_at;
-                foreach ($bookinDetailData as $key => $value) {
-                    if (is_null($value)) {
-                        $bookinDetailData[$key] = "";
-                    }
+            $tripDate = strtotime(date('d-m-Y', $tripDate));
+            if (isset($request->date) && ($request->date != null || !empty($request->date))) {
+                if ($toDate == $tripDate)
+                {
+                    $bookinDetailData = $booking;
+                    foreach ($bookinDetailData as $key => $value) {
                         $bookinDetailData['driverid'] = (string)$bookinDetailData['driverid'];
-                        if ($bookinDetailData['status'] == 'Booking Accepted')
-                        {
-                            $bookinDetailData['status'] = 'accepted';
-                        }
-
+                    }
+                    array_push($myBookings, $bookinDetailData);
                 }
-                array_push($myBookings,$bookinDetailData);
+            }
+            else
+            {
+                if($booking->source_address == null)
+                {
+                    $booking->source_address = $booking->destination_address = "";
+                }
+                array_push($myBookings, $booking);
             }
         }
         if (empty($myBookings) || count($myBookings) < 1)
@@ -1126,27 +1188,178 @@ class bookingApiController extends Controller
             $response['data'] = [];
             return $response;
         }
-        if(DB::table('maximum_distance')->exists())
+        $city = $this->getAddress($request->lat,$request->lng);
+        if (adSettings::where('city','like',$city)->exists())
         {
-            $max = DB::table('maximum_distance')->first();
-            if ($max->ads == '' || $max->ads == null || empty($max->ads) || $max->ads == 0)
+            $adSettings = adSettings::where('city','like',$city)->first();
+            $maxDistance = (float)$adSettings->max_distance;
+        }
+        else
+        {
+            $maxDistance = 0.5;
+        }
+        if(isset($request->categoryid) || !empty($request->categoryid))
+        {
+            $ads = advertisement::where('status',1)->where('exceed_daily_budget',0)->where('category',$request->categoryid)->get();
+            if (adSettings::where('city','like',$city)->exists())
             {
-                $maxDistance = 10;
+                $adSetting = adSettings::where('city','like',$city)->first();
+                $cat_cost = (float)$adSetting->category_view_cost;
             }
             else
             {
-                $maxDistance = $max->ads;
+                $cat_cost = 0;
             }
         }
         else
         {
-            $maxDistance = 10;
+            $ads = advertisement::where('status',1)->where('exceed_daily_budget',0)->get();
+            if (adSettings::where('city','like',$city)->exists())
+            {
+                $adSetting = adSettings::where('city','like',$city)->first();
+                $base_cost = (float)$adSetting->view_cost;
+            }
+            else
+            {
+                $base_cost = 0;
+            }
         }
-        $ads = advertisement::get();
+
         if (count($ads) < 1)
+        {
+            $response['code'] = 200;
+            $response['status'] = "success";
+            if(isset($request->categoryid) || !empty($request->categoryid))
+            {
+                $response['message'] = "No advertisement found in this category";
+            }
+            else
+            {
+                $response['message'] = "No advertisements Found";
+            }
+            $response['data'] = [];
+            return $response;
+        }
+        $lat1 = $request->lat;
+        $long1 = $request->lng;
+        $totalAds = [];
+        foreach ($ads as $ad) {
+            $id = $ad->id;
+            $lat2 = $ad->lat;
+            $long2 = $ad->lng;
+            $distance = $this->calculateDistance($lat1, $long1, $lat2, $long2);
+            if ($distance['distance'] > $maxDistance) {
+                continue;
+            } else {
+                if (adView::where('adId', $ad->id)->where('date', date('Y-m-d', time()))->exists()) {
+                    $view = adView::where('adId', $ad->id)->where('date', date('Y-m-d', time()))->first();
+                    $dayCost = (float)$view->ad_cost;
+                    $maxBudget = (float)$ad->max_day_budget;
+                    if ($dayCost >= $maxBudget) {
+                        advertisement::whereId($ad->id)->update(['visible'=>0]);
+                        continue;
+                    }
+                    advertisement::whereId($ad->id)->update(['visible'=>1]);
+                    $ad = advertisement::whereId($ad->id)->first();
+                }
+                if($ad->visible != 1)
+                {
+                    continue;
+                }
+                if (isset($ad->image) || ($ad->image != '') || !empty($ad->image)) {
+                    $ad->image = asset('public/avatars') . '/' . $ad->image;
+                }
+                if (adView::where('adId', $ad->id)->where('date', date('Y-m-d', time()))->exists()) {
+                    $view = adView::where('adId', $ad->id)->where('date', date('Y-m-d', time()))->first();
+                    $dayCost = (float)$view->ad_cost;
+                    if (isset($request->categoryid) || !empty($request->categoryid)) {
+                        $dayCost = $dayCost + $cat_cost;
+                        $cat_view = (int)$view->category_view;
+                        $input['category_view'] = ++$cat_view;
+                        $input['ad_cost'] = $dayCost;
+                    } else {
+                        $dayCost = $dayCost + $base_cost;
+                        $base_view = (int)$view->base_view;
+                        $input['base_view'] = ++$base_view;
+                        $input['ad_cost'] = $dayCost;
+                    }
+                    adView::whereId($view->id)->update($input);
+                } else {
+                    if (isset($request->categoryid) || !empty($request->categoryid)) {
+                        $dayCost = $cat_cost;
+                        $input['category_view'] = 1;
+                        $input['ad_cost'] = $dayCost;
+                    } else {
+                        $dayCost = $base_cost;
+                        $input['base_view'] = 1;
+                        $input['ad_cost'] = $dayCost;
+                    }
+                    $input['adId'] = $ad->id;
+                    $input['date'] = date('Y-m-d', time());
+                    $input['ad_user_id'] = $ad->adUserid;
+                    adView::create($input);
+                }
+                array_push($totalAds, $ad);
+
+            }
+        }
+        if (count($totalAds) < 1)
         {
             $response['code'] = 500;
             $response['status'] = "failed";
+            if(isset($request->categoryid) || !empty($request->categoryid))
+            {
+                $response['message'] = "No advertisement found in this category";
+            }
+            else
+            {
+                $response['message'] = "No advertisements Found";
+            }
+            $response['data'] = [];
+        }
+        else
+        {
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "Advertisements fetched successfully";
+            $response['data'] = $totalAds;
+        }
+        return $response;
+    }
+
+    public function fetchFilterdAds(Request $request)
+    {
+        if (!isset($request->lat) || ($request->lat == '' || empty($request->lat)))
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Destination latitude can not be empty";
+            $response['data'] = [];
+            return $response;
+        }
+        if (!isset($request->lng) || ($request->lng == '' || empty($request->lng)))
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Destination longitude can not be empty";
+            $response['data'] = [];
+            return $response;
+        }
+        $city = $this->getAddress($request->lat,$request->lng);
+        if (adSettings::where('city','like',$city)->exists())
+        {
+            $adSettings = adSettings::where('city','like',$city)->first();
+            $maxDistance = (float)$adSettings->max_distance;
+        }
+        else
+        {
+            $maxDistance = 0.5;
+        }
+        $ads = advertisement::where('status',1)->where('visible',1)->where('filter_category',1)->where('exceed_daily_budget',0)->where('category',$request->categoryid)->get();
+        if (count($ads) < 1)
+        {
+            $response['code'] = 200;
+            $response['status'] = "success";
             $response['message'] = "No advertisements Found";
             $response['data'] = [];
             return $response;
@@ -1175,8 +1388,8 @@ class bookingApiController extends Controller
         }
         if (count($totalAds) < 1)
         {
-            $response['code'] = 500;
-            $response['status'] = "failed";
+            $response['code'] = 200;
+            $response['status'] = "success";
             $response['message'] = "No advertisements Found";
             $response['data'] = [];
         }
@@ -1190,6 +1403,42 @@ class bookingApiController extends Controller
         return $response;
     }
 
+    public function fetchAdCategory(Request $request)
+    {
+        if (!isset($request->lat) || ($request->lat == '' || empty($request->lat)))
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Destination latitude can not be empty";
+            $response['data'] = [];
+            return $response;
+        }
+        if (!isset($request->lng) || ($request->lng == '' || empty($request->lng)))
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Destination longitude can not be empty";
+            $response['data'] = [];
+            return $response;
+        }
+        $city = $this->getAddress($request->lat,$request->lng);
+        if (adCategory::where('city','like',$city)->exists())
+        {
+            $categories = adCategory::where('city','like',$city)->get();
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "Here are the ad categories";
+            $response['data'] = $categories;
+        }
+        else
+        {
+            $response['code'] = 200;
+            $response['status'] = "success";
+            $response['message'] = "No categories found";
+            $response['data'] = [];
+        }
+        return $response;
+    }
 
     function getFormattedAddress($lat,$lon)
     {
@@ -1334,11 +1583,11 @@ class bookingApiController extends Controller
     {
         if ($discount == 0)
         {
-            $drivers = driver::where('status',1)->where('isAvailable',1)->where('active_ride',0)->where('city','like',$city)->get();
+            $drivers = driver::where('status',1)->where('isAvailable',1)->where('active_ride',0)->where('city','like',$city)->where('payment',1)->get();
         }
         else
         {
-            $drivers = driver::where('status',1)->where('isAvailable',1)->where('active_ride',0)->where('discount','!=',0)->where('city','like',$city)->orderby('discount','desc')->get();
+            $drivers = driver::where('status',1)->where('isAvailable',1)->where('active_ride',0)->where('discount','!=',0)->where('city','like',$city)->orderby('discount','desc')->where('payment',1)->get();
         }
         if($payment != null && $favorite == 0)
         {
@@ -1387,11 +1636,11 @@ class bookingApiController extends Controller
                     {
                         if ($discount == 0)
                         {
-                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->where('city','like',$city)->first();
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->where('city','like',$city)->where('payment',1)->first();
                         }
                         else
                         {
-                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->where('city','like',$city)->where('discount','!=',0)->first();
+                            $driverDetail = driver::whereId($pay->driverid)->where('status',1)->where('active_ride',0)->where('city','like',$city)->where('discount','!=',0)->where('payment',1)->first();
                         }
                         if (isset($driverDetail) && !empty($driverDetail))
                         {
@@ -1458,7 +1707,7 @@ class bookingApiController extends Controller
                     $fetchDetails['favorite_driver_filter_applied'] = 0;
                 }
                 if(isset($driverCategories)&& isset($driverCategories->categoryid)){
-                    $fetchDetails['category'] = $driverCategories->categoryid;
+                    $fetchDetails['category'] = (int)$driverCategories->categoryid;
                 }
                 else{
                     $fetchDetails['category'] = "";
@@ -1535,7 +1784,6 @@ class bookingApiController extends Controller
             $estimate = ($price*10)/100;
             $estimate = $estimate+$price;
             $fetch['estimated_actual_price'] = number_format($price,2).' - '.number_format($estimate,2);
-
             if ($request->discount == 1)
             {
                 $discount = (float)$fetch['discount'];
@@ -1602,6 +1850,7 @@ class bookingApiController extends Controller
                 return $response;
             }
     }
+
     function checkCity2($city)
     {
         if (availableCities::where('city','like',$city)->exists()== 0)
@@ -1718,6 +1967,72 @@ class bookingApiController extends Controller
         }
         return $rate;
 
+    }
+
+    public function checkActiveRide(Request $request)
+    {
+        if(passengers::whereId($request->userid)->exists() == 0)
+        {
+            $response['code'] = 500;
+            $response['message'] = "User doesn't exists";
+            $response['status'] = "failed";
+            $response['data'] = [];
+            return $response;
+        }
+        $user = passengers::whereId($request->userid)->first();
+        if($user->active_ride == 0)
+        {
+            $response['code'] = 200;
+            $response['message'] = "User is not actively on ride";
+            $response['status'] = "success";
+            $response['active_ride'] = 0;
+            $response['data'] = [];
+            return $response;
+        }
+        else
+        {
+            $booking = booking::where('userid',$request->userid)->orderby('id','desc')->first();
+            $driver_id = $booking->driverid;
+            if(!empty($driver_id)){
+                $driver = driver::whereId($driver_id)->first();
+                $booking['driver_name'] = $driver->first_name .$driver->last_name;
+                $responseDriver = app('App\Http\Controllers\api\driverApiController')->driverRating($driver_id);
+                $booking['driver_rating'] = $responseDriver;
+            }
+            $response['code'] = 200;
+            $response['message'] = "User is actively on a ride";
+            $response['status'] = "success";
+            $response['active_ride'] = 1;
+            $response['data'] = $booking;
+            return $response;
+        }
+    }
+
+    public function cancellationTime(Request $request)
+    {
+        $userDeatils = explode(',',$request->user_lat_lng);
+        if (!isset($userDeatils[0]) || !isset($userDeatils[1]))
+        {
+            $response['code'] = 500;
+            $response['status'] = "failed";
+            $response['message'] = "Invalid user data";
+            $response['data'] = [];
+            return $response;
+        }
+        $city = $this->getAddress($userDeatils[0],$userDeatils[1]);
+        $time = 60000;
+        if (cencellation::where('city','like',$city)->exists())
+        {
+            $cancellation = cencellation::where('city','like',$city)->first();
+            $time = (float)$cancellation->max_time;
+            $time = $time*60000;
+        }
+        $response['code'] = 200;
+        $response['status'] = "success";
+        $response['message'] = "Here is the cancellation time";
+        $response['cancellation_time'] = $time;
+        $response['data'] = [];
+        return $response;
     }
 
 }
