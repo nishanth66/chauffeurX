@@ -30,8 +30,8 @@ class Home1Controller extends Controller
         if (User::where('phone',$mNumber)->exists())
         {
             $otp = substr(str_shuffle("0123456789"), 0, 4);
-            $sid    = "AC7835895b4de3218265df779b550d793b";
-            $token  = "c44245d2f7d682f18eb3a1399d8d5ef6";
+            $sid    = "sid";
+            $token  = "token";
             $twilio = new Client($sid, $token);
 
             try
