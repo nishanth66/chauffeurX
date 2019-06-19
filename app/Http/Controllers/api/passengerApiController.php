@@ -40,8 +40,8 @@ class passengerApiController extends Controller
 {
     protected $googleMap = "AIzaSyB56Xh1A7HQDPQg_7HxrPTcSNnlpqYavc0";
     private $database;
-    protected $sid    = "AC7835895b4de3218265df779b550d793b";
-    protected $token  = "c44245d2f7d682f18eb3a1399d8d5ef6";
+    protected $sid    = "sid";
+    protected $token  = "token";
     public function __construct()
     {
         $config = array(
