@@ -311,8 +311,8 @@ class driverApiController extends Controller
         {
             $number1 = str_replace(' ','',$number);
             $message = "I switched to ChauffeurX. It’s awesome!!! You should download it today";
-            $sid    = "AC7835895b4de3218265df779b550d793b";
-            $token  = "c44245d2f7d682f18eb3a1399d8d5ef6";
+            $sid    = "sid";
+            $token  = "token";
             $twilio = new Client($sid, $token);
 
             try
